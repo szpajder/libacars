@@ -16,17 +16,15 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define _GNU_SOURCE	// for vasprintf()
-#include <stdio.h>
-#include <stdarg.h>	// va_list, etc
+#include <stdio.h>	// fprintf
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
+#include <stdlib.h>	// calloc, realloc, free
+#include <string.h>	// strerror, strlen
+#include <errno.h>	// errno
+#include <unistd.h>	// _exit
 #include "util.h"
 
-void *xcalloc(size_t nmemb, size_t size, const char *file, const int line, const char *func) {
+void *la_xcalloc(size_t nmemb, size_t size, const char *file, const int line, const char *func) {
 	void *ptr = calloc(nmemb, size);
 	if(ptr == NULL) {
 		fprintf(stderr, "%s:%d: %s(): calloc(%zu, %zu) failed: %s\n",
@@ -36,7 +34,7 @@ void *xcalloc(size_t nmemb, size_t size, const char *file, const int line, const
 	return ptr;
 }
 
-void *xrealloc(void *ptr, size_t size, const char *file, const int line, const char *func) {
+void *la_xrealloc(void *ptr, size_t size, const char *file, const int line, const char *func) {
 	ptr = realloc(ptr, size);
 	if(ptr == NULL) {
 		fprintf(stderr, "%s:%d: %s(): realloc(%zu) failed: %s\n",
@@ -46,28 +44,16 @@ void *xrealloc(void *ptr, size_t size, const char *file, const int line, const c
 	return ptr;
 }
 
-int xasprintf(const char *file, const int line, const char *func, char **strp, const char *fmt, ...) {
-	va_list ap;
-	va_start(ap, fmt);
-	int r = vasprintf(strp, fmt, ap);
-	va_end(ap);
-	if(r == -1) {
-		fprintf(stderr, "%s:%d: %s(): vasprintf() failed (out of memory?)\n",
-			file, line, func);
-	}
-	return r;
-}
-
-void *dict_search(const dict *list, uint8_t id) {
+void *la_dict_search(const la_dict *list, uint8_t id) {
 	if(list == NULL) return NULL;
-	dict *ptr;
-	for(ptr = (dict *)list; ; ptr++) {
+	la_dict *ptr;
+	for(ptr = (la_dict *)list; ; ptr++) {
 		if(ptr->val == NULL) return NULL;
 		if(ptr->id == id) return ptr->val;
 	}
 }
 
-size_t slurp_hexstring(char* string, uint8_t **buf) {
+size_t la_slurp_hexstring(char* string, uint8_t **buf) {
 	if(string == NULL)
 		return 0;
 	size_t slen = strlen(string);
@@ -76,7 +62,7 @@ size_t slurp_hexstring(char* string, uint8_t **buf) {
 	size_t dlen = slen / 2;
 	if(dlen == 0)
 		return 0;
-	*buf = XCALLOC(dlen, sizeof(uint8_t));
+	*buf = LA_XCALLOC(dlen, sizeof(uint8_t));
 
 	for(size_t i = 0; i < slen; i++) {
 		char c = string[i];
@@ -88,7 +74,7 @@ size_t slurp_hexstring(char* string, uint8_t **buf) {
 		} else if (c >= 'a' && c <= 'f') {
 			 value = (10 + (c - 'a'));
 		} else {
-			debug_print("stopped at invalid char %u at pos %zu\n", c, i);
+			la_debug_print("stopped at invalid char %u at pos %zu\n", c, i);
 			return i/2;
 		}
 		(*buf)[(i/2)] |= value << (((i + 1) % 2) * 4);
