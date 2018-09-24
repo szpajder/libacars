@@ -20,6 +20,7 @@
 #ifndef LA_VSTRING_H
 #define LA_VSTRING_H
 
+#include <stdbool.h>
 #include "macros.h"		// LA_GCC_PRINTF_ATTR
 
 typedef struct {
@@ -29,7 +30,7 @@ typedef struct {
 } la_vstring;
 
 la_vstring *la_vstring_new();
-void la_vstring_destroy(la_vstring *vstr);
+void la_vstring_destroy(la_vstring *vstr, bool destroy_buffer);
 void la_vstring_append_sprintf(la_vstring * const vstr, char const *fmt, ...) LA_GCC_PRINTF_ATTR(2, 3);
 
 #endif // LA_VSTRING_H

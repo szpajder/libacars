@@ -18,6 +18,7 @@
  */
 
 #include <stdarg.h>
+#include <stdbool.h>
 #include "macros.h"
 #include "util.h"
 #include "vstring.h"
@@ -52,8 +53,8 @@ la_vstring *la_vstring_new() {
 	return vstr;
 }
 
-void la_vstring_destroy(la_vstring *vstr) {
-	if(vstr) {
+void la_vstring_destroy(la_vstring *vstr, bool destroy_buffer) {
+	if(vstr && destroy_buffer == true) {
 		LA_XFREE(vstr->str);
 	}
 	LA_XFREE(vstr);
