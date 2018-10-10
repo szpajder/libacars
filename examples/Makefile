@@ -14,8 +14,11 @@ all: $(BIN)
 
 $(BIN): $(DEPS)
 
+decode_arinc: decode_arinc.o
+
 clean:
 	rm -f *.o $(BIN)
 
-decpdlc.o: ../src/libacars.h
+decpdlc.o: ../src/libacars.h ../src/vstring.h ../src/util.h ../src/cpdlc.h
 
+decode_arinc.o: ../src/libacars.h

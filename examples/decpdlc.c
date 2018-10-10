@@ -20,8 +20,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <libacars.h>
-#include <util.h> // temp - slurp_hexstring;
+#include <cpdlc.h>
+#include <util.h>		// la_slurp_hexstring()
+#include <vstring.h>		// la_vstring
+
+FILE *outf;
 
 void usage() {
 	fprintf(stderr,
@@ -50,32 +55,31 @@ void usage() {
 	"Supported FANS-1/A message types: CR1, CC1, DR1, AT1\n");
 }
 
-void parse(char *txt, uint32_t *msg_type) {
-	void *ptr = NULL;
-	cpdlc_msgid_t msgid = CPDLC_MSG_UNKNOWN;
-	dump_asn1 = 0;
+void parse(char *txt, la_msg_dir msg_dir) {
+	int msgid = 0;
+//	dump_asn1 = 0;
 	char *s = strstr(txt, ".AT1");
 	if(s != NULL) {
-		msgid = CPDLC_MSG_AT1;
+		msgid = 1;
 		goto msgid_set;
 	}
 	s = strstr(txt, ".CR1");
 	if(s != NULL) {
-		msgid = CPDLC_MSG_CR1;
+		msgid = 1;
 		goto msgid_set;
 	}
 	s = strstr(txt, ".CC1");
 	if(s != NULL) {
-		msgid = CPDLC_MSG_CC1;
+		msgid = 1;
 		goto msgid_set;
 	}
 	s = strstr(txt, ".DR1");
 	if(s != NULL) {
-		msgid = CPDLC_MSG_DR1;
+		msgid = 1;
 		goto msgid_set;
 	}
 msgid_set:
-	if(msgid == CPDLC_MSG_UNKNOWN) {
+	if(msgid == 0) {
 		fprintf(stderr, "not a FANS-1/A CPDLC message\n");
 		return;
 	}
@@ -86,20 +90,26 @@ msgid_set:
 	}
 	s += 7;
 	uint8_t *buf = NULL;
-	size_t buflen = slurp_hexstring(s, &buf);
-	ptr = cpdlc_parse_msg(msgid, buf, (size_t)buflen, msg_type);
+	size_t buflen = la_slurp_hexstring(s, &buf);
+// cut off CRC
+	if(buflen >= 2)
+		buflen -= 2;
+// FIXME: prevent overflow on buflen cast
+	la_proto_node *node = la_cpdlc_parse(buf, (int)buflen, msg_dir);
 end:
-	outf = stdout;
 	fprintf(outf, "%s\n", txt);
-	if(ptr != NULL) {
-		cpdlc_output_msg(ptr);
-		fprintf(outf, "\n");
+	if(node != NULL) {
+		la_vstring *vstr = la_proto_tree_format_text(NULL, node);
+		fprintf(outf, "%s\n", vstr->str);
+		la_vstring_destroy(vstr, true);
 	}
+	la_proto_tree_destroy(node);
 	free(buf);
 }
 
 int main(int argc, char **argv) {
-	uint32_t msg_type = 0;
+	la_msg_dir msg_dir = LA_MSG_DIR_UNKNOWN;
+	outf = stdout;
 	if(argc > 1 && !strcmp(argv[1], "-h")) {
 		usage();
 		exit(0);
@@ -112,7 +122,7 @@ int main(int argc, char **argv) {
 		char buf[1024];
 		for(;;) {
 			memset(buf, 0, sizeof(buf));
-			msg_type = 0;
+			msg_dir = LA_MSG_DIR_UNKNOWN;
 			if(fgets(buf, sizeof(buf), stdin) == NULL)
 				break;
 			char *end = strchr(buf, '\n');
@@ -123,22 +133,22 @@ int main(int argc, char **argv) {
 				continue;
 			}
 			if(buf[0] == 'u')
-				msg_type |= MSGFLT_SRC_GND;
+				msg_dir = LA_MSG_DIR_GND2AIR;
 			else if(buf[0] == 'd')
-				msg_type |= MSGFLT_SRC_AIR;
-			parse(buf, &msg_type);
+				msg_dir = LA_MSG_DIR_AIR2GND;
+			parse(buf, msg_dir);
 		}
 	} else if(argc == 3) {
 		if(argv[1][0] == 'u')
-			msg_type |= MSGFLT_SRC_GND;
+			msg_dir = LA_MSG_DIR_GND2AIR;
 		else if(argv[1][0] == 'd')
-			msg_type |= MSGFLT_SRC_AIR;
+			msg_dir = LA_MSG_DIR_AIR2GND;
 		else {
 			fprintf(stderr, "Invalid command line options\n\n");
 			usage();
 			exit(1);
 		}
-		parse(argv[2], &msg_type);
+		parse(argv[2], msg_dir);
 	} else {
 		fprintf(stderr, "Invalid command line options\n\n");
 		usage();
