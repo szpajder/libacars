@@ -17,25 +17,26 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _ASN1_UTIL_H
-#define _ASN1_UTIL_H
+#ifndef LA_ASN1_UTIL_H
+#define LA_ASN1_UTIL_H 1
 #include <stdint.h>			// uint8_t
 #include "asn1/constr_TYPE.h"		// asn_TYPE_descriptor_t
+#include "vstring.h"			// la_vstring
 
 typedef struct {
 	asn_TYPE_descriptor_t *type;
-	void (*format)(FILE *, char const * const label, asn_TYPE_descriptor_t *, const void *, int);
+// FIXME: typedef?
+	void (*format)(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *, const void *, int);
 	char const * const label;
-} asn_formatter_t;
-typedef void (*asn1_output_fun_t)(FILE *, asn_TYPE_descriptor_t *, const void *, int);
+} la_asn_formatter;
 
-#define ASN1_FORMATTER_PROTOTYPE(x) void x(FILE *stream, char const * const label, asn_TYPE_descriptor_t *td, void const *sptr, int indent)
-#define CAST_PTR(x, t, y) t x = (t)(y)
-#define IFPRINTF(s, i, f, ...) fprintf(s, "%*s" f, i, "", __VA_ARGS__)
+typedef void (*asn1_output_fun_t)(la_vstring *, asn_TYPE_descriptor_t *, const void *, int);
+
+#define LA_ASN1_FORMATTER_PROTOTYPE(x) void x(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td, void const *sptr, int indent)
 
 // asn1-util.c
-int asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t *buf, int size);
-void asn1_output(FILE *stream, asn_formatter_t const * const asn1_formatter_table,
+int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t *buf, int size);
+void la_asn1_output(la_vstring *vstr, la_asn_formatter const * const asn1_formatter_table,
 	size_t asn1_formatter_table_len, asn_TYPE_descriptor_t *td, const void *sptr, int indent);
 
-#endif // _ASN1_UTIL_H
+#endif // !LA_ASN1_UTIL_H

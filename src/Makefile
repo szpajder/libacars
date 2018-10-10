@@ -11,16 +11,17 @@ CFLAGS += -std=c11 -g -Wall -fPIC -D_XOPEN_SOURCE=600 -DDEBUG=$(DEBUG)
 #  CFLAGS+=-DLIBACARS_VERSION=$(LIBACARS_VERSION)
 #endif
 
-CFLAGS += -Iasn1 $(GLIBCFLAGS)
+CFLAGS += -Iasn1 -I. $(GLIBCFLAGS)
 SUBDIRS = asn1
 CLEANDIRS = $(SUBDIRS:%=clean-%)
 LIB = libacars.so
 OBJ =	asn1-format-common.o \
 	asn1-format-cpdlc.o \
 	asn1-util.o \
+	cpdlc.o \
 	libacars.o \
-	util.o
-
+	util.o \
+	vstring.o
 ASN1 = asn1/asn1.a
 
 DEPS = $(OBJ) $(ASN1)
@@ -34,15 +35,19 @@ $(LIB): $(DEPS)
 
 $(ASN1): asn1 ;
 
-asn1-format-common.o: asn1-util.h util.h
+asn1-format-common.o: asn1-util.h macros.h util.h vstring.h
 
-asn1-format-cpdlc.o: asn1-util.h asn1-format-common.h util.h
+asn1-format-cpdlc.o: asn1-util.h asn1-format-common.h macros.h util.h vstring.h
 
-asn1-util.o: util.h asn1-util.h
+asn1-util.o: asn1-util.h macros.h vstring.h
 
-libacars.o: asn1-util.h asn1-format-cpdlc.h libacars.h
+cpdlc.o: asn1-util.h asn1-format-cpdlc.h cpdlc.h libacars.h util.h macros.h vstring.h
 
-util.o:
+libacars.o: macros.h libacars.h vstring.h util.h
+
+util.o: macros.h util.h
+
+vstring.o: vstring.h macros.h util.h
 
 $(SUBDIRS):
 	$(MAKE) -C $@

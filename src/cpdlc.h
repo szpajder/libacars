@@ -17,36 +17,31 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LA_LIBACARS_H
-#define LA_LIBACARS_H 1
+#ifndef LA_CPDLC_H
+#define LA_CPDLC_H 1
+
+#include <stdint.h>
+#include "libacars.h"		// la_type_descriptor, la_proto_node
 #include "vstring.h"		// la_vstring
-
-typedef enum {
-	LA_MSG_DIR_UNKNOWN,
-	LA_MSG_DIR_GND2AIR,
-	LA_MSG_DIR_AIR2GND
-} la_msg_dir;
-
-typedef void (la_print_type_f)(la_vstring * const vstr, void const * const data);
-typedef void (la_destroy_type_f)(void *data);
+#include "asn1/constr_TYPE.h"	// asn_TYPE_descriptor_t
 
 typedef struct {
-	char const * const header;
-	la_print_type_f *format_text;
-	la_destroy_type_f *destroy;
-} la_type_descriptor;
-
-typedef struct la_proto_node la_proto_node;
-
-struct la_proto_node {
-	la_type_descriptor const *td;
+	asn_TYPE_descriptor_t *asn_type;
 	void *data;
-	la_proto_node *next;
+	int err;
+} la_cpdlc_msg;
+
+// cpdlc.c
+extern int la_enable_asn1_dumps;
+
+la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir);
+void la_cpdlc_format_text(la_vstring * const vstr, void const * const data);
+void la_cpdlc_destroy(void *data);
+
+la_type_descriptor const la_DEF_cpdlc_message = {
+	.header = NULL,		// header is the label of the outermost ASN.1 tag
+	.format_text = &la_cpdlc_format_text,
+	.destroy = &la_cpdlc_destroy
 };
 
-// libacars.c
-la_proto_node *la_proto_node_new();
-la_vstring *la_proto_tree_format_text(la_vstring *vstr, la_proto_node const * const root);
-void la_proto_tree_destroy(la_proto_node *root);
-
-#endif // !LA_LIBACARS_H
+#endif // !LA_CPDLC_H

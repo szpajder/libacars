@@ -17,7 +17,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef LA_ASN1_FORMAT_CPDLC_H
+#define LA_ASN1_FORMAT_CPDLC_H 1
 #include "asn1/constr_TYPE.h"		// asn_TYPE_descriptor_t
+#include "vstring.h"			// la_vstring
 
 // asn1-format-cpdlc.c
-void asn1_output_cpdlc(FILE *stream, asn_TYPE_descriptor_t *td, const void *sptr, int indent);
+void la_asn1_output_cpdlc_as_text(la_vstring *vstr, asn_TYPE_descriptor_t *td, const void *sptr, int indent);
+
+#endif // !LA_ASN1_FORMAT_CPDLC_H

@@ -22,6 +22,7 @@
 #include <string.h>	// strerror, strlen
 #include <errno.h>	// errno
 #include <unistd.h>	// _exit
+#include "macros.h"	// la_debug_print()
 #include "util.h"
 
 void *la_xcalloc(size_t nmemb, size_t size, const char *file, const int line, const char *func) {

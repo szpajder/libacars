@@ -17,11 +17,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <limits.h>		// INT_MAX
 #include <stdarg.h>
 #include <stdbool.h>
-#include "macros.h"
-#include "util.h"
-#include "vstring.h"
+#include <stdint.h>
+#include <string.h>		// memcpy
+#include "macros.h"		// la_assert, la_debug_print
+#include "util.h"		// LA_XCALLOC, LA_XFREE
+#include "vstring.h"		// la_vstring
 
 #define LA_VSTR_INITIAL_SIZE 256
 #define LA_VSTR_SIZE_MULT 2
@@ -31,6 +34,7 @@ static void la_vstring_grow(la_vstring * const vstr, int const space_needed) {
 	la_assert(space_needed > 0);
 
 	int new_size = vstr->allocated_size;
+// FIXME: prevent overflow
 	while(vstr->len + space_needed >= new_size) {
 		new_size *= LA_VSTR_SIZE_MULT;
 	}
@@ -42,6 +46,7 @@ static void la_vstring_grow(la_vstring * const vstr, int const space_needed) {
 
 static int la_vstring_space_left(la_vstring const * const vstr) {
 	la_assert(vstr);
+	la_assert(vstr->allocated_size >= vstr->len);
 	return vstr->allocated_size - vstr->len;
 }
 
@@ -87,5 +92,26 @@ end:
 	vstr->len += result_size - 1;	// not including '\0'
 	la_debug_print("sprintf completed: allocated_size=%d len=%d\n",
 		vstr->allocated_size, vstr->len);
+	return;
+}
+
+void la_vstring_append_buffer(la_vstring * const vstr, void const * buffer, size_t size) {
+	la_assert(vstr);
+// NULL buffer or zero length is not a fatal error
+	if(buffer == NULL || size == 0) {
+		return;
+	}
+	la_assert(size <= INT_MAX);
+
+	int space_left = la_vstring_space_left(vstr);
+	int len = (int)size;
+	if(len >= space_left) {
+		la_debug_print("len %d >= space_left %d - need to grow\n", len, space_left);
+		la_vstring_grow(vstr, len);
+	}
+	memcpy(vstr->str + vstr->len, buffer, len);
+	la_assert((size_t)vstr->len + size <= INT_MAX);
+	vstr->len += len;
+	vstr->str[vstr->len] = '\0';
 	return;
 }

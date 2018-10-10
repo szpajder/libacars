@@ -2,7 +2,7 @@ export DEBUG ?= 0
 CC = gcc
 AR = ar
 RANLIB = ranlib
-CFLAGS += -std=c11 -g -Wall -fPIC -DEMIT_ASN_DEBUG=$(DEBUG) -I. -D_XOPEN_SOURCE=600
+CFLAGS += -std=c11 -g -Wall -fPIC -DEMIT_ASN_DEBUG=$(DEBUG) -I. -I.. -D_XOPEN_SOURCE=600
 include Makefile.inc
 
 LIB=asn1.a

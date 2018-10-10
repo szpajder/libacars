@@ -18,10 +18,13 @@
  */
 
 #ifndef LA_VSTRING_H
-#define LA_VSTRING_H
+#define LA_VSTRING_H 1
 
 #include <stdbool.h>
 #include "macros.h"		// LA_GCC_PRINTF_ATTR
+
+// la_vstring_append_sprintf with variable indentation
+#define LA_ISPRINTF(vstr, i, f, ...) la_vstring_append_sprintf(vstr, "%*s" f, i, "", __VA_ARGS__)
 
 typedef struct {
 	char *str;		// string buffer pointer
@@ -32,5 +35,6 @@ typedef struct {
 la_vstring *la_vstring_new();
 void la_vstring_destroy(la_vstring *vstr, bool destroy_buffer);
 void la_vstring_append_sprintf(la_vstring * const vstr, char const *fmt, ...) LA_GCC_PRINTF_ATTR(2, 3);
+void la_vstring_append_buffer(la_vstring * const vstr, void const * buffer, size_t size);
 
-#endif // LA_VSTRING_H
+#endif // !LA_VSTRING_H

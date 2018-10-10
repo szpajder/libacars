@@ -17,41 +17,43 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "asn1/asn_application.h"	// asn_TYPE_descriptor_t, asn_fprint
+#include "asn1/asn_application.h"	// asn_TYPE_descriptor_t, asn_sprintf
 #include "asn1/INTEGER.h"		// asn_INTEGER_enum_map_t
 #include "asn1/constr_CHOICE.h"		// _fetch_present_idx()
 #include "asn1/asn_SET_OF.h"		// _A_CSET_FROM_VOID()
-#include "asn1-util.h"			// CAST_PTR, ASN1_FORMATTER_PROTOTYPE, IFPRINTF
-#include "util.h"			// dict_search
+#include "asn1-util.h"			// LA_ASN1_FORMATTER_PROTOTYPE
+#include "macros.h"			// LA_CAST_PTR
+#include "util.h"			// la_dict_search
+#include "vstring.h"			// la_vstring, la_vstring_append_sprintf(), LA_ISPRINTF
 
-char const *value2enum(asn_TYPE_descriptor_t *td, long const value) {
+char const *la_value2enum(asn_TYPE_descriptor_t *td, long const value) {
 	if(td == NULL) return NULL;
 	asn_INTEGER_enum_map_t const *enum_map = INTEGER_map_value2enum(td->specifics, value);
 	if(enum_map == NULL) return NULL;
 	return enum_map->enum_name;
 }
 
-void _format_INTEGER_with_unit(FILE *stream, char const * const label, asn_TYPE_descriptor_t *td,
+void la_format_INTEGER_with_unit(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td,
 	void const *sptr, int indent, char const * const unit, double multiplier, int decimal_places) {
-	CAST_PTR(val, long *, sptr);
-	IFPRINTF(stream, indent, "%s: %.*f%s\n", label, decimal_places, (double)(*val) * multiplier, unit);
+	LA_CAST_PTR(val, long *, sptr);
+	LA_ISPRINTF(vstr, indent, "%s: %.*f%s\n", label, decimal_places, (double)(*val) * multiplier, unit);
 }
 
-void _format_CHOICE(FILE *stream, char const * const label, dict const * const choice_labels,
+void la_format_CHOICE(la_vstring *vstr, char const * const label, la_dict const * const choice_labels,
 	asn1_output_fun_t cb, asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
 
 	asn_CHOICE_specifics_t *specs = (asn_CHOICE_specifics_t *)td->specifics;
 	int present = _fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
 	if(label != NULL) {
-		IFPRINTF(stream, indent, "%s:\n", label);
+		LA_ISPRINTF(vstr, indent, "%s:\n", label);
 		indent++;
 	}
 	if(choice_labels != NULL) {
-		char *descr = dict_search(choice_labels, present);
+		char *descr = la_dict_search(choice_labels, present);
 		if(descr != NULL) {
-			IFPRINTF(stream, indent, "%s\n", descr);
+			LA_ISPRINTF(vstr, indent, "%s\n", descr);
 		} else {
-			IFPRINTF(stream, indent, "<no description for CHOICE value %d>\n", present);
+			LA_ISPRINTF(vstr, indent, "<no description for CHOICE value %d>\n", present);
 		}
 		indent++;
 	}
@@ -62,23 +64,23 @@ void _format_CHOICE(FILE *stream, char const * const label, dict const * const c
 		if(elm->flags & ATF_POINTER) {
 			memb_ptr = *(const void * const *)((const char *)sptr + elm->memb_offset);
 			if(!memb_ptr) {
-				IFPRINTF(stream, indent, "%s: <not present>\n", elm->name);
+				LA_ISPRINTF(vstr, indent, "%s: <not present>\n", elm->name);
 				return;
 			}
 		} else {
 			memb_ptr = (const void *)((const char *)sptr + elm->memb_offset);
 		}
 
-		cb(stream, elm->type, memb_ptr, indent);
+		cb(vstr, elm->type, memb_ptr, indent);
 	} else {
-		IFPRINTF(stream, indent, "-- %s: value %d out of range\n", td->name, present);
+		LA_ISPRINTF(vstr, indent, "-- %s: value %d out of range\n", td->name, present);
 	}
 }
 
-void _format_SEQUENCE(FILE *stream, char const * const label, asn1_output_fun_t cb,
+void la_format_SEQUENCE(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
 	asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
 	if(label != NULL) {
-		IFPRINTF(stream, indent, "%s:\n", label);
+		LA_ISPRINTF(vstr, indent, "%s:\n", label);
 		indent++;
 	}
 	for(int edx = 0; edx < td->elements_count; edx++) {
@@ -93,14 +95,14 @@ void _format_SEQUENCE(FILE *stream, char const * const label, asn1_output_fun_t 
 		} else {
 			memb_ptr = (const void *)((const char *)sptr + elm->memb_offset);
 		}
-		cb(stream, elm->type, memb_ptr, indent);
+		cb(vstr, elm->type, memb_ptr, indent);
 	}
 }
 
-void _format_SEQUENCE_OF(FILE *stream, char const * const label, asn1_output_fun_t cb,
+void la_format_SEQUENCE_OF(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
 	asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
 	if(label != NULL) {
-		IFPRINTF(stream, indent, "%s:\n", label);
+		LA_ISPRINTF(vstr, indent, "%s:\n", label);
 		indent++;
 	}
 	asn_TYPE_member_t *elm = td->elements;
@@ -110,33 +112,33 @@ void _format_SEQUENCE_OF(FILE *stream, char const * const label, asn1_output_fun
 		if(memb_ptr == NULL) {
 			continue;
 		}
-		cb(stream, elm->type, memb_ptr, indent);
+		cb(vstr, elm->type, memb_ptr, indent);
 	}
 }
 
-ASN1_FORMATTER_PROTOTYPE(asn1_format_any) {
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_any) {
 	if(label != NULL) {
-		IFPRINTF(stream, indent, "%s: ", label);
+		LA_ISPRINTF(vstr, indent, "%s: ", label);
 	} else {
-		IFPRINTF(stream, indent, "%s", "");
+		LA_ISPRINTF(vstr, indent, "%s", "");
 	}
-	asn_fprint(stream, td, sptr, 1);
+	asn_sprintf(vstr, td, sptr, 1);
 }
 
-ASN1_FORMATTER_PROTOTYPE(asn1_format_NULL) {
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_NULL) {
 	// NOOP
 }
 
-ASN1_FORMATTER_PROTOTYPE(asn1_format_ENUM) {
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_ENUM) {
 	long const value = *(long const *)sptr;
-	char const *s = value2enum(td, value);
+	char const *s = la_value2enum(td, value);
 	if(s != NULL) {
-		IFPRINTF(stream, indent, "%s: %s\n", label, s);
+		LA_ISPRINTF(vstr, indent, "%s: %s\n", label, s);
 	} else {
-		IFPRINTF(stream, indent, "%s: %ld\n", label, value);
+		LA_ISPRINTF(vstr, indent, "%s: %ld\n", label, value);
 	}
 }
 
-ASN1_FORMATTER_PROTOTYPE(asn1_format_Deg) {
-	_format_INTEGER_with_unit(stream, label, td, sptr, indent, " deg", 1, 0);
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_Deg) {
+	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " deg", 1, 0);
 }

@@ -16,20 +16,26 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <stdio.h>			// FILE
-#include "asn1/asn_application.h"	// asn_TYPE_descriptor_t
-#include "asn1-util.h"			// ASN1_FORMATTER_PROTOTYPE
 
-char const *value2enum(asn_TYPE_descriptor_t *td, long const value);
-void _format_INTEGER_with_unit(FILE *stream, char const * const label, asn_TYPE_descriptor_t *td,
+#ifndef LA_ASN1_FORMAT_COMMON_H
+#define LA_ASN1_FORMAT_COMMON_H 1
+#include "asn1/asn_application.h"	// asn_TYPE_descriptor_t
+#include "asn1-util.h"			// LA_ASN1_FORMATTER_PROTOTYPE
+#include "util.h"			// la_dict
+#include "vstring.h"			// la_vstring
+
+char const *la_value2enum(asn_TYPE_descriptor_t *td, long const value);
+void la_format_INTEGER_with_unit(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td,
 	void const *sptr, int indent, char const * const unit, double multiplier, int decimal_places);
-void _format_CHOICE(FILE *stream, char const * const label, dict const * const choice_labels,
+void la_format_CHOICE(la_vstring *vstr, char const * const label, la_dict const * const choice_labels,
 	asn1_output_fun_t cb, asn_TYPE_descriptor_t *td, void const *sptr, int indent);
-void _format_SEQUENCE(FILE *stream, char const * const label, asn1_output_fun_t cb,
+void la_format_SEQUENCE(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
 	asn_TYPE_descriptor_t *td, void const *sptr, int indent);
-void _format_SEQUENCE_OF(FILE *stream, char const * const label, asn1_output_fun_t cb,
+void la_format_SEQUENCE_OF(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
 	asn_TYPE_descriptor_t *td, void const *sptr, int indent);
-ASN1_FORMATTER_PROTOTYPE(asn1_format_any);
-ASN1_FORMATTER_PROTOTYPE(asn1_format_NULL);
-ASN1_FORMATTER_PROTOTYPE(asn1_format_ENUM);
-ASN1_FORMATTER_PROTOTYPE(asn1_format_Deg);
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_any);
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_NULL);
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_ENUM);
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_Deg);
+
+#endif // !LA_ASN1_FORMAT_COMMON_H

@@ -20,23 +20,24 @@
 #include <stdint.h>
 #include <search.h>			// lfind()
 #include "asn1/asn_application.h"	// asn_TYPE_descriptor_t
-#include "util.h"			// debug_print()
-#include "asn1-util.h"			// asn_formatter_table
+#include "asn1-util.h"			// la_asn_formatter
+#include "macros.h"			// LA_CAST_PTR, LA_ISPRINTF, la_debug_print()
+#include "vstring.h"			// la_vstring
 
-static int compare_fmtr(const void *k, const void *m) {
-	asn_formatter_t *memb = (asn_formatter_t *)m;
+static int la_compare_fmtr(const void *k, const void *m) {
+	LA_CAST_PTR(memb, la_asn_formatter *, m);
 	return(k == memb->type ? 0 : 1);
 }
 
-int asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t *buf, int size) {
+int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t *buf, int size) {
 	asn_dec_rval_t rval;
 	rval = uper_decode_complete(0, td, struct_ptr, buf, size);
 	if(rval.code != RC_OK) {
-		debug_print("uper_decode_complete failed: %d\n", rval.code);
+		la_debug_print("uper_decode_complete failed: %d\n", rval.code);
 		return -1;
 	}
 	if(rval.consumed < size) {
-		debug_print("uper_decode_complete left %zd unparsed octets\n", size - rval.consumed);
+		la_debug_print("uper_decode_complete left %zd unparsed octets\n", size - rval.consumed);
 		return size - rval.consumed;
 	}
 	if(DEBUG)
@@ -44,19 +45,19 @@ int asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t *buf, i
 	return 0;
 }
 
-void asn1_output(FILE *stream, asn_formatter_t const * const asn1_formatter_table,
+void la_asn1_output(la_vstring *vstr, la_asn_formatter const * const asn1_formatter_table,
 	size_t asn1_formatter_table_len, asn_TYPE_descriptor_t *td, const void *sptr, int indent) {
 	if(td == NULL || sptr == NULL) return;
-	asn_formatter_t *formatter = lfind(td, asn1_formatter_table, &asn1_formatter_table_len,
-		sizeof(asn_formatter_t), &compare_fmtr);
+	la_asn_formatter *formatter = lfind(td, asn1_formatter_table, &asn1_formatter_table_len,
+		sizeof(la_asn_formatter), &la_compare_fmtr);
 	if(formatter != NULL) {
-		(*formatter->format)(stream, formatter->label, td, sptr, indent);
+		(*formatter->format)(vstr, formatter->label, td, sptr, indent);
 	} else {
-		IFPRINTF(stream, indent, "-- Formatter for type %s not found, ASN.1 dump follows:\n", td->name);
+		LA_ISPRINTF(vstr, indent, "-- Formatter for type %s not found, ASN.1 dump follows:\n", td->name);
 		if(indent > 0) {
-			IFPRINTF(stream, indent * 4, "%s", "");	// asn_fprint does not indent the first line
+			LA_ISPRINTF(vstr, indent * 4, "%s", "");	// asn_fprint does not indent the first line
 		}
-		asn_fprint(stream, td, sptr, indent+1);
-		IFPRINTF(stream, indent, "%s", "-- ASN.1 dump end\n");
+		asn_sprintf(vstr, td, sptr, indent+1);
+		LA_ISPRINTF(vstr, indent, "%s", "-- ASN.1 dump end\n");
 	}
 }
