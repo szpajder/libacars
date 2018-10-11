@@ -28,23 +28,23 @@
 
 #define LA_VSTR_INITIAL_SIZE 256
 #define LA_VSTR_SIZE_MULT 2
+#define LA_VSTR_SIZE_MAX INT_MAX
 
-static void la_vstring_grow(la_vstring * const vstr, int const space_needed) {
+static void la_vstring_grow(la_vstring * const vstr, size_t const space_needed) {
 	la_assert(vstr);
-	la_assert(space_needed > 0);
 
-	int new_size = vstr->allocated_size;
-// FIXME: prevent overflow
+	size_t new_size = vstr->allocated_size;
 	while(vstr->len + space_needed >= new_size) {
 		new_size *= LA_VSTR_SIZE_MULT;
 	}
-	la_debug_print("allocated_size=%d len=%d space_needed=%d new_size: %d\n",
+	la_debug_print("allocated_size=%zu len=%zu space_needed=%zu new_size: %zu\n",
 		vstr->allocated_size, vstr->len, space_needed, new_size);
+	la_assert(new_size <= LA_VSTR_SIZE_MAX);
 	vstr->str = LA_XREALLOC(vstr->str, new_size);
 	vstr->allocated_size = new_size;
 }
 
-static int la_vstring_space_left(la_vstring const * const vstr) {
+static size_t la_vstring_space_left(la_vstring const * const vstr) {
 	la_assert(vstr);
 	la_assert(vstr->allocated_size >= vstr->len);
 	return vstr->allocated_size - vstr->len;
@@ -69,48 +69,49 @@ void la_vstring_append_sprintf(la_vstring * const vstr, char const *fmt, ...) {
 	la_assert(vstr);
 	la_assert(fmt);
 
-	int space_left = la_vstring_space_left(vstr);
-	int result_size;
+	size_t space_left = la_vstring_space_left(vstr);
+	size_t result_size;
+	int ret;
 	va_list ap;
 	va_start(ap, fmt);
-		result_size = 1 + vsnprintf(vstr->str + vstr->len, space_left, fmt, ap);
+		ret = vsnprintf(vstr->str + vstr->len, space_left, fmt, ap);
 	va_end(ap);
+	la_assert(ret >= 0);
+	result_size = 1 + (size_t)ret;
 	if(result_size < space_left) {	// we have enough space
-		la_debug_print("result_size %d < space_left %d - no need to grow\n", result_size, space_left);
+		la_debug_print("result_size %zu < space_left %zu - no need to grow\n", result_size, space_left);
 		goto end;
 	} else {
 		// Not enough space - realloc and retry once
-		la_debug_print("result_size %d >= space_left %d - need to grow\n", result_size, space_left);
+		la_debug_print("result_size %zu >= space_left %zu - need to grow\n", result_size, space_left);
 		la_vstring_grow(vstr, result_size);
 		space_left = la_vstring_space_left(vstr);
 		va_start(ap, fmt);
-			result_size = 1 + vsnprintf(vstr->str + vstr->len, space_left, fmt, ap);
+			ret = vsnprintf(vstr->str + vstr->len, space_left, fmt, ap);
 		va_end(ap);
+		la_assert(ret >= 0);
+		result_size = 1 + (size_t)ret;
 		la_assert(result_size < space_left);
 	}
 end:
 	vstr->len += result_size - 1;	// not including '\0'
-	la_debug_print("sprintf completed: allocated_size=%d len=%d\n",
+	la_debug_print("sprintf completed: allocated_size=%zu len=%zu\n",
 		vstr->allocated_size, vstr->len);
 	return;
 }
 
-void la_vstring_append_buffer(la_vstring * const vstr, void const * buffer, size_t size) {
+void la_vstring_append_buffer(la_vstring * const vstr, void const * buffer, size_t len) {
 	la_assert(vstr);
-// NULL buffer or zero length is not a fatal error
-	if(buffer == NULL || size == 0) {
+	if(buffer == NULL || len == 0) {
 		return;
 	}
-	la_assert(size <= INT_MAX);
-
-	int space_left = la_vstring_space_left(vstr);
-	int len = (int)size;
+	size_t space_left = la_vstring_space_left(vstr);
 	if(len >= space_left) {
-		la_debug_print("len %d >= space_left %d - need to grow\n", len, space_left);
+		la_debug_print("len %zu >= space_left %zu - need to grow\n", len, space_left);
 		la_vstring_grow(vstr, len);
 	}
+	la_assert(vstr->len + len <= LA_VSTR_SIZE_MAX);
 	memcpy(vstr->str + vstr->len, buffer, len);
-	la_assert((size_t)vstr->len + size <= INT_MAX);
 	vstr->len += len;
 	vstr->str[vstr->len] = '\0';
 	return;

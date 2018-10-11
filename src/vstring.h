@@ -28,8 +28,8 @@
 
 typedef struct {
 	char *str;		// string buffer pointer
-	int len;		// current length of the string (excl. '\0')
-	int allocated_size;	// current allocated buffer size (ie. max len = allocated_len - 1)
+	size_t len;		// current length of the string (excl. '\0')
+	size_t allocated_size;	// current allocated buffer size (ie. max len = allocated_len - 1)
 } la_vstring;
 
 la_vstring *la_vstring_new();
