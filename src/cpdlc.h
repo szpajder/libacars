@@ -33,15 +33,10 @@ typedef struct {
 
 // cpdlc.c
 extern int la_enable_asn1_dumps;
+extern la_type_descriptor const la_DEF_cpdlc_message;
 
 la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir);
 void la_cpdlc_format_text(la_vstring * const vstr, void const * const data);
 void la_cpdlc_destroy(void *data);
-
-la_type_descriptor const la_DEF_cpdlc_message = {
-	.header = NULL,		// header is the label of the outermost ASN.1 tag
-	.format_text = &la_cpdlc_format_text,
-	.destroy = &la_cpdlc_destroy
-};
 
 #endif // !LA_CPDLC_H
