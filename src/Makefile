@@ -15,7 +15,8 @@ CFLAGS += -Iasn1 -I. $(GLIBCFLAGS)
 SUBDIRS = asn1
 CLEANDIRS = $(SUBDIRS:%=clean-%)
 LIB = libacars.so
-OBJ =	asn1-format-common.o \
+OBJ =	arinc.o \
+	asn1-format-common.o \
 	asn1-format-cpdlc.o \
 	asn1-util.o \
 	cpdlc.o \
@@ -34,6 +35,8 @@ $(LIB): $(DEPS)
 	$(CC) -shared -Wl,-soname,libacars.so.1 -o $@ $(DEPS)
 
 $(ASN1): asn1 ;
+
+arinc.o: arinc.h cpdlc.h macros.h vstring.h util.h
 
 asn1-format-common.o: asn1-util.h macros.h util.h vstring.h
 
