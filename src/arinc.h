@@ -24,6 +24,10 @@
 #include "libacars.h"		// la_type_descriptor, la_proto_node
 #include "vstring.h"		// la_vstring
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
 	ARINC_MSG_UNKNOWN = 0,
 	ARINC_MSG_CR1,
@@ -43,5 +47,9 @@ typedef struct {
 la_proto_node *la_arinc_parse(char const *txt, la_msg_dir const msg_dir);
 void la_arinc_format_text(la_vstring * const vstr, void const * const data);
 extern la_type_descriptor const la_DEF_arinc_message;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // !LA_ARINC_H

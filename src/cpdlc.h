@@ -25,6 +25,10 @@
 #include "vstring.h"		// la_vstring
 #include "asn1/constr_TYPE.h"	// asn_TYPE_descriptor_t
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
 	asn_TYPE_descriptor_t *asn_type;
 	void *data;
@@ -38,5 +42,9 @@ extern la_type_descriptor const la_DEF_cpdlc_message;
 la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir);
 void la_cpdlc_format_text(la_vstring * const vstr, void const * const data);
 void la_cpdlc_destroy(void *data);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // !LA_CPDLC_H

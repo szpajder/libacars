@@ -21,6 +21,10 @@
 #define LA_LIBACARS_H 1
 #include "vstring.h"		// la_vstring
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
 	LA_MSG_DIR_UNKNOWN,
 	LA_MSG_DIR_GND2AIR,
@@ -48,5 +52,9 @@ struct la_proto_node {
 la_proto_node *la_proto_node_new();
 la_vstring *la_proto_tree_format_text(la_vstring *vstr, la_proto_node const * const root);
 void la_proto_tree_destroy(la_proto_node *root);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // !LA_LIBACARS_H
