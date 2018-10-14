@@ -50,7 +50,7 @@ libacars.o: macros.h libacars.h vstring.h util.h
 
 util.o: macros.h util.h
 
-vstring.o: vstring.h macros.h util.h
+vstring.o: vstring.h util.h
 
 $(SUBDIRS):
 	$(MAKE) -C $@

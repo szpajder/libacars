@@ -21,10 +21,22 @@
 #define LA_VSTRING_H 1
 
 #include <stdbool.h>
-#include "macros.h"		// LA_GCC_PRINTF_ATTR
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#if defined(__GNUC__)
+#ifdef __MINGW32__
+/* libintl overrides printf with a #define. As this breaks this attribute,
+ * it has a workaround. However the workaround isn't enabled for MINGW
+ * builds (only cygwin) */
+#define LA_GCC_PRINTF_ATTR(a,b) __attribute__ ((format (__printf__, a, b)))
+#else
+#define LA_GCC_PRINTF_ATTR(a,b) __attribute__ ((format (printf, a, b)))
+#endif
+#else
+#define LA_GCC_PRINTF_ATTR(a,b)
 #endif
 
 // la_vstring_append_sprintf with variable indentation

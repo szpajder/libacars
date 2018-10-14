@@ -55,19 +55,6 @@
 #define la_assert(expr) la_assert_se(expr)
 #endif
 
-#if defined(__GNUC__)
-#ifdef __MINGW32__
-/* libintl overrides printf with a #define. As this breaks this attribute,
- * it has a workaround. However the workaround isn't enabled for MINGW
- * builds (only cygwin) */
-#define LA_GCC_PRINTF_ATTR(a,b) __attribute__ ((format (__printf__, a, b)))
-#else
-#define LA_GCC_PRINTF_ATTR(a,b) __attribute__ ((format (printf, a, b)))
-#endif
-#else
-#define LA_GCC_PRINTF_ATTR(a,b)
-#endif
-
 #define LA_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define LA_MIN(a, b) ((a) < (b) ? (a) : (b))
 
