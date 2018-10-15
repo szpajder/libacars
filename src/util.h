@@ -18,8 +18,8 @@
  */
 #ifndef LA_UTIL_H
 #define LA_UTIL_H 1
-#include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>		// free()
 
 typedef struct {
 	uint8_t id;
