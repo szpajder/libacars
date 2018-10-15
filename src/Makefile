@@ -21,6 +21,7 @@ OBJ =	arinc.o \
 	asn1-util.o \
 	cpdlc.o \
 	libacars.o \
+	list.o \
 	util.o \
 	vstring.o
 ASN1 = asn1/asn1.a
@@ -47,6 +48,8 @@ asn1-util.o: asn1-util.h macros.h vstring.h
 cpdlc.o: asn1-util.h asn1-format-cpdlc.h cpdlc.h libacars.h util.h macros.h vstring.h
 
 libacars.o: macros.h libacars.h vstring.h util.h
+
+list.o: list.h macros.h util.h
 
 util.o: macros.h util.h
 
