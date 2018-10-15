@@ -19,6 +19,7 @@ OBJ =	arinc.o \
 	asn1-format-common.o \
 	asn1-format-cpdlc.o \
 	asn1-util.o \
+	bitstream.o \
 	cpdlc.o \
 	libacars.o \
 	list.o \
@@ -44,6 +45,8 @@ asn1-format-common.o: asn1-util.h macros.h util.h vstring.h
 asn1-format-cpdlc.o: asn1-util.h asn1-format-common.h macros.h util.h vstring.h
 
 asn1-util.o: asn1-util.h macros.h vstring.h
+
+bitstream.o: bitstream.h util.h
 
 cpdlc.o: asn1-util.h asn1-format-cpdlc.h cpdlc.h libacars.h util.h macros.h vstring.h
 
