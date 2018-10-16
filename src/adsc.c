@@ -403,8 +403,8 @@ static void la_adsc_destroy_noncomp_notify(void *data) {
  * Downlink tag parsers
  **********************/
 
-#define BS_READ_OR_RETURN(bs, dest, len, ret) \
-	if(bitstream_read_word_msbfirst(bs, dest, len) < 0) { return ret; }
+#define LA_BS_READ_OR_RETURN(bs, dest, len, ret) \
+	if(la_bitstream_read_word_msbfirst(bs, dest, len) < 0) { return ret; }
 
 LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_nack) {
 	uint32_t tag_len = 2;
@@ -518,28 +518,28 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_basic_report) {
 	la_adsc_basic_report_t *r = LA_XCALLOC(1, sizeof(la_adsc_basic_report_t));
 	t->data = r;
 
-	bitstream_t *bs = bitstream_init(tag_len * 8);
-	if(bitstream_append_msbfirst(bs, buf, tag_len, 8) < 0) {
+	la_bitstream_t *bs = la_bitstream_init(tag_len * 8);
+	if(la_bitstream_append_msbfirst(bs, buf, tag_len, 8) < 0) {
 		return -1;
 	}
 
 	uint32_t tmp;
-	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
 	r->lat = la_adsc_parse_coordinate(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
 	r->lon = la_adsc_parse_coordinate(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 16, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 16, -1);
 	r->alt = la_adsc_parse_altitude(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 15, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 15, -1);
 	r->timestamp = la_adsc_parse_timestamp(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 7, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 7, -1);
 	r->redundancy = (uint8_t)(tmp & 1);
 	r->accuracy = (uint8_t)((tmp >> 1) & 0x7);
 	r->tcas_health = (uint8_t)((tmp >> 4) & 1);
 	la_debug_print("redundancy: %u accuracy: %u TCAS: %u\n",
 		r->redundancy, r->accuracy, r->tcas_health);
 
-	bitstream_destroy(bs);
+	la_bitstream_destroy(bs);
 	return tag_len;
 }
 
@@ -550,8 +550,8 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_flight_id) {
 	la_adsc_flight_id_t *f = LA_XCALLOC(1, sizeof(la_adsc_flight_id_t));
 	t->data = f;
 
-	bitstream_t *bs = bitstream_init(tag_len * 8);
-	if(bitstream_append_msbfirst(bs, buf, tag_len, 8) < 0) {
+	la_bitstream_t *bs = la_bitstream_init(tag_len * 8);
+	if(la_bitstream_append_msbfirst(bs, buf, tag_len, 8) < 0) {
 		return -1;
 	}
 	uint32_t tmp = 0;
@@ -560,14 +560,14 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_flight_id) {
 // (00) 10 0000 - space
 // (01) 0x xxxx - A-Z
 // (00) 11 xxxx - 0-9
-		BS_READ_OR_RETURN(bs, &tmp, 6, -1);
+		LA_BS_READ_OR_RETURN(bs, &tmp, 6, -1);
 		if((tmp & 0x20) == 0)
 			tmp += 0x40;
 		f->id[i] = (uint8_t)tmp;
 	}
 	f->id[sizeof(f->id) - 1] = '\0';
 	la_debug_print("%s\n", f->id);
-	bitstream_destroy(bs);
+	la_bitstream_destroy(bs);
 	return tag_len;
 }
 
@@ -578,29 +578,29 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_predicted_route) {
 	la_adsc_predicted_route_t *r = LA_XCALLOC(1, sizeof(la_adsc_predicted_route_t));
 	t->data = r;
 
-	bitstream_t *bs = bitstream_init(tag_len * 8);
-	if(bitstream_append_msbfirst(bs, buf, tag_len, 8) < 0) {
+	la_bitstream_t *bs = la_bitstream_init(tag_len * 8);
+	if(la_bitstream_append_msbfirst(bs, buf, tag_len, 8) < 0) {
 		return -1;
 	}
 
 	uint32_t tmp;
-	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
 	r->lat_next = la_adsc_parse_coordinate(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
 	r->lon_next = la_adsc_parse_coordinate(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 16, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 16, -1);
 	r->alt_next = la_adsc_parse_altitude(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 14, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 14, -1);
 	r->eta_next = tmp;
 	la_debug_print("eta: %d\n", r->eta_next);
-	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
 	r->lat_next_next = la_adsc_parse_coordinate(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
 	r->lon_next_next = la_adsc_parse_coordinate(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 16, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 16, -1);
 	r->alt_next_next = la_adsc_parse_altitude(tmp);
 
-	bitstream_destroy(bs);
+	la_bitstream_destroy(bs);
 	return tag_len;
 }
 
@@ -611,22 +611,22 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_earth_air_ref) {
 	la_adsc_earth_air_ref_t *r = LA_XCALLOC(1, sizeof(la_adsc_earth_air_ref_t));
 	t->data = r;
 
-	bitstream_t *bs = bitstream_init(tag_len * 8);
-	if(bitstream_append_msbfirst(bs, buf, tag_len, 8) < 0) {
+	la_bitstream_t *bs = la_bitstream_init(tag_len * 8);
+	if(la_bitstream_append_msbfirst(bs, buf, tag_len, 8) < 0) {
 		return -1;
 	}
 
 	uint32_t tmp;
-	BS_READ_OR_RETURN(bs, &tmp, 1, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 1, -1);
 	r->heading_invalid = tmp;
-	BS_READ_OR_RETURN(bs, &tmp, 12, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 12, -1);
 	r->heading = la_adsc_parse_heading(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 13, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 13, -1);
 	r->speed = la_adsc_parse_speed(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 12, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 12, -1);
 	r->vert_speed = la_adsc_parse_vert_speed(tmp);
 
-	bitstream_destroy(bs);
+	la_bitstream_destroy(bs);
 	return tag_len;
 }
 
@@ -637,25 +637,25 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_intermediate_projection) {
 	la_adsc_intermediate_projection_t *p = LA_XCALLOC(1, sizeof(la_adsc_intermediate_projection_t));
 	t->data = p;
 
-	bitstream_t *bs = bitstream_init(tag_len * 8);
-	if(bitstream_append_msbfirst(bs, buf, tag_len, 8) < 0) {
+	la_bitstream_t *bs = la_bitstream_init(tag_len * 8);
+	if(la_bitstream_append_msbfirst(bs, buf, tag_len, 8) < 0) {
 		return -1;
 	}
 
 	uint32_t tmp;
-	BS_READ_OR_RETURN(bs, &tmp, 16, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 16, -1);
 	p->distance = la_adsc_parse_distance(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 1, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 1, -1);
 	p->track_invalid = tmp;
-	BS_READ_OR_RETURN(bs, &tmp, 12, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 12, -1);
 	p->track = la_adsc_parse_heading(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 16, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 16, -1);
 	p->alt = la_adsc_parse_altitude(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 14, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 14, -1);
 	p->eta = tmp;
 	la_debug_print("eta: %d\n", p->eta);
 
-	bitstream_destroy(bs);
+	la_bitstream_destroy(bs);
 	return tag_len;
 }
 
@@ -666,23 +666,23 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_fixed_projection) {
 	la_adsc_fixed_projection_t *p = LA_XCALLOC(1, sizeof(la_adsc_fixed_projection_t));
 	t->data = p;
 
-	bitstream_t *bs = bitstream_init(tag_len * 8);
-	if(bitstream_append_msbfirst(bs, buf, tag_len, 8) < 0) {
+	la_bitstream_t *bs = la_bitstream_init(tag_len * 8);
+	if(la_bitstream_append_msbfirst(bs, buf, tag_len, 8) < 0) {
 		return -1;
 	}
 
 	uint32_t tmp;
-	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
 	p->lat = la_adsc_parse_coordinate(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
 	p->lon = la_adsc_parse_coordinate(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 16, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 16, -1);
 	p->alt = la_adsc_parse_altitude(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 14, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 14, -1);
 	p->eta = tmp;
 	la_debug_print("eta: %d\n", p->eta);
 
-	bitstream_destroy(bs);
+	la_bitstream_destroy(bs);
 	return tag_len;
 }
 
@@ -693,22 +693,22 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_meteo) {
 	la_adsc_meteo_t *m = LA_XCALLOC(1, sizeof(la_adsc_meteo_t));
 	t->data = m;
 
-	bitstream_t *bs = bitstream_init(tag_len * 8);
-	if(bitstream_append_msbfirst(bs, buf, tag_len, 8) < 0) {
+	la_bitstream_t *bs = la_bitstream_init(tag_len * 8);
+	if(la_bitstream_append_msbfirst(bs, buf, tag_len, 8) < 0) {
 		return -1;
 	}
 
 	uint32_t tmp;
-	BS_READ_OR_RETURN(bs, &tmp, 9, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 9, -1);
 	m->wind_speed = la_adsc_parse_speed(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 1, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 1, -1);
 	m->wind_dir_invalid = tmp;
-	BS_READ_OR_RETURN(bs, &tmp, 9, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 9, -1);
 	m->wind_dir = la_adsc_parse_wind_dir(tmp);
-	BS_READ_OR_RETURN(bs, &tmp, 12, -1);
+	LA_BS_READ_OR_RETURN(bs, &tmp, 12, -1);
 	m->temp = la_adsc_parse_temperature(tmp);
 
-	bitstream_destroy(bs);
+	la_bitstream_destroy(bs);
 	return tag_len;
 }
 
