@@ -55,10 +55,10 @@ static la_arinc_imi_map const imi_map[LA_ARINC_IMI_CNT] = {
 
 static la_arinc_imi_props const imi_props[LA_ARINC_IMI_CNT] = {
 	[ARINC_MSG_UNKNOWN]	= { .app_type = ARINC_APP_TYPE_UNKNOWN, .description = "Unknown message type"},
-	[ARINC_MSG_AT1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "CPDLC Message" },
-	[ARINC_MSG_CR1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "CPDLC Connect Request" },
-	[ARINC_MSG_CC1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "CPDLC Connect Confirm" },
-	[ARINC_MSG_DR1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "CPDLC Disconnect Request" },
+	[ARINC_MSG_AT1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "FANS-1/A CPDLC Message" },
+	[ARINC_MSG_CR1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "FANS-1/A CPDLC Connect Request" },
+	[ARINC_MSG_CC1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "FANS-1/A CPDLC Connect Confirm" },
+	[ARINC_MSG_DR1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "FANS-1/A CPDLC Disconnect Request" },
 	[ARINC_MSG_ADS]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "ADS-C message" },
 	[ARINC_MSG_DIS]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "ADS-C disconnect request" }
 };
@@ -185,7 +185,7 @@ void la_arinc_format_text(la_vstring * const vstr, void const * const data) {
 	la_assert(data);
 
 	LA_CAST_PTR(msg, la_arinc_msg *, data);
-	la_vstring_append_sprintf(vstr, "FANS-1/A %s%s:\n",
+	la_vstring_append_sprintf(vstr, "%s%s:\n",
 		imi_props[msg->imi].description, msg->crc_ok ? "" : "(CRC check failed)");
 }
 
