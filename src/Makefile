@@ -12,10 +12,12 @@ CFLAGS += -std=c11 -g -Wall -fPIC -D_XOPEN_SOURCE=600 -DDEBUG=$(DEBUG)
 #endif
 
 CFLAGS += -Iasn1 -I. $(GLIBCFLAGS)
+LDLIBS = -lm
 SUBDIRS = asn1
 CLEANDIRS = $(SUBDIRS:%=clean-%)
 LIB = libacars.so
-OBJ =	arinc.o \
+OBJ =	adsc.o \
+	arinc.o \
 	asn1-format-common.o \
 	asn1-format-cpdlc.o \
 	asn1-util.o \
@@ -34,9 +36,11 @@ DEPS = $(OBJ) $(ASN1)
 all: $(LIB)
 
 $(LIB): $(DEPS)
-	$(CC) -shared -Wl,-soname,libacars.so.1 -o $@ $(DEPS)
+	$(CC) $(LDLIBS) -shared -Wl,-soname,libacars.so.1 -o $@ $(DEPS)
 
 $(ASN1): asn1 ;
+
+adsc.o: adsc.h arinc.h bitstream.h libacars.h list.h macros.h vstring.h util.h
 
 arinc.o: arinc.h cpdlc.h macros.h vstring.h util.h
 

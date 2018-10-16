@@ -24,6 +24,7 @@
 #include "macros.h"		// la_debug_print
 #include "vstring.h"		// la_vstring_append_sprintf
 #include "util.h"		// la_slurp_hexstring
+#include "adsc.h"		// adsc_parse()
 #include "cpdlc.h"		// la_cpdlc_parse()
 
 typedef enum {
@@ -47,6 +48,8 @@ static la_arinc_imi_map const imi_map[LA_ARINC_IMI_CNT] = {
 	{ .imi_string = ".CR1", .imi = ARINC_MSG_CR1 },
 	{ .imi_string = ".CC1", .imi = ARINC_MSG_CC1 },
 	{ .imi_string = ".DR1", .imi = ARINC_MSG_DR1 },
+	{ .imi_string = ".ADS", .imi = ARINC_MSG_ADS },
+	{ .imi_string = ".DIS", .imi = ARINC_MSG_DIS },
 	{ .imi_string = NULL,   .imi = ARINC_MSG_UNKNOWN }
 };
 
@@ -55,7 +58,9 @@ static la_arinc_imi_props const imi_props[LA_ARINC_IMI_CNT] = {
 	[ARINC_MSG_AT1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "CPDLC Message" },
 	[ARINC_MSG_CR1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "CPDLC Connect Request" },
 	[ARINC_MSG_CC1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "CPDLC Connect Confirm" },
-	[ARINC_MSG_DR1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "CPDLC Disconnect Request" }
+	[ARINC_MSG_DR1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "CPDLC Disconnect Request" },
+	[ARINC_MSG_ADS]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "ADS-C message" },
+	[ARINC_MSG_DIS]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "ADS-C disconnect request" }
 };
 
 static bool is_numeric_or_uppercase(char const *str, size_t len) {
@@ -152,6 +157,11 @@ la_proto_node *la_arinc_parse(char const *txt, la_msg_dir const msg_dir) {
 		case ARINC_MSG_DR1:
 		case ARINC_MSG_AT1:
 			next_node = la_cpdlc_parse(buf, buflen, msg_dir);
+			LA_XFREE(buf);
+			break;
+		case ARINC_MSG_ADS:
+		case ARINC_MSG_DIS:
+			next_node = adsc_parse(buf, buflen, msg_dir, msg->imi);
 			LA_XFREE(buf);
 			break;
 		default:
