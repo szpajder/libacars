@@ -51,7 +51,7 @@ int xasprintf(const char *file, const int line, const char *func, char **strp, c
 		} \
 	} while(0);
 
-static double adsc_parse_coordinate(uint32_t c) {
+static double la_adsc_parse_coordinate(uint32_t c) {
 // extend the 21-bit signed field to 32-bit signed int
 	struct { signed int coord:21; } s;
 	int r = s.coord = (int)c;
@@ -68,7 +68,7 @@ static double adsc_parse_coordinate(uint32_t c) {
 	return result;
 }
 
-static int adsc_parse_altitude(uint32_t a) {
+static int la_adsc_parse_altitude(uint32_t a) {
 	struct { signed int alt:16; } s;
 	int result = s.alt = (int)a;
 	result *= 4;
@@ -76,19 +76,19 @@ static int adsc_parse_altitude(uint32_t a) {
 	return result;
 }
 
-static double adsc_parse_timestamp(uint32_t t) {
+static double la_adsc_parse_timestamp(uint32_t t) {
 	double result = (double)t * 0.125;
 	la_debug_print("result: %f\n", result);
 	return result;
 }
 
-static double adsc_parse_speed(uint32_t s) {
+static double la_adsc_parse_speed(uint32_t s) {
 	double result = (double)s / 2.0;
 	la_debug_print("result: %f\n", result);
 	return result;
 }
 
-static int adsc_parse_vert_speed(uint32_t vs) {
+static int la_adsc_parse_vert_speed(uint32_t vs) {
 	struct { signed int vs:12; } s;
 	int result = s.vs = (int)vs;
 	result *= 16;
@@ -96,13 +96,13 @@ static int adsc_parse_vert_speed(uint32_t vs) {
 	return result;
 }
 
-static double adsc_parse_distance(uint32_t d) {
+static double la_adsc_parse_distance(uint32_t d) {
 	double result = (double)d / 8.0;
 	la_debug_print("result: %f\n", result);
 	return result;
 }
 
-double adsc_parse_heading(uint32_t h) {
+double la_adsc_parse_heading(uint32_t h) {
 // Heading/track format is the same as latitude/longitude
 // except that:
 // - the field is 12-bit long (including sign bit)
@@ -120,7 +120,7 @@ double adsc_parse_heading(uint32_t h) {
 	return result;
 }
 
-double adsc_parse_wind_dir(uint32_t w) {
+double la_adsc_parse_wind_dir(uint32_t w) {
 // Wind direction format is the same as latitude/longitude
 // except that:
 // - the field is 9-bit long (including sign bit)
@@ -137,7 +137,7 @@ double adsc_parse_wind_dir(uint32_t w) {
 	return result;
 }
 
-double adsc_parse_temperature(uint32_t t) {
+double la_adsc_parse_temperature(uint32_t t) {
 	struct { signed int temp:12; } s;
 	int r = s.temp = (int)t;
 	la_debug_print("r=%d\n", r);
@@ -148,235 +148,235 @@ double adsc_parse_temperature(uint32_t t) {
 	return result;
 }
 
-#define ADSC_CHECK_LEN(t, l, m) if((l) < (m)) { \
+#define LA_ADSC_CHECK_LEN(t, l, m) if((l) < (m)) { \
 	la_debug_print("Truncated tag %u: len: %u < %u\n", (t), (l), (m)); \
 		return -1; \
 	}
-#define ADSC_PARSER_PROTOTYPE(x) static int x(void *dest, uint8_t *buf, uint32_t len)
-#define ADSC_FORMATTER_PROTOTYPE(x) static char *x(char const * const label, void const * const data)
+#define LA_ADSC_PARSER_PROTOTYPE(x) static int x(void *dest, uint8_t *buf, uint32_t len)
+#define LA_ADSC_FORMATTER_PROTOTYPE(x) static char *x(char const * const label, void const * const data)
 
-static int adsc_parse_tag(adsc_tag_t *t, la_dict const *tag_descriptor_table, uint8_t *buf, uint32_t len);
+static int la_adsc_parse_tag(la_adsc_tag_t *t, la_dict const *tag_descriptor_table, uint8_t *buf, uint32_t len);
 
 /***************************************************
  * Prototypes of functions used in descriptor tables
  ***************************************************/
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_uint8_t);
-ADSC_PARSER_PROTOTYPE(adsc_parse_contract_request);
-ADSC_PARSER_PROTOTYPE(adsc_parse_reporting_interval);
-ADSC_PARSER_PROTOTYPE(adsc_parse_lat_dev_change);
-ADSC_PARSER_PROTOTYPE(adsc_parse_vspd_change);
-ADSC_PARSER_PROTOTYPE(adsc_parse_alt_range);
-ADSC_PARSER_PROTOTYPE(adsc_parse_acft_intent_group);
-ADSC_PARSER_PROTOTYPE(adsc_parse_nack);
-ADSC_PARSER_PROTOTYPE(adsc_parse_noncomp_notify);
-ADSC_PARSER_PROTOTYPE(adsc_parse_basic_report);
-ADSC_PARSER_PROTOTYPE(adsc_parse_flight_id);
-ADSC_PARSER_PROTOTYPE(adsc_parse_predicted_route);
-ADSC_PARSER_PROTOTYPE(adsc_parse_earth_air_ref);
-ADSC_PARSER_PROTOTYPE(adsc_parse_intermediate_projection);
-ADSC_PARSER_PROTOTYPE(adsc_parse_fixed_projection);
-ADSC_PARSER_PROTOTYPE(adsc_parse_meteo);
-ADSC_PARSER_PROTOTYPE(adsc_parse_airframe_id);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_uint8_t);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_contract_request);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_reporting_interval);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_lat_dev_change);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_vspd_change);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_alt_range);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_acft_intent_group);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_nack);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_noncomp_notify);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_basic_report);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_flight_id);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_predicted_route);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_earth_air_ref);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_intermediate_projection);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_fixed_projection);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_meteo);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_airframe_id);
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_empty_tag);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_tag_with_contract_number);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_contract_request);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_reporting_interval);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_lat_dev_change);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_vspd_change);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_alt_range);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_acft_intent_group);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_modulus);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_nack);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_dis_reason_code);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_noncomp_notify);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_basic_report);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_flight_id);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_predicted_route);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_earth_ref);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_air_ref);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_intermediate_projection);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_fixed_projection);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_meteo);
-ADSC_FORMATTER_PROTOTYPE(adsc_format_airframe_id);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_empty_tag);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_tag_with_contract_number);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_contract_request);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_reporting_interval);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_lat_dev_change);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_vspd_change);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_alt_range);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_acft_intent_group);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_modulus);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_nack);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_dis_reason_code);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_noncomp_notify);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_basic_report);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_flight_id);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_predicted_route);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_earth_ref);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_air_ref);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_intermediate_projection);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_fixed_projection);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_meteo);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_airframe_id);
 
-static void adsc_destroy_contract_request(void *data);
-static void adsc_destroy_noncomp_notify(void *data);
+static void la_adsc_destroy_contract_request(void *data);
+static void la_adsc_destroy_noncomp_notify(void *data);
 
 /*****************
  * Downlink tags
  *****************/
 
-static la_dict const adsc_downlink_tag_descriptor_table[] = {
+static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 	{
 		.id = 3,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Acknowledgement",
-			.parse = &adsc_parse_uint8_t,
-			.format = &adsc_format_tag_with_contract_number,
+			.parse = &la_adsc_parse_uint8_t,
+			.format = &la_adsc_format_tag_with_contract_number,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 4,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Negative acknowledgement",
-			.parse = &adsc_parse_nack,
-			.format = &adsc_format_nack,
+			.parse = &la_adsc_parse_nack,
+			.format = &la_adsc_format_nack,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 5,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Noncompliance notification",
-			.parse = &adsc_parse_noncomp_notify,
-			.format = &adsc_format_noncomp_notify,
-			.destroy = &adsc_destroy_noncomp_notify
+			.parse = &la_adsc_parse_noncomp_notify,
+			.format = &la_adsc_format_noncomp_notify,
+			.destroy = &la_adsc_destroy_noncomp_notify
 		}
 	},
 	{
 		.id = 6,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Cancel emergency mode",
 			.parse = NULL,
-			.format = &adsc_format_empty_tag,
+			.format = &la_adsc_format_empty_tag,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 7,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Basic report",
-			.parse = &adsc_parse_basic_report,
-			.format = &adsc_format_basic_report,
+			.parse = &la_adsc_parse_basic_report,
+			.format = &la_adsc_format_basic_report,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 9,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Emergency basic report",
-			.parse = &adsc_parse_basic_report,
-			.format = &adsc_format_basic_report,
+			.parse = &la_adsc_parse_basic_report,
+			.format = &la_adsc_format_basic_report,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 10,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Lateral deviation change event",
-			.parse = &adsc_parse_basic_report,
-			.format = &adsc_format_basic_report,
+			.parse = &la_adsc_parse_basic_report,
+			.format = &la_adsc_format_basic_report,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 12,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Flight ID data",
-			.parse = &adsc_parse_flight_id,
-			.format = &adsc_format_flight_id,
+			.parse = &la_adsc_parse_flight_id,
+			.format = &la_adsc_format_flight_id,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 13,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Predicted route",
-			.parse = &adsc_parse_predicted_route,
-			.format = &adsc_format_predicted_route,
+			.parse = &la_adsc_parse_predicted_route,
+			.format = &la_adsc_format_predicted_route,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 14,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Earth reference data",
-			.parse = &adsc_parse_earth_air_ref,
-			.format = &adsc_format_earth_ref,
+			.parse = &la_adsc_parse_earth_air_ref,
+			.format = &la_adsc_format_earth_ref,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 15,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Air reference data",
-			.parse = &adsc_parse_earth_air_ref,
-			.format = &adsc_format_air_ref,
+			.parse = &la_adsc_parse_earth_air_ref,
+			.format = &la_adsc_format_air_ref,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 16,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Meteo data",
-			.parse = &adsc_parse_meteo,
-			.format = &adsc_format_meteo,
+			.parse = &la_adsc_parse_meteo,
+			.format = &la_adsc_format_meteo,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 17,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Airframe ID",
-			.parse = &adsc_parse_airframe_id,
-			.format = &adsc_format_airframe_id,
+			.parse = &la_adsc_parse_airframe_id,
+			.format = &la_adsc_format_airframe_id,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 18,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Vertical rate change event",
-			.parse = &adsc_parse_basic_report,
-			.format = &adsc_format_basic_report,
+			.parse = &la_adsc_parse_basic_report,
+			.format = &la_adsc_format_basic_report,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 19,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Altitude range event",
-			.parse = &adsc_parse_basic_report,
-			.format = &adsc_format_basic_report,
+			.parse = &la_adsc_parse_basic_report,
+			.format = &la_adsc_format_basic_report,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 20,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Waypoint change event",
-			.parse = &adsc_parse_basic_report,
-			.format = &adsc_format_basic_report,
+			.parse = &la_adsc_parse_basic_report,
+			.format = &la_adsc_format_basic_report,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 22,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Intermediate projection",
-			.parse = &adsc_parse_intermediate_projection,
-			.format = &adsc_format_intermediate_projection,
+			.parse = &la_adsc_parse_intermediate_projection,
+			.format = &la_adsc_format_intermediate_projection,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 23,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Fixed projection",
-			.parse = &adsc_parse_fixed_projection,
-			.format = &adsc_format_fixed_projection,
+			.parse = &la_adsc_parse_fixed_projection,
+			.format = &la_adsc_format_fixed_projection,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 255,	// Fake tag for reason code in DIS message
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Reason",
-			.parse = &adsc_parse_uint8_t,
-			.format = &adsc_format_dis_reason_code,
+			.parse = &la_adsc_parse_uint8_t,
+			.format = &la_adsc_format_dis_reason_code,
 			.destroy = NULL
 		}
 	},
@@ -390,10 +390,10 @@ static la_dict const adsc_downlink_tag_descriptor_table[] = {
  * Downlink tag destructors
  **************************/
 
-static void adsc_destroy_noncomp_notify(void *data) {
+static void la_adsc_destroy_noncomp_notify(void *data) {
 	if(data == NULL)
 		return;
-	LA_CAST_PTR(n, adsc_noncomp_notify_t *, data);
+	LA_CAST_PTR(n, la_adsc_noncomp_notify_t *, data);
 	LA_XFREE(n->groups);
 	LA_XFREE(data);
 	return;
@@ -406,14 +406,14 @@ static void adsc_destroy_noncomp_notify(void *data) {
 #define BS_READ_OR_RETURN(bs, dest, len, ret) \
 	if(bitstream_read_word_msbfirst(bs, dest, len) < 0) { return ret; }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_nack) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_nack) {
 	uint32_t tag_len = 2;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
-	adsc_nack_t *n = LA_XCALLOC(1, sizeof(adsc_basic_report_t));
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
+	la_adsc_nack_t *n = LA_XCALLOC(1, sizeof(la_adsc_basic_report_t));
 
 	n->contract_req_num = buf[0];
-	if(buf[1] > ADSC_NACK_MAX_REASON_CODE) {
+	if(buf[1] > LA_ADSC_NACK_MAX_REASON_CODE) {
 		la_debug_print("Invalid reason code: %u\n", buf[1]);
 		goto fail;
 	}
@@ -437,9 +437,9 @@ fail:
 	return -1;
 }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_noncomp_group) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_noncomp_group) {
 	uint32_t tag_len = 2;
-	LA_CAST_PTR(g, adsc_noncomp_group_t *, dest);
+	LA_CAST_PTR(g, la_adsc_noncomp_group_t *, dest);
 	if(len < tag_len) {
 		la_debug_print("too short: %u < %u\n", len, tag_len);
 		return -1;
@@ -476,11 +476,11 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_noncomp_group) {
 	return tag_len;
 }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_noncomp_notify) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_noncomp_notify) {
 	uint32_t tag_len = 2;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
-	adsc_noncomp_notify_t *n = LA_XCALLOC(1, sizeof(adsc_noncomp_notify_t));
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
+	la_adsc_noncomp_notify_t *n = LA_XCALLOC(1, sizeof(la_adsc_noncomp_notify_t));
 	t->data = n;
 
 	n->contract_req_num = buf[0];
@@ -489,12 +489,12 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_noncomp_notify) {
 		return tag_len;
 	}
 	la_debug_print("group_cnt: %u\n", n->group_cnt);
-	n->groups = LA_XCALLOC(n->group_cnt, sizeof(adsc_noncomp_group_t));
+	n->groups = LA_XCALLOC(n->group_cnt, sizeof(la_adsc_noncomp_group_t));
 	buf += 2; len -= 2;
 	int consumed_bytes = 0;
 	for(uint8_t i = 0; i < n->group_cnt; i++) {
 		la_debug_print("Remaining length: %u\n", len);
-		if((consumed_bytes = adsc_parse_noncomp_group(n->groups + i, buf, len)) < 0) {
+		if((consumed_bytes = la_adsc_parse_noncomp_group(n->groups + i, buf, len)) < 0) {
 			return -1;
 		}
 		buf += consumed_bytes; len -= consumed_bytes;
@@ -511,11 +511,11 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_noncomp_notify) {
 	return tag_len;
 }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_basic_report) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_basic_report) {
 	const uint32_t tag_len = 10;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
-	adsc_basic_report_t *r = LA_XCALLOC(1, sizeof(adsc_basic_report_t));
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
+	la_adsc_basic_report_t *r = LA_XCALLOC(1, sizeof(la_adsc_basic_report_t));
 	t->data = r;
 
 	bitstream_t *bs = bitstream_init(tag_len * 8);
@@ -525,13 +525,13 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_basic_report) {
 
 	uint32_t tmp;
 	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	r->lat = adsc_parse_coordinate(tmp);
+	r->lat = la_adsc_parse_coordinate(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	r->lon = adsc_parse_coordinate(tmp);
+	r->lon = la_adsc_parse_coordinate(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 16, -1);
-	r->alt = adsc_parse_altitude(tmp);
+	r->alt = la_adsc_parse_altitude(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 15, -1);
-	r->timestamp = adsc_parse_timestamp(tmp);
+	r->timestamp = la_adsc_parse_timestamp(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 7, -1);
 	r->redundancy = (uint8_t)(tmp & 1);
 	r->accuracy = (uint8_t)((tmp >> 1) & 0x7);
@@ -543,11 +543,11 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_basic_report) {
 	return tag_len;
 }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_flight_id) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_flight_id) {
 	const uint32_t tag_len = 6;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
-	adsc_flight_id_t *f = LA_XCALLOC(1, sizeof(adsc_flight_id_t));
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
+	la_adsc_flight_id_t *f = LA_XCALLOC(1, sizeof(la_adsc_flight_id_t));
 	t->data = f;
 
 	bitstream_t *bs = bitstream_init(tag_len * 8);
@@ -571,11 +571,11 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_flight_id) {
 	return tag_len;
 }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_predicted_route) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_predicted_route) {
 	const uint32_t tag_len = 17;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
-	adsc_predicted_route_t *r = LA_XCALLOC(1, sizeof(adsc_predicted_route_t));
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
+	la_adsc_predicted_route_t *r = LA_XCALLOC(1, sizeof(la_adsc_predicted_route_t));
 	t->data = r;
 
 	bitstream_t *bs = bitstream_init(tag_len * 8);
@@ -585,30 +585,30 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_predicted_route) {
 
 	uint32_t tmp;
 	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	r->lat_next = adsc_parse_coordinate(tmp);
+	r->lat_next = la_adsc_parse_coordinate(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	r->lon_next = adsc_parse_coordinate(tmp);
+	r->lon_next = la_adsc_parse_coordinate(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 16, -1);
-	r->alt_next = adsc_parse_altitude(tmp);
+	r->alt_next = la_adsc_parse_altitude(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 14, -1);
 	r->eta_next = tmp;
 	la_debug_print("eta: %d\n", r->eta_next);
 	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	r->lat_next_next = adsc_parse_coordinate(tmp);
+	r->lat_next_next = la_adsc_parse_coordinate(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	r->lon_next_next = adsc_parse_coordinate(tmp);
+	r->lon_next_next = la_adsc_parse_coordinate(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 16, -1);
-	r->alt_next_next = adsc_parse_altitude(tmp);
+	r->alt_next_next = la_adsc_parse_altitude(tmp);
 
 	bitstream_destroy(bs);
 	return tag_len;
 }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_earth_air_ref) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_earth_air_ref) {
 	const uint32_t tag_len = 5;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
-	adsc_earth_air_ref_t *r = LA_XCALLOC(1, sizeof(adsc_earth_air_ref_t));
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
+	la_adsc_earth_air_ref_t *r = LA_XCALLOC(1, sizeof(la_adsc_earth_air_ref_t));
 	t->data = r;
 
 	bitstream_t *bs = bitstream_init(tag_len * 8);
@@ -620,21 +620,21 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_earth_air_ref) {
 	BS_READ_OR_RETURN(bs, &tmp, 1, -1);
 	r->heading_invalid = tmp;
 	BS_READ_OR_RETURN(bs, &tmp, 12, -1);
-	r->heading = adsc_parse_heading(tmp);
+	r->heading = la_adsc_parse_heading(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 13, -1);
-	r->speed = adsc_parse_speed(tmp);
+	r->speed = la_adsc_parse_speed(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 12, -1);
-	r->vert_speed = adsc_parse_vert_speed(tmp);
+	r->vert_speed = la_adsc_parse_vert_speed(tmp);
 
 	bitstream_destroy(bs);
 	return tag_len;
 }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_intermediate_projection) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_intermediate_projection) {
 	const uint32_t tag_len = 8;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
-	adsc_intermediate_projection_t *p = LA_XCALLOC(1, sizeof(adsc_intermediate_projection_t));
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
+	la_adsc_intermediate_projection_t *p = LA_XCALLOC(1, sizeof(la_adsc_intermediate_projection_t));
 	t->data = p;
 
 	bitstream_t *bs = bitstream_init(tag_len * 8);
@@ -644,13 +644,13 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_intermediate_projection) {
 
 	uint32_t tmp;
 	BS_READ_OR_RETURN(bs, &tmp, 16, -1);
-	p->distance = adsc_parse_distance(tmp);
+	p->distance = la_adsc_parse_distance(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 1, -1);
 	p->track_invalid = tmp;
 	BS_READ_OR_RETURN(bs, &tmp, 12, -1);
-	p->track = adsc_parse_heading(tmp);
+	p->track = la_adsc_parse_heading(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 16, -1);
-	p->alt = adsc_parse_altitude(tmp);
+	p->alt = la_adsc_parse_altitude(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 14, -1);
 	p->eta = tmp;
 	la_debug_print("eta: %d\n", p->eta);
@@ -659,11 +659,11 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_intermediate_projection) {
 	return tag_len;
 }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_fixed_projection) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_fixed_projection) {
 	const uint32_t tag_len = 9;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
-	adsc_fixed_projection_t *p = LA_XCALLOC(1, sizeof(adsc_fixed_projection_t));
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
+	la_adsc_fixed_projection_t *p = LA_XCALLOC(1, sizeof(la_adsc_fixed_projection_t));
 	t->data = p;
 
 	bitstream_t *bs = bitstream_init(tag_len * 8);
@@ -673,11 +673,11 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_fixed_projection) {
 
 	uint32_t tmp;
 	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	p->lat = adsc_parse_coordinate(tmp);
+	p->lat = la_adsc_parse_coordinate(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	p->lon = adsc_parse_coordinate(tmp);
+	p->lon = la_adsc_parse_coordinate(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 16, -1);
-	p->alt = adsc_parse_altitude(tmp);
+	p->alt = la_adsc_parse_altitude(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 14, -1);
 	p->eta = tmp;
 	la_debug_print("eta: %d\n", p->eta);
@@ -686,11 +686,11 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_fixed_projection) {
 	return tag_len;
 }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_meteo) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_meteo) {
 	const uint32_t tag_len = 4;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
-	adsc_meteo_t *m = LA_XCALLOC(1, sizeof(adsc_meteo_t));
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
+	la_adsc_meteo_t *m = LA_XCALLOC(1, sizeof(la_adsc_meteo_t));
 	t->data = m;
 
 	bitstream_t *bs = bitstream_init(tag_len * 8);
@@ -700,23 +700,23 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_meteo) {
 
 	uint32_t tmp;
 	BS_READ_OR_RETURN(bs, &tmp, 9, -1);
-	m->wind_speed = adsc_parse_speed(tmp);
+	m->wind_speed = la_adsc_parse_speed(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 1, -1);
 	m->wind_dir_invalid = tmp;
 	BS_READ_OR_RETURN(bs, &tmp, 9, -1);
-	m->wind_dir = adsc_parse_wind_dir(tmp);
+	m->wind_dir = la_adsc_parse_wind_dir(tmp);
 	BS_READ_OR_RETURN(bs, &tmp, 12, -1);
-	m->temp = adsc_parse_temperature(tmp);
+	m->temp = la_adsc_parse_temperature(tmp);
 
 	bitstream_destroy(bs);
 	return tag_len;
 }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_airframe_id) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_airframe_id) {
 	const uint32_t tag_len = 3;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
-	adsc_airframe_id_t *a = LA_XCALLOC(1, sizeof(adsc_airframe_id_t));
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
+	la_adsc_airframe_id_t *a = LA_XCALLOC(1, sizeof(la_adsc_airframe_id_t));
 	t->data = a;
 
 	memcpy(a->icao_hex, buf, tag_len);
@@ -727,8 +727,8 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_airframe_id) {
  * Downlink tag formatters
  *************************/
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_nack) {
-	static const char *reason_code_table[ADSC_NACK_MAX_REASON_CODE+1] = {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_nack) {
+	static const char *reason_code_table[LA_ADSC_NACK_MAX_REASON_CODE+1] = {
 		[0] = NULL,
 		[1] = "Duplicate group tag",
 		[2] = "Duplicate reporting interval tag",
@@ -744,7 +744,7 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_nack) {
 		[12] = "Aircraft intent projection time is 0",
 		[13] = "Lateral deviation threshold is 0"
 	};
-	LA_CAST_PTR(n, adsc_nack_t *, data);
+	LA_CAST_PTR(n, la_adsc_nack_t *, data);
 	char *str = NULL;
 	char *tmp = NULL;
 	if(n->reason == 1 || n->reason == 2 || n->reason == 7) {
@@ -768,7 +768,7 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_nack) {
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_dis_reason_code) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_dis_reason_code) {
 	static la_dict const dis_reason_code_table[] = {
 		{ 0, "reason not specified" },
 		{ 1, "congestion" },
@@ -788,8 +788,8 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_dis_reason_code) {
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_noncomp_group) {
-	LA_CAST_PTR(g, adsc_noncomp_group_t *, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_noncomp_group) {
+	LA_CAST_PTR(g, la_adsc_noncomp_group_t *, data);
 	char *str = NULL;
 	char *grp_header;
 	char param_numbers[64];
@@ -820,8 +820,8 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_noncomp_group) {
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_noncomp_notify) {
-	LA_CAST_PTR(n, adsc_noncomp_notify_t *, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_noncomp_notify) {
+	LA_CAST_PTR(n, la_adsc_noncomp_notify_t *, data);
 	char *str = NULL;
 	char *header = NULL;
 	XASPRINTF(NULL, &header,
@@ -835,7 +835,7 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_noncomp_notify) {
 	if(n->group_cnt > 0) {
 		tmp = LA_XCALLOC(n->group_cnt, sizeof(char *));
 		for(int i = 0; i < n->group_cnt; i++) {
-			tmp[i] = adsc_format_noncomp_group(NULL, n->groups + i);
+			tmp[i] = la_adsc_format_noncomp_group(NULL, n->groups + i);
 			if(tmp[i] != NULL) {
 				total_len += strlen(tmp[i]) + 3;	// add room for newline and two spaces
 			}
@@ -855,7 +855,7 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_noncomp_notify) {
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_basic_report) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_basic_report) {
 	static const char *accuracy_table[] = {
 		[0] = "none (NAV capability lost)",
 		[1] = "<30 nm",
@@ -874,7 +874,7 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_basic_report) {
 		[0] = "not available to ADS",
 		[1] = "OK"
 	};
-	LA_CAST_PTR(r, adsc_basic_report_t *, data);
+	LA_CAST_PTR(r, la_adsc_basic_report_t *, data);
 	char *str = NULL;
 	XASPRINTF(NULL, &str,
 		"%s:\n"
@@ -899,8 +899,8 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_basic_report) {
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_flight_id) {
-	LA_CAST_PTR(f, adsc_flight_id_t *, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_flight_id) {
+	LA_CAST_PTR(f, la_adsc_flight_id_t *, data);
 	char *str = NULL;
 	XASPRINTF(NULL, &str,
 		"%s:\n"
@@ -911,8 +911,8 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_flight_id) {
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_predicted_route) {
-	LA_CAST_PTR(r, adsc_predicted_route_t *, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_predicted_route) {
+	LA_CAST_PTR(r, la_adsc_predicted_route_t *, data);
 	char *str = NULL;
 	XASPRINTF(NULL, &str,
 		"%s:\n"
@@ -937,8 +937,8 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_predicted_route) {
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_earth_ref) {
-	LA_CAST_PTR(r, adsc_earth_air_ref_t *, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_earth_ref) {
+	LA_CAST_PTR(r, la_adsc_earth_air_ref_t *, data);
 	char *str = NULL;
 	XASPRINTF(NULL, &str,
 		"%s:\n"
@@ -954,8 +954,8 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_earth_ref) {
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_air_ref) {
-	LA_CAST_PTR(r, adsc_earth_air_ref_t *, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_air_ref) {
+	LA_CAST_PTR(r, la_adsc_earth_air_ref_t *, data);
 	char *str = NULL;
 	XASPRINTF(NULL, &str,
 		"%s:\n"
@@ -971,8 +971,8 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_air_ref) {
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_intermediate_projection) {
-	LA_CAST_PTR(p, adsc_intermediate_projection_t *, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_intermediate_projection) {
+	LA_CAST_PTR(p, la_adsc_intermediate_projection_t *, data);
 	char *str = NULL;
 	XASPRINTF(NULL, &str,
 		"%s:\n"
@@ -990,8 +990,8 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_intermediate_projection) {
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_fixed_projection) {
-	LA_CAST_PTR(p, adsc_fixed_projection_t *, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_fixed_projection) {
+	LA_CAST_PTR(p, la_adsc_fixed_projection_t *, data);
 	char *str = NULL;
 	XASPRINTF(NULL, &str,
 		"%s:\n"
@@ -1008,8 +1008,8 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_fixed_projection) {
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_meteo) {
-	LA_CAST_PTR(m, adsc_meteo_t *, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_meteo) {
+	LA_CAST_PTR(m, la_adsc_meteo_t *, data);
 	char *str = NULL;
 	XASPRINTF(NULL, &str,
 		"%s:\n"
@@ -1025,8 +1025,8 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_meteo) {
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_airframe_id) {
-	LA_CAST_PTR(a, adsc_airframe_id_t *, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_airframe_id) {
+	LA_CAST_PTR(a, la_adsc_airframe_id_t *, data);
 	char *str = NULL;
 	XASPRINTF(NULL, &str,
 		"%s:\n"
@@ -1041,59 +1041,59 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_airframe_id) {
  * Uplink tags
  ****************/
 
-static la_dict const adsc_uplink_tag_descriptor_table[] = {
+static la_dict const la_adsc_uplink_tag_descriptor_table[] = {
 	{
 		.id = 1,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Cancel all contracts and terminate connection",
 			.parse = NULL,
-			.format = &adsc_format_empty_tag,
+			.format = &la_adsc_format_empty_tag,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 2,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Cancel contract",
-			.parse = &adsc_parse_uint8_t,
-			.format = &adsc_format_tag_with_contract_number,
+			.parse = &la_adsc_parse_uint8_t,
+			.format = &la_adsc_format_tag_with_contract_number,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 6,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Cancel emergency mode",
-			.parse = &adsc_parse_uint8_t,
-			.format = &adsc_format_tag_with_contract_number,
+			.parse = &la_adsc_parse_uint8_t,
+			.format = &la_adsc_format_tag_with_contract_number,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 7,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Periodic contract request",
-			.parse = &adsc_parse_contract_request,
-			.format = &adsc_format_contract_request,
-			.destroy = &adsc_destroy_contract_request
+			.parse = &la_adsc_parse_contract_request,
+			.format = &la_adsc_format_contract_request,
+			.destroy = &la_adsc_destroy_contract_request
 		}
 	},
 	{
 		.id = 8,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Event contract request",
-			.parse = &adsc_parse_contract_request,
-			.format = &adsc_format_contract_request,
-			.destroy = &adsc_destroy_contract_request
+			.parse = &la_adsc_parse_contract_request,
+			.format = &la_adsc_format_contract_request,
+			.destroy = &la_adsc_destroy_contract_request
 		}
 	},
 	{
 		.id = 9,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Emergency periodic contract request",
-			.parse = &adsc_parse_contract_request,
-			.format = &adsc_format_contract_request,
-			.destroy = &adsc_destroy_contract_request
+			.parse = &la_adsc_parse_contract_request,
+			.format = &la_adsc_format_contract_request,
+			.destroy = &la_adsc_destroy_contract_request
 		}
 	},
 	{
@@ -1102,112 +1102,112 @@ static la_dict const adsc_uplink_tag_descriptor_table[] = {
 	}
 };
 
-static la_dict const adsc_request_tag_descriptor_table[] = {
+static la_dict const la_adsc_request_tag_descriptor_table[] = {
 	{
 		.id = 10,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Report when lateral deviation exceeds",
-			.parse = &adsc_parse_lat_dev_change,
-			.format = &adsc_format_lat_dev_change,
+			.parse = &la_adsc_parse_lat_dev_change,
+			.format = &la_adsc_format_lat_dev_change,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 11,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Reporting interval",
-			.parse = &adsc_parse_reporting_interval,
-			.format = &adsc_format_reporting_interval,
+			.parse = &la_adsc_parse_reporting_interval,
+			.format = &la_adsc_format_reporting_interval,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 12,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Flight ID",
-			.parse = &adsc_parse_uint8_t,
-			.format = &adsc_format_modulus,
+			.parse = &la_adsc_parse_uint8_t,
+			.format = &la_adsc_format_modulus,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 13,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Predicted route",
-			.parse = &adsc_parse_uint8_t,
-			.format = &adsc_format_modulus,
+			.parse = &la_adsc_parse_uint8_t,
+			.format = &la_adsc_format_modulus,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 14,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Earth reference data",
-			.parse = &adsc_parse_uint8_t,
-			.format = &adsc_format_modulus,
+			.parse = &la_adsc_parse_uint8_t,
+			.format = &la_adsc_format_modulus,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 15,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Air reference data",
-			.parse = &adsc_parse_uint8_t,
-			.format = &adsc_format_modulus,
+			.parse = &la_adsc_parse_uint8_t,
+			.format = &la_adsc_format_modulus,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 16,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Meteo data",
-			.parse = &adsc_parse_uint8_t,
-			.format = &adsc_format_modulus,
+			.parse = &la_adsc_parse_uint8_t,
+			.format = &la_adsc_format_modulus,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 17,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Airframe ID",
-			.parse = &adsc_parse_uint8_t,
-			.format = &adsc_format_modulus,
+			.parse = &la_adsc_parse_uint8_t,
+			.format = &la_adsc_format_modulus,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 18,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Report when vertical speed is",
-			.parse = &adsc_parse_vspd_change,
-			.format = &adsc_format_vspd_change,
+			.parse = &la_adsc_parse_vspd_change,
+			.format = &la_adsc_format_vspd_change,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 19,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Report when altitude out of range",
-			.parse = &adsc_parse_alt_range,
-			.format = &adsc_format_alt_range,
+			.parse = &la_adsc_parse_alt_range,
+			.format = &la_adsc_format_alt_range,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 20,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Report waypoint changes",
 			.parse = NULL,
-			.format = &adsc_format_empty_tag,
+			.format = &la_adsc_format_empty_tag,
 			.destroy = NULL
 		}
 	},
 	{
 		.id = 21,
-		.val = &(adsc_type_descriptor_t){
+		.val = &(la_adsc_type_descriptor_t){
 			.label = "Aircraft intent data",
-			.parse = &adsc_parse_acft_intent_group,
-			.format = &adsc_format_acft_intent_group,
+			.parse = &la_adsc_parse_acft_intent_group,
+			.format = &la_adsc_format_acft_intent_group,
 			.destroy = NULL
 		}
 	},
@@ -1221,10 +1221,10 @@ static la_dict const adsc_request_tag_descriptor_table[] = {
  * Tag destructors
  *****************/
 
-static void adsc_tag_destroy(void *tag) {
+static void la_adsc_tag_destroy(void *tag) {
 	if(tag == NULL)
 		return;
-	LA_CAST_PTR(t, adsc_tag_t *, tag);
+	LA_CAST_PTR(t, la_adsc_tag_t *, tag);
 	if(t->data == NULL || t->type == NULL) {
 		LA_XFREE(tag);
 		return;
@@ -1238,11 +1238,11 @@ static void adsc_tag_destroy(void *tag) {
 	LA_XFREE(tag);
 }
 
-static void adsc_destroy_contract_request(void *data) {
+static void la_adsc_destroy_contract_request(void *data) {
 	if(data == NULL) return;
-	LA_CAST_PTR(r, adsc_req_t *, data);
+	LA_CAST_PTR(r, la_adsc_req_t *, data);
 	if(r->req_tag_list != NULL) {
-		la_list_free_full(r->req_tag_list, adsc_tag_destroy);
+		la_list_free_full(r->req_tag_list, la_adsc_tag_destroy);
 		r->req_tag_list = NULL;
 	}
 	LA_XFREE(data);
@@ -1252,39 +1252,39 @@ static void adsc_destroy_contract_request(void *data) {
  * Tag formatters
  ****************/
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_empty_tag) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_empty_tag) {
 	return strdup(label);
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_tag_with_contract_number) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_tag_with_contract_number) {
 	char *str = NULL;
 	XASPRINTF(NULL, &str, "%s:\n  Contract number: %u", label, *(uint8_t *)data);
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_modulus) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_modulus) {
 	char *str = NULL;
 	XASPRINTF(NULL, &str, "%s: every %u reports", label, *(uint8_t *)data);
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_reporting_interval) {
-	LA_CAST_PTR(t, adsc_report_interval_req_t const * const, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_reporting_interval) {
+	LA_CAST_PTR(t, la_adsc_report_interval_req_t const * const, data);
 	char *str = NULL;
 	XASPRINTF(NULL, &str, "%s: %d seconds", label, (int)(t->scaling_factor) * (int)(t->rate));
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_acft_intent_group) {
-	LA_CAST_PTR(t, adsc_acft_intent_group_req_t const * const, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_acft_intent_group) {
+	LA_CAST_PTR(t, la_adsc_acft_intent_group_req_t const * const, data);
 	char *str = NULL;
 	XASPRINTF(NULL, &str, "%s: every %u reports, projection time: %u minutes",
 		label, t->modulus, t->acft_intent_projection_time);
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_lat_dev_change) {
-	LA_CAST_PTR(e, adsc_lat_dev_chg_event_t const * const, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_lat_dev_change) {
+	LA_CAST_PTR(e, la_adsc_lat_dev_chg_event_t const * const, data);
 	char *str = NULL;
 	XASPRINTF(NULL, &str,
 		"%s: %.3f nm",
@@ -1294,8 +1294,8 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_lat_dev_change) {
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_vspd_change) {
-	LA_CAST_PTR(e, adsc_vspd_chg_event_t const * const, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_vspd_change) {
+	LA_CAST_PTR(e, la_adsc_vspd_chg_event_t const * const, data);
 	char *str = NULL;
 	XASPRINTF(NULL, &str,
 		"%s: %c%d ft",
@@ -1306,8 +1306,8 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_vspd_change) {
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_alt_range) {
-	LA_CAST_PTR(e, adsc_alt_range_event_t const * const, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_alt_range) {
+	LA_CAST_PTR(e, la_adsc_alt_range_event_t const * const, data);
 	char *str = NULL;
 	XASPRINTF(NULL, &str,
 		"%s: %d-%d ft",
@@ -1318,8 +1318,8 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_alt_range) {
 	return str;
 }
 
-ADSC_FORMATTER_PROTOTYPE(adsc_format_contract_request) {
-	LA_CAST_PTR(r, adsc_req_t const * const, data);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_contract_request) {
+	LA_CAST_PTR(r, la_adsc_req_t const * const, data);
 	char *header = NULL;
 	XASPRINTF(NULL, &header,
 		"%s:\n"
@@ -1334,7 +1334,7 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_contract_request) {
 	la_list *str_list = NULL;
 	size_t total_len = strlen(header);
 	for(la_list *ptr = r->req_tag_list; ptr != NULL; ptr = la_list_next(ptr)) {
-		LA_CAST_PTR(t, adsc_tag_t *, ptr->data);
+		LA_CAST_PTR(t, la_adsc_tag_t *, ptr->data);
 		if(!t->type) {
 			char *s = NULL;
 			XASPRINTF(NULL, &s, "-- Unparseable tag %u", t->tag);
@@ -1366,10 +1366,10 @@ ADSC_FORMATTER_PROTOTYPE(adsc_format_contract_request) {
  * Tag parsers
  **************/
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_uint8_t) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_uint8_t) {
 	uint32_t tag_len = 1;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
 	uint8_t *ptr = LA_XCALLOC(1, sizeof(uint8_t));
 	*ptr = buf[0];
 	la_debug_print("val=%u\n", *ptr);
@@ -1377,11 +1377,11 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_uint8_t) {
 	return tag_len;
 }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_reporting_interval) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_reporting_interval) {
 	uint32_t tag_len = 1;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
-	adsc_report_interval_req_t *ri = LA_XCALLOC(1, sizeof(adsc_report_interval_req_t));
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
+	la_adsc_report_interval_req_t *ri = LA_XCALLOC(1, sizeof(la_adsc_report_interval_req_t));
 	t->data = ri;
 	uint8_t sf = (buf[0] & 0xc0) >> 6;
 // convert scaling factor to multiplier value
@@ -1395,48 +1395,48 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_reporting_interval) {
 	return tag_len;
 }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_lat_dev_change) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_lat_dev_change) {
 	uint32_t tag_len = 1;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
-	adsc_lat_dev_chg_event_t *e = LA_XCALLOC(1, sizeof(adsc_lat_dev_chg_event_t));
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
+	la_adsc_lat_dev_chg_event_t *e = LA_XCALLOC(1, sizeof(la_adsc_lat_dev_chg_event_t));
 	t->data = e;
 
 	e->lat_dev_threshold = (double)buf[0] / 8.0;
 	return tag_len;
 }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_vspd_change) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_vspd_change) {
 	uint32_t tag_len = 1;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
-	adsc_vspd_chg_event_t *e = LA_XCALLOC(1, sizeof(adsc_vspd_chg_event_t));
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
+	la_adsc_vspd_chg_event_t *e = LA_XCALLOC(1, sizeof(la_adsc_vspd_chg_event_t));
 	t->data = e;
 
 	e->vspd_threshold = (char)buf[0] * 64;
 	return tag_len;
 }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_alt_range) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_alt_range) {
 	uint32_t tag_len = 4;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
-	adsc_alt_range_event_t *e = LA_XCALLOC(1, sizeof(adsc_alt_range_event_t));
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
+	la_adsc_alt_range_event_t *e = LA_XCALLOC(1, sizeof(la_adsc_alt_range_event_t));
 	t->data = e;
 
 	uint32_t tmp = 0;
 	tmp = (buf[0] << 8) | buf[1];
-	e->ceiling_alt = adsc_parse_altitude(tmp);
+	e->ceiling_alt = la_adsc_parse_altitude(tmp);
 	tmp = (buf[2] << 8) | buf[3];
-	e->floor_alt = adsc_parse_altitude(tmp);
+	e->floor_alt = la_adsc_parse_altitude(tmp);
 	return tag_len;
 }
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_acft_intent_group) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_acft_intent_group) {
 	uint32_t tag_len = 2;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
-	adsc_acft_intent_group_req_t *aig = LA_XCALLOC(1, sizeof(adsc_acft_intent_group_req_t));
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
+	la_adsc_acft_intent_group_req_t *aig = LA_XCALLOC(1, sizeof(la_adsc_acft_intent_group_req_t));
 	t->data = aig;
 	aig->modulus = buf[0];
 	aig->acft_intent_projection_time = buf[1];
@@ -1445,12 +1445,12 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_acft_intent_group) {
 }
 
 
-ADSC_PARSER_PROTOTYPE(adsc_parse_contract_request) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_contract_request) {
 	uint32_t tag_len = 1;
-	LA_CAST_PTR(t, adsc_tag_t *, dest);
-	ADSC_CHECK_LEN(t->tag, len, tag_len);
+	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
+	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
 	int consumed_bytes = 0;
-	adsc_req_t *r = LA_XCALLOC(1, sizeof(adsc_req_t));
+	la_adsc_req_t *r = LA_XCALLOC(1, sizeof(la_adsc_req_t));
 	t->data = r;
 
 	r->contract_num = buf[0];
@@ -1458,9 +1458,9 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_contract_request) {
 
 	while(len > 0) {
 		la_debug_print("Remaining length: %u\n", len);
-		adsc_tag_t *req_tag = LA_XCALLOC(1, sizeof(adsc_tag_t));
+		la_adsc_tag_t *req_tag = LA_XCALLOC(1, sizeof(la_adsc_tag_t));
 		r->req_tag_list = la_list_append(r->req_tag_list, req_tag);
-		if((consumed_bytes = adsc_parse_tag(req_tag, adsc_request_tag_descriptor_table, buf, len)) < 0) {
+		if((consumed_bytes = la_adsc_parse_tag(req_tag, la_adsc_request_tag_descriptor_table, buf, len)) < 0) {
 			return -1;
 		}
 		buf += consumed_bytes; len -= consumed_bytes;
@@ -1469,7 +1469,7 @@ ADSC_PARSER_PROTOTYPE(adsc_parse_contract_request) {
 	return tag_len;
 }
 
-static int adsc_parse_tag(adsc_tag_t *t, la_dict const *tag_descriptor_table, uint8_t *buf, uint32_t len) {
+static int la_adsc_parse_tag(la_adsc_tag_t *t, la_dict const *tag_descriptor_table, uint8_t *buf, uint32_t len) {
 	uint32_t tag_len = 1;
 	if(len < tag_len) {
 		la_debug_print("%s", "Buffer len is 0\n");
@@ -1478,7 +1478,7 @@ static int adsc_parse_tag(adsc_tag_t *t, la_dict const *tag_descriptor_table, ui
 
 	t->tag = buf[0];
 	buf++; len--;
-	LA_CAST_PTR(type, adsc_type_descriptor_t *, la_dict_search(tag_descriptor_table, t->tag));
+	LA_CAST_PTR(type, la_adsc_type_descriptor_t *, la_dict_search(tag_descriptor_table, t->tag));
 	if(type == NULL) {
 		la_debug_print("Unknown tag %u\n", t->tag);
 		return -1;
@@ -1497,33 +1497,33 @@ end:
 	return tag_len;
 }
 
-la_proto_node *adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc_imi imi) {
+la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc_imi imi) {
 	if(buf == NULL)
 		return NULL;
 
 	la_proto_node *node = la_proto_node_new();
-	adsc_msg_t *msg = LA_XCALLOC(1, sizeof(adsc_msg_t));
+	la_adsc_msg_t *msg = LA_XCALLOC(1, sizeof(la_adsc_msg_t));
 	node->data = msg;
 	node->td = &la_DEF_adsc_message;
-	adsc_tag_t *tag = NULL;
+	la_adsc_tag_t *tag = NULL;
 	int consumed_bytes;
 
 // Uplink and downlink tag values are the same, but their syntax is different.
 // Figure out the la_dictionary to use based on the message direction.
 	static la_dict const *tag_table = NULL;
 	if(msg_dir == LA_MSG_DIR_GND2AIR)
-		tag_table = adsc_uplink_tag_descriptor_table;
+		tag_table = la_adsc_uplink_tag_descriptor_table;
 	else if(msg_dir == LA_MSG_DIR_AIR2GND)
-		tag_table = adsc_downlink_tag_descriptor_table;
+		tag_table = la_adsc_downlink_tag_descriptor_table;
 	la_assert(tag_table != NULL);
 
 	switch(imi) {
 	case ARINC_MSG_ADS:
 		while(len > 0) {
 			la_debug_print("Remaining length: %u\n", len);
-			tag = LA_XCALLOC(1, sizeof(adsc_tag_t));
+			tag = LA_XCALLOC(1, sizeof(la_adsc_tag_t));
 			msg->tag_list = la_list_append(msg->tag_list, tag);
-			if((consumed_bytes = adsc_parse_tag(tag, tag_table, buf, len)) < 0) {
+			if((consumed_bytes = la_adsc_parse_tag(tag, tag_table, buf, len)) < 0) {
 				msg->err = 1;
 				break;
 			}
@@ -1538,13 +1538,13 @@ la_proto_node *adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc_im
 			msg->err = 1;
 			break;
 		}
-		tag = LA_XCALLOC(1, sizeof(adsc_tag_t));
+		tag = LA_XCALLOC(1, sizeof(la_adsc_tag_t));
 		msg->tag_list = la_list_append(msg->tag_list, tag);
 		len = 2;
 		uint8_t *tmpbuf = LA_XCALLOC(len, sizeof(uint8_t));
 		tmpbuf[0] = 255;
 		tmpbuf[1] = buf[0];
-		if(adsc_parse_tag(tag, tag_table, tmpbuf, len) < 0) {
+		if(la_adsc_parse_tag(tag, tag_table, tmpbuf, len) < 0) {
 			msg->err = 1;
 		}
 		LA_XFREE(tmpbuf);
@@ -1555,11 +1555,11 @@ la_proto_node *adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc_im
 	return node;
 }
 
-static void adsc_output_tag(void const * const p, void *ctx) {
+static void la_adsc_output_tag(void const * const p, void *ctx) {
 	la_assert(p);
 	la_assert(ctx);
 
-	LA_CAST_PTR(t, adsc_tag_t *, p);
+	LA_CAST_PTR(t, la_adsc_tag_t *, p);
 	LA_CAST_PTR(vstr, la_vstring *, ctx);
 	if(!t->type) {
 		la_vstring_append_sprintf(vstr, "-- Unparseable tag %u\n", t->tag);
@@ -1574,27 +1574,27 @@ static void adsc_output_tag(void const * const p, void *ctx) {
 	}
 }
 
-void adsc_format_text(la_vstring * const vstr, void const * const data) {
+void la_adsc_format_text(la_vstring * const vstr, void const * const data) {
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, adsc_msg_t *, data);
+	LA_CAST_PTR(msg, la_adsc_msg_t *, data);
 	if(msg->tag_list == NULL) {
 		la_vstring_append_sprintf(vstr, "-- Empty ADS-C message\n");
 		return;
 	}
-	la_list_foreach(msg->tag_list, adsc_output_tag, vstr);
+	la_list_foreach(msg->tag_list, la_adsc_output_tag, vstr);
 	if(msg->err != 0) {
 		la_vstring_append_sprintf(vstr, "-- Malformed ADS-C message\n");
 	}
 }
 
-void adsc_destroy(void *data) {
+void la_adsc_destroy(void *data) {
 	if(data == NULL) {
 		return;
 	}
-	LA_CAST_PTR(msg, adsc_msg_t *, data);
-	la_list_free_full(msg->tag_list, adsc_tag_destroy);
+	LA_CAST_PTR(msg, la_adsc_msg_t *, data);
+	la_list_free_full(msg->tag_list, la_adsc_tag_destroy);
 	msg->tag_list = NULL;
 	msg->err = 0;
 	LA_XFREE(data);
@@ -1602,6 +1602,6 @@ void adsc_destroy(void *data) {
 
 la_type_descriptor const la_DEF_adsc_message = {
 	.header = NULL,
-	.format_text = &adsc_format_text,
-	.destroy = &adsc_destroy
+	.format_text = &la_adsc_format_text,
+	.destroy = &la_adsc_destroy
 };

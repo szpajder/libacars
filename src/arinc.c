@@ -24,7 +24,7 @@
 #include "macros.h"		// la_debug_print
 #include "vstring.h"		// la_vstring_append_sprintf
 #include "util.h"		// la_slurp_hexstring
-#include "adsc.h"		// adsc_parse()
+#include "adsc.h"		// la_adsc_parse()
 #include "cpdlc.h"		// la_cpdlc_parse()
 
 typedef enum {
@@ -161,7 +161,7 @@ la_proto_node *la_arinc_parse(char const *txt, la_msg_dir const msg_dir) {
 			break;
 		case ARINC_MSG_ADS:
 		case ARINC_MSG_DIS:
-			next_node = adsc_parse(buf, buflen, msg_dir, msg->imi);
+			next_node = la_adsc_parse(buf, buflen, msg_dir, msg->imi);
 			LA_XFREE(buf);
 			break;
 		default:
