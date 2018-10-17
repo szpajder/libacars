@@ -727,8 +727,10 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_nack) {
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Contract request number: %u\n", n->contract_req_num);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Reason: %u (%s)\n", n->reason, reason_code_table[n->reason]);
-	if(n->reason == 1 || n->reason == 2 || n->reason == 7) {
+	if(n->reason == 1 || n->reason == 2) {
 		LA_ISPRINTF(ctx->vstr, ctx->indent, "Erroneous octet number: %u\n", n->ext_data);
+	} else if(n->reason == 7) {
+		LA_ISPRINTF(ctx->vstr, ctx->indent, "Erroneous tag number: %u\n", n->ext_data);
 	}
 	ctx->indent--;
 }
