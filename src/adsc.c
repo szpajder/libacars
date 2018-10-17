@@ -17,39 +17,17 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define _GNU_SOURCE
 #include <stdint.h>
-#include <string.h>		// memcpy(), strlen(), strcat(), strdup()
+#include <string.h>		// memcpy()
 #include <math.h>
 #include "macros.h"		// la_debug_print, LA_CAST_PTR
-#include "bitstream.h"
+#include "bitstream.h"		// la_bitstream_*
 #include "libacars.h"		// la_msg_dir
 #include "arinc.h"		// la_arinc_imi
 #include "list.h"		// la_list_*
 #include "util.h"		// la_dict, la_dict_search(), LA_XCALLOC, LA_XFREE
 #include "vstring.h"		// la_vstring, la_vstring_append_sprintf()
 #include "adsc.h"
-
-// FIXME: replace with la_vstring_append_sprintf
-#include <stdio.h>
-#include <stdarg.h>
-int xasprintf(const char *file, const int line, const char *func, char **strp, const char *fmt, ...) {
-	va_list ap;
-	va_start(ap, fmt);
-	int r = vasprintf(strp, fmt, ap);
-	va_end(ap);
-	if(r == -1) {
-		fprintf(stderr, "%s:%d: %s(): vasprintf() failed (out of memory?)\n",
-			file, line, func);
-	}
-	return r;
-}
-#define XASPRINTF(failcode, strp, fmt, ...) \
-	do { \
-		if(xasprintf(__FILE__, __LINE__, __func__, (strp), (fmt), __VA_ARGS__) == -1) { \
-			return (failcode); \
-		} \
-	} while(0);
 
 static double la_adsc_parse_coordinate(uint32_t c) {
 // extend the 21-bit signed field to 32-bit signed int
@@ -101,7 +79,7 @@ static double la_adsc_parse_distance(uint32_t d) {
 	la_debug_print("result: %f\n", result);
 	return result;
 }
-
+//FIXME: static
 double la_adsc_parse_heading(uint32_t h) {
 // Heading/track format is the same as latitude/longitude
 // except that:
@@ -153,7 +131,7 @@ double la_adsc_parse_temperature(uint32_t t) {
 		return -1; \
 	}
 #define LA_ADSC_PARSER_PROTOTYPE(x) static int x(void *dest, uint8_t *buf, uint32_t len)
-#define LA_ADSC_FORMATTER_PROTOTYPE(x) static char *x(char const * const label, void const * const data)
+#define LA_ADSC_FORMATTER_PROTOTYPE(x) static void x(la_adsc_formatter_ctx_t * const ctx, char const * const label, void const * const data)
 
 static int la_adsc_parse_tag(la_adsc_tag_t *t, la_dict const *tag_descriptor_table, uint8_t *buf, uint32_t len);
 
@@ -745,27 +723,14 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_nack) {
 		[13] = "Lateral deviation threshold is 0"
 	};
 	LA_CAST_PTR(n, la_adsc_nack_t *, data);
-	char *str = NULL;
-	char *tmp = NULL;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Contract request number: %u\n", n->contract_req_num);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Reason: %u (%s)\n", n->reason, reason_code_table[n->reason]);
 	if(n->reason == 1 || n->reason == 2 || n->reason == 7) {
-		XASPRINTF(NULL, &tmp,
-			"\n  Erroneous octet number: %u",
-			n->ext_data
-		);
+		LA_ISPRINTF(ctx->vstr, ctx->indent, "Erroneous octet number: %u\n", n->ext_data);
 	}
-	XASPRINTF(NULL, &str,
-		"%s:\n"
-		"  Contract request number: %u\n"
-		"  Reason: %u (%s)"
-		"%s",
-		label,
-		n->contract_req_num,
-		n->reason,
-		reason_code_table[n->reason],
-		tmp ? tmp : ""
-	);
-	LA_XFREE(tmp);
-	return str;
+	ctx->indent--;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_dis_reason_code) {
@@ -779,80 +744,42 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_dis_reason_code) {
 	LA_CAST_PTR(rc, uint8_t *, data);
 	uint8_t reason = *rc >> 4;
 	char *descr = la_dict_search(dis_reason_code_table, reason);
-	char *str = NULL;
 	if(descr) {
-		XASPRINTF(NULL, &str, "%s: %s", label, descr);
+		LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: %s\n", label, descr);
 	} else {
-		XASPRINTF(NULL, &str, "%s: unknown (%u)", label, reason);
+		LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: unknown (%u)\n", label, reason);
 	}
-	return str;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_noncomp_group) {
 	LA_CAST_PTR(g, la_adsc_noncomp_group_t *, data);
-	char *str = NULL;
-	char *grp_header;
-	char param_numbers[64];
-	param_numbers[0] = '\0';
 
-	XASPRINTF(NULL, &grp_header,
-		"Tag %u:\n"
-		"   %s",
-		g->noncomp_tag,
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Tag %u:\n", g->noncomp_tag);
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s",
 		g->is_unrecognized ? "Unrecognized group" :
 			(g->is_whole_group_unavail ? "Unavailable group" : "Unavailable parameters: ")
 	);
-	size_t total_len = strlen(grp_header);
 	if(!g->is_unrecognized && !g->is_whole_group_unavail && g->param_cnt > 0) {
-		char tmp[5];
 		for(int i = 0; i < g->param_cnt; i++) {
-			snprintf(tmp, sizeof(tmp), "%d ", g->params[i]);
-			strcat(param_numbers, tmp);
+			la_vstring_append_sprintf(ctx->vstr, "%d ", g->params[i]);
 		}
-		total_len += strlen(param_numbers);
 	}
-	str = LA_XCALLOC(total_len + 1, sizeof(char));
-	strcat(str, grp_header);
-	LA_XFREE(grp_header);
-	if(strlen(param_numbers) > 0) {
-		strcat(str, param_numbers);
-	}
-	return str;
+	la_vstring_append_sprintf(ctx->vstr, "\n");
+	ctx->indent--;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_noncomp_notify) {
 	LA_CAST_PTR(n, la_adsc_noncomp_notify_t *, data);
-	char *str = NULL;
-	char *header = NULL;
-	XASPRINTF(NULL, &header,
-		"%s:\n"
-		"  Contract number: %u",
-		label,
-		n->contract_req_num
-	);
-	char **tmp = NULL;
-	size_t total_len = strlen(header);
-	if(n->group_cnt > 0) {
-		tmp = LA_XCALLOC(n->group_cnt, sizeof(char *));
-		for(int i = 0; i < n->group_cnt; i++) {
-			tmp[i] = la_adsc_format_noncomp_group(NULL, n->groups + i);
-			if(tmp[i] != NULL) {
-				total_len += strlen(tmp[i]) + 3;	// add room for newline and two spaces
-			}
-		}
-	}
-	str = LA_XCALLOC(total_len + 1, sizeof(char));	// add room for '\0'
-	strcat(str, header);
-	LA_XFREE(header);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Contract number: %u\n", n->contract_req_num);
 	if(n->group_cnt > 0) {
 		for(int i = 0; i < n->group_cnt; i++) {
-			strcat(str, "\n  ");
-			strcat(str, tmp[i]);
-			LA_XFREE(tmp[i]);
+			la_adsc_format_noncomp_group(ctx, NULL, n->groups + i);
 		}
-		LA_XFREE(tmp);
 	}
-	return str;
+	ctx->indent--;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_basic_report) {
@@ -875,166 +802,108 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_basic_report) {
 		[1] = "OK"
 	};
 	LA_CAST_PTR(r, la_adsc_basic_report_t *, data);
-	char *str = NULL;
-	XASPRINTF(NULL, &str,
-		"%s:\n"
-		"  Lat: %.7f\n"
-		"  Lon: %.7f\n"
-		"  Alt: %d ft\n"
-		"  Time: %.3f sec past hour (:%02.0f:%06.3f)\n"
-		"  Position accuracy: %s\n"
-		"  NAV unit redundancy: %s\n"
-		"  TCAS: %s",
-		label,
-		r->lat,
-		r->lon,
-		r->alt,
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Lat: %.7f\n", r->lat);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Lon: %.7f\n", r->lon);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Alt: %d ft\n", r->alt);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Time: %.3f sec past hour (:%02.0f:%06.3f)\n",
 		r->timestamp,
 		trunc(r->timestamp / 60.0),
-		r->timestamp - 60.0 * trunc(r->timestamp / 60.0),
-		accuracy_table[r->accuracy],
-		redundancy_state_table[r->redundancy],
-		tcas_state_table[r->tcas_health]
+		r->timestamp - 60.0 * trunc(r->timestamp / 60.0)
 	);
-	return str;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Position accuracy: %s\n", accuracy_table[r->accuracy]);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "NAV unit redundancy: %s\n", redundancy_state_table[r->redundancy]);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "TCAS: %s\n", tcas_state_table[r->tcas_health]);
+	ctx->indent--;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_flight_id) {
 	LA_CAST_PTR(f, la_adsc_flight_id_t *, data);
-	char *str = NULL;
-	XASPRINTF(NULL, &str,
-		"%s:\n"
-		"  Flight ID: %s",
-		label,
-		f->id
-	);
-	return str;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Flight ID: %s\n", f->id);
+	ctx->indent--;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_predicted_route) {
 	LA_CAST_PTR(r, la_adsc_predicted_route_t *, data);
-	char *str = NULL;
-	XASPRINTF(NULL, &str,
-		"%s:\n"
-		"  Next waypoint:\n"
-		"   Lat: %.7f\n"
-		"   Lon: %.7f\n"
-		"   Alt: %d ft\n"
-		"   ETA: %d sec\n"
-		"  Next+1 waypoint:\n"
-		"   Lat: %.7f\n"
-		"   Lon: %.7f\n"
-		"   Alt: %d ft",
-		label,
-		r->lat_next,
-		r->lon_next,
-		r->alt_next,
-		r->eta_next,
-		r->lat_next_next,
-		r->lon_next_next,
-		r->alt_next_next
-	);
-	return str;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s", "Next waypoint:\n");
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Lat: %.7f\n", r->lat_next);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Lon: %.7f\n", r->lon_next);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Alt: %d ft\n", r->alt_next);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "ETA: %d sec\n", r->eta_next);
+	ctx->indent--;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s", "Next+1 waypoint:\n");
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Lat: %.7f\n", r->lat_next_next);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Lon: %.7f\n", r->lon_next_next);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Alt: %d ft\n", r->alt_next_next);
+	ctx->indent--;
+	ctx->indent--;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_earth_ref) {
 	LA_CAST_PTR(r, la_adsc_earth_air_ref_t *, data);
-	char *str = NULL;
-	XASPRINTF(NULL, &str,
-		"%s:\n"
-		"  True track: %.1f deg%s\n"
-		"  Ground speed: %.1f kt\n"
-		"  Vertical speed: %d ft/min",
-		label,
-		r->heading,
-		r->heading_invalid ? " (invalid)" : "",
-		r->speed,
-		r->vert_speed
-	);
-	return str;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "True track: %.1f deg%s\n", r->heading, r->heading_invalid ? " (invalid)" : "");
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Ground speed: %.1f kt\n", r->speed);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Vertical speed: %d ft/min\n", r->vert_speed);
+	ctx->indent--;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_air_ref) {
 	LA_CAST_PTR(r, la_adsc_earth_air_ref_t *, data);
-	char *str = NULL;
-	XASPRINTF(NULL, &str,
-		"%s:\n"
-		"  True heading: %.1f deg%s\n"
-		"  Mach speed: %.4f\n"
-		"  Vertical speed: %d ft/min",
-		label,
-		r->heading,
-		r->heading_invalid ? " (invalid)" : "",
-		r->speed / 1000.0,
-		r->vert_speed
-	);
-	return str;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "True heading: %.1f deg%s\n", r->heading, r->heading_invalid ? " (invalid)" : "");
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Mach speed: %.4f\n", r->speed / 1000.0);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Vertical speed: %d ft/min\n", r->vert_speed);
+	ctx->indent--;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_intermediate_projection) {
 	LA_CAST_PTR(p, la_adsc_intermediate_projection_t *, data);
-	char *str = NULL;
-	XASPRINTF(NULL, &str,
-		"%s:\n"
-		"  Distance: %.3f nm\n"
-		"  True track: %.1f deg%s\n"
-		"  Alt: %d ft\n"
-		"  ETA: %d sec",
-		label,
-		p->distance,
-		p->track,
-		p->track_invalid ? " (invalid)" : "",
-		p->alt,
-		p->eta
-	);
-	return str;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Distance: %.3f nm\n", p->distance);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "True track: %.1f deg%s\n", p->track, p->track_invalid ? " (invalid)" : "");
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Alt: %d ft\n", p->alt);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "ETA: %d sec\n", p->eta);
+	ctx->indent--;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_fixed_projection) {
 	LA_CAST_PTR(p, la_adsc_fixed_projection_t *, data);
-	char *str = NULL;
-	XASPRINTF(NULL, &str,
-		"%s:\n"
-		"  Lat: %.7f\n"
-		"  Lon: %.7f\n"
-		"  Alt: %d ft\n"
-		"  ETA: %d sec",
-		label,
-		p->lat,
-		p->lon,
-		p->alt,
-		p->eta
-	);
-	return str;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Lat: %.7f\n", p->lat);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Lon: %.7f\n", p->lon);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Alt: %d ft\n", p->alt);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "ETA: %d sec\n", p->eta);
+	ctx->indent--;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_meteo) {
 	LA_CAST_PTR(m, la_adsc_meteo_t *, data);
-	char *str = NULL;
-	XASPRINTF(NULL, &str,
-		"%s:\n"
-		"  Wind speed: %.1f kt\n"
-		"  True wind direction: %.1f deg%s\n"
-		"  Temperature: %.2f C",
-		label,
-		m->wind_speed,
-		m->wind_dir,
-		m->wind_dir_invalid ? " (invalid)" : "",
-		m->temp
-	);
-	return str;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Wind speed: %.1f kt\n", m->wind_speed);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "True wind direction: %.1f deg%s\n", m->wind_dir, m->wind_dir_invalid ? " (invalid)" : "");
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Temperature: %.2f C\n", m->temp);
+	ctx->indent--;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_airframe_id) {
 	LA_CAST_PTR(a, la_adsc_airframe_id_t *, data);
-	char *str = NULL;
-	XASPRINTF(NULL, &str,
-		"%s:\n"
-		"  ICAO ID: %02X%02X%02X",
-		label,
-		a->icao_hex[0], a->icao_hex[1], a->icao_hex[2]
-	);
-	return str;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "ICAO ID: %02X%02X%02X\n", a->icao_hex[0], a->icao_hex[1], a->icao_hex[2]);
+	ctx->indent--;
 }
 
 /****************
@@ -1253,113 +1122,80 @@ static void la_adsc_destroy_contract_request(void *data) {
  ****************/
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_empty_tag) {
-	return strdup(label);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s\n", label);
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_tag_with_contract_number) {
-	char *str = NULL;
-	XASPRINTF(NULL, &str, "%s:\n  Contract number: %u", label, *(uint8_t *)data);
-	return str;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Contract number: %u\n", *(uint8_t *)data);
+	ctx->indent--;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_modulus) {
-	char *str = NULL;
-	XASPRINTF(NULL, &str, "%s: every %u reports", label, *(uint8_t *)data);
-	return str;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: every %u reports\n", label, *(uint8_t *)data);
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_reporting_interval) {
 	LA_CAST_PTR(t, la_adsc_report_interval_req_t const * const, data);
-	char *str = NULL;
-	XASPRINTF(NULL, &str, "%s: %d seconds", label, (int)(t->scaling_factor) * (int)(t->rate));
-	return str;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: %d seconds\n", label, (int)(t->scaling_factor) * (int)(t->rate));
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_acft_intent_group) {
 	LA_CAST_PTR(t, la_adsc_acft_intent_group_req_t const * const, data);
-	char *str = NULL;
-	XASPRINTF(NULL, &str, "%s: every %u reports, projection time: %u minutes",
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: every %u reports, projection time: %u minutes\n",
 		label, t->modulus, t->acft_intent_projection_time);
-	return str;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_lat_dev_change) {
 	LA_CAST_PTR(e, la_adsc_lat_dev_chg_event_t const * const, data);
-	char *str = NULL;
-	XASPRINTF(NULL, &str,
-		"%s: %.3f nm",
+	LA_ISPRINTF(ctx->vstr, ctx->indent,
+		"%s: %.3f nm\n",
 		label,
 		e->lat_dev_threshold
 	);
-	return str;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_vspd_change) {
 	LA_CAST_PTR(e, la_adsc_vspd_chg_event_t const * const, data);
-	char *str = NULL;
-	XASPRINTF(NULL, &str,
-		"%s: %c%d ft",
+	LA_ISPRINTF(ctx->vstr, ctx->indent,
+		"%s: %c%d ft\n",
 		label,
 		e->vspd_threshold >= 0 ? '>' : '<',
 		abs(e->vspd_threshold)
 	);
-	return str;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_alt_range) {
 	LA_CAST_PTR(e, la_adsc_alt_range_event_t const * const, data);
-	char *str = NULL;
-	XASPRINTF(NULL, &str,
-		"%s: %d-%d ft",
+	LA_ISPRINTF(ctx->vstr, ctx->indent,
+		"%s: %d-%d ft\n",
 		label,
 		e->floor_alt,
 		e->ceiling_alt
 	);
-	return str;
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_contract_request) {
 	LA_CAST_PTR(r, la_adsc_req_t const * const, data);
-	char *header = NULL;
-	XASPRINTF(NULL, &header,
-		"%s:\n"
-		"  Contract number: %u",
-		label,
-		r->contract_num
-	);
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
+	ctx->indent++;
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Contract number: %u\n", r->contract_num);
+
 	size_t len = la_list_length(r->req_tag_list);
 	if(len == 0) {
-		return header;
+		return;
 	}
-	la_list *str_list = NULL;
-	size_t total_len = strlen(header);
 	for(la_list *ptr = r->req_tag_list; ptr != NULL; ptr = la_list_next(ptr)) {
 		LA_CAST_PTR(t, la_adsc_tag_t *, ptr->data);
 		if(!t->type) {
-			char *s = NULL;
-			XASPRINTF(NULL, &s, "-- Unparseable tag %u", t->tag);
-			str_list = la_list_append(str_list, s);
-			total_len += strlen(s) + 3;
+			LA_ISPRINTF(ctx->vstr, ctx->indent, "-- Unparseable tag %u\n", t->tag);
 			break;
 		}
 		la_assert(t->type->format != NULL);
-		char *s = (*(t->type->format))(t->type->label, t->data);
-		if(s != NULL) {
-			la_debug_print("fmt tag: %s\n", s);
-			str_list = la_list_append(str_list, s);
-			total_len += strlen(s) + 3;	// add room for newline + 2 indenting spaces
-		}
+		(*(t->type->format))(ctx, t->type->label, t->data);
 	}
-	char *str = LA_XCALLOC(total_len + 1, sizeof(char));	// add room for '\0'
-	strcat(str, header);
-	LA_XFREE(header);
-	for(la_list *ptr = str_list; ptr != NULL; ptr = la_list_next(ptr)) {
-		strcat(str, "\n  ");
-		strcat(str, (char const *)(ptr->data));
-		LA_XFREE(ptr->data);
-	}
-	la_list_free(str_list);
-	return str;
+	ctx->indent--;
 }
 
 /**************
@@ -1560,17 +1396,13 @@ static void la_adsc_output_tag(void const * const p, void *ctx) {
 	la_assert(ctx);
 
 	LA_CAST_PTR(t, la_adsc_tag_t *, p);
-	LA_CAST_PTR(vstr, la_vstring *, ctx);
+	LA_CAST_PTR(c, la_adsc_formatter_ctx_t *, ctx);
 	if(!t->type) {
-		la_vstring_append_sprintf(vstr, "-- Unparseable tag %u\n", t->tag);
+		LA_ISPRINTF(c->vstr, c->indent, "-- Unparseable tag %u\n", t->tag);
 		return;
 	}
 	if(t->type->format != NULL) {
-		char *str = (*(t->type->format))(t->type->label, t->data);
-		if(str != NULL) {
-			la_vstring_append_sprintf(vstr, " %s\n", str);
-			LA_XFREE(str);
-		}
+		(*(t->type->format))(c, t->type->label, t->data);
 	}
 }
 
@@ -1579,13 +1411,18 @@ void la_adsc_format_text(la_vstring * const vstr, void const * const data) {
 	la_assert(data);
 
 	LA_CAST_PTR(msg, la_adsc_msg_t *, data);
+// FIXME: indent should be passed by the caller
+	la_adsc_formatter_ctx_t ctx = {
+		.vstr = vstr,
+		.indent = 1
+	};
 	if(msg->tag_list == NULL) {
-		la_vstring_append_sprintf(vstr, "-- Empty ADS-C message\n");
+		LA_ISPRINTF(ctx.vstr, ctx.indent, "%s", "-- Empty ADS-C message\n");
 		return;
 	}
-	la_list_foreach(msg->tag_list, la_adsc_output_tag, vstr);
+	la_list_foreach(msg->tag_list, la_adsc_output_tag, &ctx);
 	if(msg->err != 0) {
-		la_vstring_append_sprintf(vstr, "-- Malformed ADS-C message\n");
+		LA_ISPRINTF(ctx.vstr, ctx.indent, "%s", "-- Malformed ADS-C message\n");
 	}
 }
 

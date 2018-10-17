@@ -23,15 +23,22 @@
 #include <stdint.h>
 #include "arinc.h"	// la_arinc_imi
 #include "list.h"	// la_list
+#include "vstring.h"	// la_vstring
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+// formatter context (FIXME: make this private)
+typedef struct {
+	la_vstring *vstr;
+	int indent;
+} la_adsc_formatter_ctx_t;
+
 typedef struct {
 	char const * const label;
 	int (*parse)(void *dest, uint8_t *buf, uint32_t len);
-	char *(*format)(char const * const, void const * const);
+	void (*format)(la_adsc_formatter_ctx_t * const, char const * const, void const * const);
 	void (*destroy)(void *data);
 } la_adsc_type_descriptor_t;
 
