@@ -47,7 +47,7 @@ typedef struct {
 } la_arinc_msg;
 
 la_proto_node *la_arinc_parse(char const *txt, la_msg_dir const msg_dir);
-void la_arinc_format_text(la_vstring * const vstr, void const * const data);
+void la_arinc_format_text(la_vstring * const vstr, void const * const data, int indent);
 extern la_type_descriptor const la_DEF_arinc_message;
 
 #ifdef __cplusplus

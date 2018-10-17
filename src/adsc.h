@@ -179,7 +179,7 @@ typedef struct {
 // adsc.c
 extern la_type_descriptor const la_DEF_adsc_message;
 la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc_imi imi);
-void la_adsc_format_text(la_vstring * const vstr, void const * const data);
+void la_adsc_format_text(la_vstring * const vstr, void const * const data, int indent);
 void la_adsc_destroy(void *data);
 
 #ifdef __cplusplus

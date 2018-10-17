@@ -62,9 +62,10 @@ la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	return node;
 }
 
-void la_cpdlc_format_text(la_vstring *vstr, void const * const data) {
+void la_cpdlc_format_text(la_vstring *vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
+	la_assert(indent >= 0);
 
 	LA_CAST_PTR(msg, la_cpdlc_msg *, data);
 //	if(msg == NULL) {
@@ -72,15 +73,19 @@ void la_cpdlc_format_text(la_vstring *vstr, void const * const data) {
 //		return;
 //	}
 	if(msg->err) {
-		la_vstring_append_sprintf(vstr, "-- Unparseable FANS-1/A message\n");
+		LA_ISPRINTF(vstr, indent, "%s", "-- Unparseable FANS-1/A message\n");
 		return;
 	}
 	if(msg->asn_type != NULL) {
 		if(msg->data != NULL) {
 			if(la_enable_asn1_dumps) {
-				asn_sprintf(vstr, msg->asn_type, msg->data, 1);
+				// asn_fprint does not indent the first line
+				if(indent > 0) {
+					LA_ISPRINTF(vstr, indent * 4, "%s", "");
+				}
+				asn_sprintf(vstr, msg->asn_type, msg->data, indent+1);
 			}
-			la_asn1_output_cpdlc_as_text(vstr, msg->asn_type, msg->data, 0);
+			la_asn1_output_cpdlc_as_text(vstr, msg->asn_type, msg->data, indent);
 //		} else {
 //			la_vstring_append_sprintf(vstr, "%s: <empty PDU>\n", msg->asn_type->name);
 		}

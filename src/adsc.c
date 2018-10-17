@@ -79,8 +79,8 @@ static double la_adsc_parse_distance(uint32_t d) {
 	la_debug_print("result: %f\n", result);
 	return result;
 }
-//FIXME: static
-double la_adsc_parse_heading(uint32_t h) {
+
+static double la_adsc_parse_heading(uint32_t h) {
 // Heading/track format is the same as latitude/longitude
 // except that:
 // - the field is 12-bit long (including sign bit)
@@ -98,7 +98,7 @@ double la_adsc_parse_heading(uint32_t h) {
 	return result;
 }
 
-double la_adsc_parse_wind_dir(uint32_t w) {
+static double la_adsc_parse_wind_dir(uint32_t w) {
 // Wind direction format is the same as latitude/longitude
 // except that:
 // - the field is 9-bit long (including sign bit)
@@ -115,7 +115,7 @@ double la_adsc_parse_wind_dir(uint32_t w) {
 	return result;
 }
 
-double la_adsc_parse_temperature(uint32_t t) {
+static double la_adsc_parse_temperature(uint32_t t) {
 	struct { signed int temp:12; } s;
 	int r = s.temp = (int)t;
 	la_debug_print("r=%d\n", r);
@@ -1408,15 +1408,16 @@ static void la_adsc_output_tag(void const * const p, void *ctx) {
 	}
 }
 
-void la_adsc_format_text(la_vstring * const vstr, void const * const data) {
+void la_adsc_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
+	la_assert(indent >= 0);
 
 	LA_CAST_PTR(msg, la_adsc_msg_t *, data);
 // FIXME: indent should be passed by the caller
 	la_adsc_formatter_ctx_t ctx = {
 		.vstr = vstr,
-		.indent = 1
+		.indent = indent
 	};
 	if(msg->tag_list == NULL) {
 		LA_ISPRINTF(ctx.vstr, ctx.indent, "%s", "-- Empty ADS-C message\n");

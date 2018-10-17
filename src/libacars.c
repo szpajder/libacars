@@ -22,16 +22,17 @@
 #include "vstring.h"
 #include "util.h"		// LA_XCALLOC, LA_XFREE
 
-static void la_proto_node_format_text(la_vstring * const vstr, la_proto_node const * const node) {
+static void la_proto_node_format_text(la_vstring * const vstr, la_proto_node const * const node, int indent) {
+	la_assert(indent >= 0);
 	if(node->data != NULL) {
 		la_assert(node->td);
 		if(node->td->header != NULL) {
-			la_vstring_append_sprintf(vstr, "%s:\n", node->td->header);
+			LA_ISPRINTF(vstr, indent, "%s:\n", node->td->header);
 		}
-		node->td->format_text(vstr, node->data);
+		node->td->format_text(vstr, node->data, indent);
 	}
 	if(node->next != NULL) {
-		la_proto_node_format_text(vstr, node->next);
+		la_proto_node_format_text(vstr, node->next, indent+1);
 	}
 }
 
@@ -46,7 +47,7 @@ la_vstring *la_proto_tree_format_text(la_vstring *vstr, la_proto_node const * co
 	if(vstr == NULL) {
 		vstr = la_vstring_new();
 	}
-	la_proto_node_format_text(vstr, root);
+	la_proto_node_format_text(vstr, root, 0);
 	return vstr;
 }
 

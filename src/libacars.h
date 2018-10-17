@@ -31,7 +31,7 @@ typedef enum {
 	LA_MSG_DIR_AIR2GND
 } la_msg_dir;
 
-typedef void (la_print_type_f)(la_vstring * const vstr, void const * const data);
+typedef void (la_print_type_f)(la_vstring * const vstr, void const * const data, int indent);
 typedef void (la_destroy_type_f)(void *data);
 
 typedef struct {

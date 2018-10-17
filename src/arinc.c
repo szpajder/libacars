@@ -180,12 +180,13 @@ cleanup:
 	return NULL;
 }
 
-void la_arinc_format_text(la_vstring * const vstr, void const * const data) {
+void la_arinc_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
+	la_assert(indent >= 0);
 
 	LA_CAST_PTR(msg, la_arinc_msg *, data);
-	la_vstring_append_sprintf(vstr, "%s%s:\n",
+	LA_ISPRINTF(vstr, indent, "%s%s:\n",
 		imi_props[msg->imi].description, msg->crc_ok ? "" : "(CRC check failed)");
 }
 
