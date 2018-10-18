@@ -1195,7 +1195,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_contract_request) {
 			break;
 		}
 		la_assert(t->type->format != NULL);
-		(*(t->type->format))(ctx, t->type->label, t->data);
+		t->type->format(ctx, t->type->label, t->data);
 	}
 	ctx->indent--;
 }
@@ -1404,7 +1404,7 @@ static void la_adsc_output_tag(void const * const p, void *ctx) {
 		return;
 	}
 	if(t->type->format != NULL) {
-		(*(t->type->format))(c, t->type->label, t->data);
+		t->type->format(c, t->type->label, t->data);
 	}
 }
 
