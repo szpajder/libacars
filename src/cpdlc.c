@@ -102,6 +102,6 @@ void la_cpdlc_destroy(void *data) {
 
 la_type_descriptor const la_DEF_cpdlc_message = {
 	.header = NULL,		// header is the label of the outermost ASN.1 tag
-	.format_text = &la_cpdlc_format_text,
-	.destroy = &la_cpdlc_destroy
+	.format_text = la_cpdlc_format_text,
+	.destroy = la_cpdlc_destroy
 };

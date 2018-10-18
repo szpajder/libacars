@@ -191,8 +191,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 3,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Acknowledgement",
-			.parse = &la_adsc_parse_uint8_t,
-			.format = &la_adsc_format_tag_with_contract_number,
+			.parse = la_adsc_parse_uint8_t,
+			.format = la_adsc_format_tag_with_contract_number,
 			.destroy = NULL
 		}
 	},
@@ -200,8 +200,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 4,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Negative acknowledgement",
-			.parse = &la_adsc_parse_nack,
-			.format = &la_adsc_format_nack,
+			.parse = la_adsc_parse_nack,
+			.format = la_adsc_format_nack,
 			.destroy = NULL
 		}
 	},
@@ -209,9 +209,9 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 5,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Noncompliance notification",
-			.parse = &la_adsc_parse_noncomp_notify,
-			.format = &la_adsc_format_noncomp_notify,
-			.destroy = &la_adsc_destroy_noncomp_notify
+			.parse = la_adsc_parse_noncomp_notify,
+			.format = la_adsc_format_noncomp_notify,
+			.destroy = la_adsc_destroy_noncomp_notify
 		}
 	},
 	{
@@ -219,7 +219,7 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Cancel emergency mode",
 			.parse = NULL,
-			.format = &la_adsc_format_empty_tag,
+			.format = la_adsc_format_empty_tag,
 			.destroy = NULL
 		}
 	},
@@ -227,8 +227,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 7,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Basic report",
-			.parse = &la_adsc_parse_basic_report,
-			.format = &la_adsc_format_basic_report,
+			.parse = la_adsc_parse_basic_report,
+			.format = la_adsc_format_basic_report,
 			.destroy = NULL
 		}
 	},
@@ -236,8 +236,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 9,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Emergency basic report",
-			.parse = &la_adsc_parse_basic_report,
-			.format = &la_adsc_format_basic_report,
+			.parse = la_adsc_parse_basic_report,
+			.format = la_adsc_format_basic_report,
 			.destroy = NULL
 		}
 	},
@@ -245,8 +245,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 10,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Lateral deviation change event",
-			.parse = &la_adsc_parse_basic_report,
-			.format = &la_adsc_format_basic_report,
+			.parse = la_adsc_parse_basic_report,
+			.format = la_adsc_format_basic_report,
 			.destroy = NULL
 		}
 	},
@@ -254,8 +254,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 12,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Flight ID data",
-			.parse = &la_adsc_parse_flight_id,
-			.format = &la_adsc_format_flight_id,
+			.parse = la_adsc_parse_flight_id,
+			.format = la_adsc_format_flight_id,
 			.destroy = NULL
 		}
 	},
@@ -263,8 +263,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 13,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Predicted route",
-			.parse = &la_adsc_parse_predicted_route,
-			.format = &la_adsc_format_predicted_route,
+			.parse = la_adsc_parse_predicted_route,
+			.format = la_adsc_format_predicted_route,
 			.destroy = NULL
 		}
 	},
@@ -272,8 +272,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 14,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Earth reference data",
-			.parse = &la_adsc_parse_earth_air_ref,
-			.format = &la_adsc_format_earth_ref,
+			.parse = la_adsc_parse_earth_air_ref,
+			.format = la_adsc_format_earth_ref,
 			.destroy = NULL
 		}
 	},
@@ -281,8 +281,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 15,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Air reference data",
-			.parse = &la_adsc_parse_earth_air_ref,
-			.format = &la_adsc_format_air_ref,
+			.parse = la_adsc_parse_earth_air_ref,
+			.format = la_adsc_format_air_ref,
 			.destroy = NULL
 		}
 	},
@@ -290,8 +290,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 16,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Meteo data",
-			.parse = &la_adsc_parse_meteo,
-			.format = &la_adsc_format_meteo,
+			.parse = la_adsc_parse_meteo,
+			.format = la_adsc_format_meteo,
 			.destroy = NULL
 		}
 	},
@@ -299,8 +299,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 17,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Airframe ID",
-			.parse = &la_adsc_parse_airframe_id,
-			.format = &la_adsc_format_airframe_id,
+			.parse = la_adsc_parse_airframe_id,
+			.format = la_adsc_format_airframe_id,
 			.destroy = NULL
 		}
 	},
@@ -308,8 +308,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 18,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Vertical rate change event",
-			.parse = &la_adsc_parse_basic_report,
-			.format = &la_adsc_format_basic_report,
+			.parse = la_adsc_parse_basic_report,
+			.format = la_adsc_format_basic_report,
 			.destroy = NULL
 		}
 	},
@@ -317,8 +317,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 19,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Altitude range event",
-			.parse = &la_adsc_parse_basic_report,
-			.format = &la_adsc_format_basic_report,
+			.parse = la_adsc_parse_basic_report,
+			.format = la_adsc_format_basic_report,
 			.destroy = NULL
 		}
 	},
@@ -326,8 +326,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 20,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Waypoint change event",
-			.parse = &la_adsc_parse_basic_report,
-			.format = &la_adsc_format_basic_report,
+			.parse = la_adsc_parse_basic_report,
+			.format = la_adsc_format_basic_report,
 			.destroy = NULL
 		}
 	},
@@ -335,8 +335,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 22,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Intermediate projection",
-			.parse = &la_adsc_parse_intermediate_projection,
-			.format = &la_adsc_format_intermediate_projection,
+			.parse = la_adsc_parse_intermediate_projection,
+			.format = la_adsc_format_intermediate_projection,
 			.destroy = NULL
 		}
 	},
@@ -344,8 +344,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 23,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Fixed projection",
-			.parse = &la_adsc_parse_fixed_projection,
-			.format = &la_adsc_format_fixed_projection,
+			.parse = la_adsc_parse_fixed_projection,
+			.format = la_adsc_format_fixed_projection,
 			.destroy = NULL
 		}
 	},
@@ -353,8 +353,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 255,	// Fake tag for reason code in DIS message
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Reason",
-			.parse = &la_adsc_parse_uint8_t,
-			.format = &la_adsc_format_dis_reason_code,
+			.parse = la_adsc_parse_uint8_t,
+			.format = la_adsc_format_dis_reason_code,
 			.destroy = NULL
 		}
 	},
@@ -918,7 +918,7 @@ static la_dict const la_adsc_uplink_tag_descriptor_table[] = {
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Cancel all contracts and terminate connection",
 			.parse = NULL,
-			.format = &la_adsc_format_empty_tag,
+			.format = la_adsc_format_empty_tag,
 			.destroy = NULL
 		}
 	},
@@ -926,8 +926,8 @@ static la_dict const la_adsc_uplink_tag_descriptor_table[] = {
 		.id = 2,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Cancel contract",
-			.parse = &la_adsc_parse_uint8_t,
-			.format = &la_adsc_format_tag_with_contract_number,
+			.parse = la_adsc_parse_uint8_t,
+			.format = la_adsc_format_tag_with_contract_number,
 			.destroy = NULL
 		}
 	},
@@ -935,8 +935,8 @@ static la_dict const la_adsc_uplink_tag_descriptor_table[] = {
 		.id = 6,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Cancel emergency mode",
-			.parse = &la_adsc_parse_uint8_t,
-			.format = &la_adsc_format_tag_with_contract_number,
+			.parse = la_adsc_parse_uint8_t,
+			.format = la_adsc_format_tag_with_contract_number,
 			.destroy = NULL
 		}
 	},
@@ -944,27 +944,27 @@ static la_dict const la_adsc_uplink_tag_descriptor_table[] = {
 		.id = 7,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Periodic contract request",
-			.parse = &la_adsc_parse_contract_request,
-			.format = &la_adsc_format_contract_request,
-			.destroy = &la_adsc_destroy_contract_request
+			.parse = la_adsc_parse_contract_request,
+			.format = la_adsc_format_contract_request,
+			.destroy = la_adsc_destroy_contract_request
 		}
 	},
 	{
 		.id = 8,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Event contract request",
-			.parse = &la_adsc_parse_contract_request,
-			.format = &la_adsc_format_contract_request,
-			.destroy = &la_adsc_destroy_contract_request
+			.parse = la_adsc_parse_contract_request,
+			.format = la_adsc_format_contract_request,
+			.destroy = la_adsc_destroy_contract_request
 		}
 	},
 	{
 		.id = 9,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Emergency periodic contract request",
-			.parse = &la_adsc_parse_contract_request,
-			.format = &la_adsc_format_contract_request,
-			.destroy = &la_adsc_destroy_contract_request
+			.parse = la_adsc_parse_contract_request,
+			.format = la_adsc_format_contract_request,
+			.destroy = la_adsc_destroy_contract_request
 		}
 	},
 	{
@@ -978,8 +978,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 10,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Report when lateral deviation exceeds",
-			.parse = &la_adsc_parse_lat_dev_change,
-			.format = &la_adsc_format_lat_dev_change,
+			.parse = la_adsc_parse_lat_dev_change,
+			.format = la_adsc_format_lat_dev_change,
 			.destroy = NULL
 		}
 	},
@@ -987,8 +987,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 11,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Reporting interval",
-			.parse = &la_adsc_parse_reporting_interval,
-			.format = &la_adsc_format_reporting_interval,
+			.parse = la_adsc_parse_reporting_interval,
+			.format = la_adsc_format_reporting_interval,
 			.destroy = NULL
 		}
 	},
@@ -996,8 +996,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 12,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Flight ID",
-			.parse = &la_adsc_parse_uint8_t,
-			.format = &la_adsc_format_modulus,
+			.parse = la_adsc_parse_uint8_t,
+			.format = la_adsc_format_modulus,
 			.destroy = NULL
 		}
 	},
@@ -1005,8 +1005,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 13,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Predicted route",
-			.parse = &la_adsc_parse_uint8_t,
-			.format = &la_adsc_format_modulus,
+			.parse = la_adsc_parse_uint8_t,
+			.format = la_adsc_format_modulus,
 			.destroy = NULL
 		}
 	},
@@ -1014,8 +1014,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 14,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Earth reference data",
-			.parse = &la_adsc_parse_uint8_t,
-			.format = &la_adsc_format_modulus,
+			.parse = la_adsc_parse_uint8_t,
+			.format = la_adsc_format_modulus,
 			.destroy = NULL
 		}
 	},
@@ -1023,8 +1023,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 15,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Air reference data",
-			.parse = &la_adsc_parse_uint8_t,
-			.format = &la_adsc_format_modulus,
+			.parse = la_adsc_parse_uint8_t,
+			.format = la_adsc_format_modulus,
 			.destroy = NULL
 		}
 	},
@@ -1032,8 +1032,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 16,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Meteo data",
-			.parse = &la_adsc_parse_uint8_t,
-			.format = &la_adsc_format_modulus,
+			.parse = la_adsc_parse_uint8_t,
+			.format = la_adsc_format_modulus,
 			.destroy = NULL
 		}
 	},
@@ -1041,8 +1041,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 17,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Airframe ID",
-			.parse = &la_adsc_parse_uint8_t,
-			.format = &la_adsc_format_modulus,
+			.parse = la_adsc_parse_uint8_t,
+			.format = la_adsc_format_modulus,
 			.destroy = NULL
 		}
 	},
@@ -1050,8 +1050,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 18,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Report when vertical speed is",
-			.parse = &la_adsc_parse_vspd_change,
-			.format = &la_adsc_format_vspd_change,
+			.parse = la_adsc_parse_vspd_change,
+			.format = la_adsc_format_vspd_change,
 			.destroy = NULL
 		}
 	},
@@ -1059,8 +1059,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 19,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Report when altitude out of range",
-			.parse = &la_adsc_parse_alt_range,
-			.format = &la_adsc_format_alt_range,
+			.parse = la_adsc_parse_alt_range,
+			.format = la_adsc_format_alt_range,
 			.destroy = NULL
 		}
 	},
@@ -1069,7 +1069,7 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Report waypoint changes",
 			.parse = NULL,
-			.format = &la_adsc_format_empty_tag,
+			.format = la_adsc_format_empty_tag,
 			.destroy = NULL
 		}
 	},
@@ -1077,8 +1077,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 21,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Aircraft intent data",
-			.parse = &la_adsc_parse_acft_intent_group,
-			.format = &la_adsc_format_acft_intent_group,
+			.parse = la_adsc_parse_acft_intent_group,
+			.format = la_adsc_format_acft_intent_group,
 			.destroy = NULL
 		}
 	},
@@ -1347,7 +1347,7 @@ la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc
 	int consumed_bytes;
 
 // Uplink and downlink tag values are the same, but their syntax is different.
-// Figure out the la_dictionary to use based on the message direction.
+// Figure out the dictionary to use based on the message direction.
 	static la_dict const *tag_table = NULL;
 	if(msg_dir == LA_MSG_DIR_GND2AIR)
 		tag_table = la_adsc_uplink_tag_descriptor_table;
@@ -1414,7 +1414,6 @@ void la_adsc_format_text(la_vstring * const vstr, void const * const data, int i
 	la_assert(indent >= 0);
 
 	LA_CAST_PTR(msg, la_adsc_msg_t *, data);
-// FIXME: indent should be passed by the caller
 	la_adsc_formatter_ctx_t ctx = {
 		.vstr = vstr,
 		.indent = indent
@@ -1442,6 +1441,6 @@ void la_adsc_destroy(void *data) {
 
 la_type_descriptor const la_DEF_adsc_message = {
 	.header = NULL,
-	.format_text = &la_adsc_format_text,
-	.destroy = &la_adsc_destroy
+	.format_text = la_adsc_format_text,
+	.destroy = la_adsc_destroy
 };
