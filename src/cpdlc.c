@@ -65,10 +65,6 @@ void la_cpdlc_format_text(la_vstring *vstr, void const * const data, int indent)
 	la_assert(indent >= 0);
 
 	LA_CAST_PTR(msg, la_cpdlc_msg *, data);
-//	if(msg == NULL) {
-//		la_vstring_append_sprintf(vstr, "-- NULL FANS-1/A message\n");
-//		return;
-//	}
 	if(msg->err) {
 		LA_ISPRINTF(vstr, indent, "%s", "-- Unparseable FANS-1/A message\n");
 		return;
@@ -83,8 +79,8 @@ void la_cpdlc_format_text(la_vstring *vstr, void const * const data, int indent)
 				asn_sprintf(vstr, msg->asn_type, msg->data, indent+1);
 			}
 			la_asn1_output_cpdlc_as_text(vstr, msg->asn_type, msg->data, indent);
-//		} else {
-//			la_vstring_append_sprintf(vstr, "%s: <empty PDU>\n", msg->asn_type->name);
+		} else {
+			LA_ISPRINTF(vstr, indent, "%s\n", "-- <empty PDU>");
 		}
 	}
 }
