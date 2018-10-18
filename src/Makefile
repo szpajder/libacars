@@ -23,6 +23,7 @@ OBJ =	adsc.o \
 	asn1-util.o \
 	bitstream.o \
 	cpdlc.o \
+	crc_arinc.o \
 	libacars.o \
 	list.o \
 	util.o \
@@ -42,7 +43,7 @@ $(ASN1): asn1 ;
 
 adsc.o: adsc.h arinc.h bitstream.h libacars.h list.h macros.h vstring.h util.h
 
-arinc.o: arinc.h cpdlc.h macros.h vstring.h util.h
+arinc.o: arinc.h cpdlc.h crc_arinc.h macros.h vstring.h util.h
 
 asn1-format-common.o: asn1-util.h macros.h util.h vstring.h
 

@@ -21,11 +21,16 @@
 #include <ctype.h>		// isupper(), isdigit()
 #include <string.h>		// strstr()
 #include "arinc.h"		// la_arinc_msg, LA_ARINC_IMI_CNT
-#include "macros.h"		// la_debug_print
-#include "vstring.h"		// la_vstring_append_sprintf
-#include "util.h"		// la_slurp_hexstring
+#include "crc_arinc.h"		// la_crc16_arinc()
+#include "macros.h"		// la_debug_print()
+#include "vstring.h"		// la_vstring_append_sprintf()
+#include "util.h"		// la_slurp_hexstring()
 #include "adsc.h"		// la_adsc_parse()
 #include "cpdlc.h"		// la_cpdlc_parse()
+
+#define LA_ARINC_IMI_LEN	3
+#define LA_ARINC_AIR_REG_LEN	7
+#define LA_ARINC_CRC_LEN	2
 
 typedef enum {
 	ARINC_APP_TYPE_UNKNOWN = 0,
@@ -123,6 +128,19 @@ complete:
 	return imi_ptr + 1;
 }
 
+static bool la_is_crc_ok(char const * const text_part, uint8_t const * const binary_part, size_t const binary_part_len) {
+// compute CRC over IMI+air_reg+binary_part_with_CRC
+	size_t buflen = LA_ARINC_IMI_LEN + LA_ARINC_AIR_REG_LEN + binary_part_len;
+	uint8_t *buf = LA_XCALLOC(buflen, sizeof(uint8_t));
+	memcpy(buf, text_part, LA_ARINC_IMI_LEN + LA_ARINC_AIR_REG_LEN);
+	memcpy(buf + LA_ARINC_IMI_LEN + LA_ARINC_AIR_REG_LEN, binary_part, binary_part_len);
+	la_debug_print_buf_hex(buf, buflen, "%s", "CRC buffer:\n");
+	bool result = la_check_crc16_arinc(buf, buflen);
+	LA_XFREE(buf);
+	la_debug_print("crc_ok? %d\n", result);
+	return result;
+}
+
 la_proto_node *la_arinc_parse(char const *txt, la_msg_dir const msg_dir) {
 	if(txt == NULL) {
 		return NULL;
@@ -138,19 +156,17 @@ la_proto_node *la_arinc_parse(char const *txt, la_msg_dir const msg_dir) {
 
 	if(imi_props[msg->imi].app_type == ARINC_APP_TYPE_BINARY) {
 		size_t payload_len = strlen(payload);
-		if(payload_len < 3 + 7 + 4) {	// IMI + aircraft regnr + CRC
+		if(payload_len < LA_ARINC_IMI_LEN + LA_ARINC_AIR_REG_LEN + LA_ARINC_CRC_LEN * 2) {
 			la_debug_print("payload too short: %zu\n", payload_len);
 			goto cleanup;
 		}
-		memcpy(msg->air_reg, payload + 3, 7);
-		msg->air_reg[7] = '\0';
+		memcpy(msg->air_reg, payload + LA_ARINC_IMI_LEN, LA_ARINC_AIR_REG_LEN);
+		msg->air_reg[LA_ARINC_AIR_REG_LEN] = '\0';
 		la_debug_print("air_reg: %s\n", msg->air_reg);
-// FIXME: compute CRC
-		msg->crc_ok = true;
-		payload += 10;
 		uint8_t *buf = NULL;
-		size_t buflen = la_slurp_hexstring(payload, &buf);
-		buflen -= 2; // strip CRC
+		size_t buflen = la_slurp_hexstring(payload + LA_ARINC_IMI_LEN + LA_ARINC_AIR_REG_LEN, &buf);
+		msg->crc_ok = la_is_crc_ok(payload, buf, buflen);
+		buflen -= LA_ARINC_CRC_LEN; // strip CRC
 		switch(msg->imi) {
 		case ARINC_MSG_CR1:
 		case ARINC_MSG_CC1:
@@ -186,8 +202,10 @@ void la_arinc_format_text(la_vstring * const vstr, void const * const data, int 
 	la_assert(indent >= 0);
 
 	LA_CAST_PTR(msg, la_arinc_msg *, data);
-	LA_ISPRINTF(vstr, indent, "%s%s:\n",
-		imi_props[msg->imi].description, msg->crc_ok ? "" : "(CRC check failed)");
+	LA_ISPRINTF(vstr, indent, "%s:\n", imi_props[msg->imi].description);
+	if(!msg->crc_ok) {
+		LA_ISPRINTF(vstr, indent + 1, "%s", "-- CRC check failed\n");
+	}
 }
 
 la_type_descriptor const la_DEF_arinc_message = {
