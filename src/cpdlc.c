@@ -27,12 +27,9 @@
 #include "asn1-util.h"				// la_asn1_decode_as()
 #include "asn1-format-cpdlc.h"			// la_asn1_output_cpdlc()
 #include "cpdlc.h"				// la_cpdlc_msg
-#include "libacars.h"				// la_proto_node
+#include "libacars.h"				// la_proto_node, la_config
 #include "util.h"				// la_debug_print(), LA_CAST_PTR
 #include "vstring.h"				// la_vstring, la_vstring_append_sprintf()
-
-// TEMP
-int la_enable_asn1_dumps = 0;
 
 la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	if(buf == NULL)
@@ -78,7 +75,7 @@ void la_cpdlc_format_text(la_vstring *vstr, void const * const data, int indent)
 	}
 	if(msg->asn_type != NULL) {
 		if(msg->data != NULL) {
-			if(la_enable_asn1_dumps) {
+			if(la_config.dump_asn1) {
 				// asn_fprint does not indent the first line
 				if(indent > 0) {
 					LA_ISPRINTF(vstr, indent * 4, "%s", "");

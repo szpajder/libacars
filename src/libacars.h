@@ -19,6 +19,7 @@
 
 #ifndef LA_LIBACARS_H
 #define LA_LIBACARS_H 1
+#include <stdbool.h>
 #include "vstring.h"		// la_vstring
 
 #ifdef __cplusplus
@@ -35,6 +36,10 @@ typedef void (la_print_type_f)(la_vstring * const vstr, void const * const data,
 typedef void (la_destroy_type_f)(void *data);
 
 typedef struct {
+	bool dump_asn1;
+} la_config_struct;
+
+typedef struct {
 	char const * const header;
 	la_print_type_f *format_text;
 	la_destroy_type_f *destroy;
@@ -49,6 +54,7 @@ struct la_proto_node {
 };
 
 // libacars.c
+extern la_config_struct la_config;
 la_proto_node *la_proto_node_new();
 la_vstring *la_proto_tree_format_text(la_vstring *vstr, la_proto_node const * const root);
 void la_proto_tree_destroy(la_proto_node *root);

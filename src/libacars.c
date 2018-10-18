@@ -16,11 +16,15 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include <stdbool.h>
 #include "macros.h"		// la_assert
 #include "libacars.h"		// la_proto_node
 #include "vstring.h"
 #include "util.h"		// LA_XCALLOC, LA_XFREE
+
+la_config_struct la_config = {
+	.dump_asn1 = false
+};
 
 static void la_proto_node_format_text(la_vstring * const vstr, la_proto_node const * const node, int indent) {
 	la_assert(indent >= 0);
