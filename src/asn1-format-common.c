@@ -18,6 +18,7 @@
  */
 
 #include "asn1/asn_application.h"	// asn_TYPE_descriptor_t, asn_sprintf
+#include "asn1/IA5String.h"		// IA5String_t
 #include "asn1/INTEGER.h"		// asn_INTEGER_enum_map_t
 #include "asn1/constr_CHOICE.h"		// _fetch_present_idx()
 #include "asn1/asn_SET_OF.h"		// _A_CSET_FROM_VOID()
@@ -117,6 +118,21 @@ void la_format_SEQUENCE_OF(la_vstring *vstr, char const * const label, asn1_outp
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_any) {
+	if(label != NULL) {
+		LA_ISPRINTF(vstr, indent, "%s: ", label);
+	} else {
+		LA_ISPRINTF(vstr, indent, "%s", "");
+	}
+	asn_sprintf(vstr, td, sptr, 1);
+}
+
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_IA5String) {
+	LA_CAST_PTR(ia5str, IA5String_t *, sptr);
+// replace nulls with periods for printf() to work correctly
+	char *buf = (char *)ia5str->buf;
+	for(int i = 0; i < ia5str->size; i++) {
+		if(buf[i] == '\0') buf[i] = '.';
+	}
 	if(label != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s: ", label);
 	} else {
