@@ -76,6 +76,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	la_acars_msg *msg = LA_XCALLOC(1, sizeof(la_acars_msg));
 	node->data = msg;
 	node->td = &la_DEF_acars_message;
+	uint8_t *buf2 = NULL;
 
 	if(len < LA_ACARS_MIN_LEN) {
 		la_debug_print("too short: %u < %u\n", len, LA_ACARS_MIN_LEN);
@@ -93,37 +94,38 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	len -= 3;
 	msg->crc_ok = (crc == 0);
 
+	buf2 = LA_XCALLOC(len, sizeof(uint8_t));
 	int i = 0;
 	for(i = 0; i < len; i++) {
-		buf[i] &= 0x7f;
+		buf2[i] = buf[i] & 0x7f;
 	}
-	la_debug_print_buf_hex(buf, len, "%s", "Msg data after parity bits removal:\n");
+	la_debug_print_buf_hex(buf2, len, "%s", "Msg data after parity bits removal:\n");
 
 	int k = 0;
-	msg->mode = buf[k++];
+	msg->mode = buf2[k++];
 
 	for (i = 0; i < 7; i++, k++) {
-		msg->reg[i] = buf[k];
+		msg->reg[i] = buf2[k];
 	}
 	msg->reg[7] = '\0';
 
 	/* ACK/NAK */
-	msg->ack = buf[k++];
+	msg->ack = buf2[k++];
 	if (msg->ack == 0x15)
 		msg->ack = '!';
 
-	msg->label[0] = buf[k++];
-	msg->label[1] = buf[k++];
+	msg->label[0] = buf2[k++];
+	msg->label[1] = buf2[k++];
 	if (msg->label[1] == 0x7f)
 		msg->label[1] = 'd';
 	msg->label[2] = '\0';
 
-	msg->block_id = buf[k++];
+	msg->block_id = buf2[k++];
 	if (msg->block_id == 0)
 		msg->block_id = ' ';
 
 	/* txt start  */
-	msg->bs = buf[k++];
+	msg->bs = buf2[k++];
 
 	msg->no[0] = '\0';
 	msg->flight_id[0] = '\0';
@@ -136,13 +138,13 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	if (msg->mode <= 'Z' && msg->block_id <= '9') {
 		/* message no */
 		for (i = 0; i < 4 && k < len; i++, k++) {
-			msg->no[i] = buf[k];
+			msg->no[i] = buf2[k];
 		}
 		msg->no[i] = '\0';
 
 		/* Flight id */
 		for (i = 0; i < 6 && k < len; i++, k++) {
-			msg->flight_id[i] = buf[k];
+			msg->flight_id[i] = buf2[k];
 		}
 		msg->flight_id[i] = '\0';
 	}
@@ -151,7 +153,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	msg->txt = LA_XCALLOC(len + 1, sizeof(char));
 	msg->txt[len] = '\0';
 	if(len > 0) {
-		memcpy(msg->txt, buf + k, len);
+		memcpy(msg->txt, buf2 + k, len);
 // Replace NULLs in text to make it printable
 		for(i = 0; i < len; i++) {
 			if(msg->txt[i] == 0)
@@ -163,6 +165,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 fail:
 	msg->err = 1;
 end:
+	LA_XFREE(buf2);
 	return node;
 }
 
