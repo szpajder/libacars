@@ -16,7 +16,8 @@ LDLIBS = -lm
 SUBDIRS = asn1
 CLEANDIRS = $(SUBDIRS:%=clean-%)
 LIB = libacars.so
-OBJ =	adsc.o \
+OBJ =	acars.o \
+	adsc.o \
 	arinc.o \
 	asn1-format-common.o \
 	asn1-format-cpdlc.o \
@@ -40,6 +41,8 @@ $(LIB): $(DEPS)
 	$(CC) $(LDLIBS) -shared -Wl,-soname,libacars.so.1 -o $@ $(DEPS)
 
 $(ASN1): asn1 ;
+
+acars.o: acars.h arinc.h libacars.h macros.h util.h vstring.h
 
 adsc.o: adsc.h arinc.h bitstream.h libacars.h list.h macros.h vstring.h util.h
 
