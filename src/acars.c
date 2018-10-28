@@ -21,7 +21,8 @@
 #include "libacars.h"			// la_proto_node
 #include "macros.h"			// la_assert()
 #include "arinc.h"			// la_arinc_parse()
-#include "vstring.h"			// la_vstring, LA_ISPRRINTF()
+#include "crc.h"			// la_crc16_ccitt()
+#include "vstring.h"			// la_vstring, LA_ISPRINTF()
 #include "util.h"			// la_debug_print(), LA_CAST_PTR()
 #include "acars.h"
 
@@ -87,8 +88,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	}
 	len--;
 
-// FIXME
-	uint16_t crc = 0; // crc16_ccitt(buf, len, 0);
+	uint16_t crc = la_crc16_ccitt(buf, len, 0);
 	la_debug_print("CRC check result: %04x\n", crc);
 	len -= 3;
 	msg->crc_ok = (crc == 0);

@@ -21,7 +21,7 @@
 #include <ctype.h>		// isupper(), isdigit()
 #include <string.h>		// strstr()
 #include "arinc.h"		// la_arinc_msg, LA_ARINC_IMI_CNT
-#include "crc_arinc.h"		// la_crc16_arinc()
+#include "crc.h"		// la_crc16_arinc()
 #include "macros.h"		// la_debug_print()
 #include "vstring.h"		// la_vstring_append_sprintf()
 #include "util.h"		// la_slurp_hexstring()

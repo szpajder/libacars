@@ -24,7 +24,7 @@ OBJ =	acars.o \
 	asn1-util.o \
 	bitstream.o \
 	cpdlc.o \
-	crc_arinc.o \
+	crc.o \
 	libacars.o \
 	list.o \
 	util.o \
@@ -42,11 +42,11 @@ $(LIB): $(DEPS)
 
 $(ASN1): asn1 ;
 
-acars.o: acars.h arinc.h libacars.h macros.h util.h vstring.h
+acars.o: acars.h arinc.h crc.h libacars.h macros.h util.h vstring.h
 
 adsc.o: adsc.h arinc.h bitstream.h libacars.h list.h macros.h vstring.h util.h
 
-arinc.o: arinc.h cpdlc.h crc_arinc.h macros.h vstring.h util.h
+arinc.o: arinc.h cpdlc.h crc.h macros.h vstring.h util.h
 
 asn1-format-common.o: asn1-util.h macros.h util.h vstring.h
 
