@@ -76,7 +76,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	la_acars_msg *msg = LA_XCALLOC(1, sizeof(la_acars_msg));
 	node->data = msg;
 	node->td = &la_DEF_acars_message;
-	uint8_t *buf2 = NULL;
+	uint8_t *buf2 = LA_XCALLOC(len, sizeof(uint8_t));
 
 	if(len < LA_ACARS_MIN_LEN) {
 		la_debug_print("too short: %u < %u\n", len, LA_ACARS_MIN_LEN);
@@ -94,7 +94,6 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	len -= 3;
 	msg->crc_ok = (crc == 0);
 
-	buf2 = LA_XCALLOC(len, sizeof(uint8_t));
 	int i = 0;
 	for(i = 0; i < len; i++) {
 		buf2[i] = buf[i] & 0x7f;
