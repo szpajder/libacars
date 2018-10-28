@@ -29,7 +29,6 @@
 #define DEL 0x7f
 #define ETX 0x03
 
-
 static la_proto_node *la_try_acars_apps(la_acars_msg const * const msg, la_msg_dir const msg_dir) {
 	la_proto_node *ret = NULL;
 	switch(msg->label[0]) {
@@ -128,10 +127,9 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 
 	msg->no[0] = '\0';
 	msg->flight_id[0] = '\0';
-	msg->txt[0] = '\0';
 
 	if(k >= len || msg->bs == ETX) {	// empty message text
-		msg->txt[0] = '\0';
+		msg->txt = strdup("");
 		goto end;
 	}
 
@@ -150,16 +148,10 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	}
 
 	len -= k;
-// FIXME
-	if(len > LA_ACARS_MSG_BUFSIZE) {
-		la_debug_print("message truncated to buffer size (%u > %u)", len, LA_ACARS_MSG_BUFSIZE);
-		len = LA_ACARS_MSG_BUFSIZE - 1;	// leave space for terminating '\0'
-	}
-	if(len > 0) {
-		memcpy(msg->txt, buf + k, len);
-	}
+	msg->txt = LA_XCALLOC(len + 1, sizeof(char));
 	msg->txt[len] = '\0';
 	if(len > 0) {
+		memcpy(msg->txt, buf + k, len);
 		node->next = la_try_acars_apps(msg, msg_dir);
 	}
 	goto end;
@@ -199,8 +191,17 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 	LA_ISPRINTF(vstr, indent+1, "%s\n", msg->txt);
 }
 
+void la_acars_destroy(void *data) {
+	if(data == NULL) {
+		return;
+	}
+	LA_CAST_PTR(msg, la_acars_msg *, data);
+	LA_XFREE(msg->txt);
+	LA_XFREE(data);
+}
+
 la_type_descriptor const la_DEF_acars_message = {
 	.header = NULL,
 	.format_text = la_acars_format_text,
-	.destroy = NULL
+	.destroy = la_acars_destroy
 };

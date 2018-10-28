@@ -22,7 +22,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <vstring.h>			// la_vstring
-#define LA_ACARS_MSG_BUFSIZE	2048
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,7 +38,7 @@ typedef struct {
 	uint8_t bs;
 	uint8_t no[5];
 	uint8_t flight_id[7];
-	char txt[LA_ACARS_MSG_BUFSIZE];
+	char *txt;
 } la_acars_msg;
 
 // acars.c
