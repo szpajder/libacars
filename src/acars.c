@@ -17,7 +17,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>			// strlen(), memcpy()
+#include <string.h>			// memcpy()
 #include "libacars.h"			// la_proto_node
 #include "macros.h"			// la_assert()
 #include "arinc.h"			// la_arinc_parse()
@@ -152,6 +152,11 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	msg->txt[len] = '\0';
 	if(len > 0) {
 		memcpy(msg->txt, buf + k, len);
+// Replace NULLs in text to make it printable
+		for(i = 0; i < len; i++) {
+			if(msg->txt[i] == 0)
+				msg->txt[i] = '.';
+		}
 		node->next = la_try_acars_apps(msg, msg_dir);
 	}
 	goto end;
@@ -179,14 +184,6 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 	}
 	LA_ISPRINTF(vstr, indent, "Mode: %1c Label: %s Blk id: %c Ack: %c Msg no.: %s\n",
 		msg->mode, msg->label, msg->block_id, msg->ack, msg->no);
-	size_t len = strlen(msg->txt);
-	if(len > 0) {
-// Replace NULLs in text
-		for(size_t p = 0; p < len; p++) {
-			if(msg->txt[p] == 0)
-				msg->txt[p] = '.';
-		}
-	}
 	LA_ISPRINTF(vstr, indent, "%s\n", "Message:");
 	LA_ISPRINTF(vstr, indent+1, "%s\n", msg->txt);
 }
