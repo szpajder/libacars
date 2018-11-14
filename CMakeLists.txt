@@ -27,11 +27,9 @@ set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DDEBUG=0")
 
 include_directories (
 	${PROJECT_SOURCE_DIR}/src
-	"${PROJECT_SOURCE_DIR}/src/asn1"
 )
 
 add_subdirectory (src)
-add_subdirectory (examples)
 
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
