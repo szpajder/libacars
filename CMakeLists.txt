@@ -31,6 +31,7 @@ include_directories (
 )
 
 add_subdirectory (src)
+add_subdirectory (examples)
 
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
