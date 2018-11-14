@@ -520,5 +520,5 @@ clean:
 regen: regenerate-from-asn1-source
 
 regenerate-from-asn1-source:
-	asn1c -fcompound-names -gen-PER fans-cpdlc.asn1
+	asn1c -fcompound-names -fincludes-quoted -gen-PER fans-cpdlc.asn1
 

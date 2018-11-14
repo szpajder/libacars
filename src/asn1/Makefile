@@ -21,7 +21,7 @@ srcclean:
 	rm -f *.c *.h Makefile.am.sample
 
 regen:
-	asn1c -fcompound-names -gen-PER fans-cpdlc.asn1
+	asn1c -fcompound-names -fincludes-quoted -gen-PER fans-cpdlc.asn1
 # enable printing of CHOICE names by asn_print()
 	patch -p0 < patches/print_choice_names.diff
 # silence compiler warnings on missing _DEFAULT_SOURCE
