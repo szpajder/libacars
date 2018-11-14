@@ -32,3 +32,5 @@ regen:
 	patch -p0 < patches/CHOICE_expose__fetch_present_idx.diff
 # replace < > includes with quoted includes in static headers
 	patch -p0 < patches/quoted_includes.diff
+# support for outputting to vstring
+	patch -p0 < patches/asn1_output_to_vstring.diff

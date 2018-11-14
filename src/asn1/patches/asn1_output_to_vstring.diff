@@ -1,10 +1,10 @@
-diff --git a/src/asn1/constr_TYPE.c b/src/asn1/constr_TYPE.c
+diff -u constr_TYPE.c.orig constr_TYPE.c
 index dc3c227..3615a36 100644
---- a/src/asn1/constr_TYPE.c
-+++ b/src/asn1/constr_TYPE.c
+--- constr_TYPE.c.orig
++++ constr_TYPE.c
 @@ -5,6 +5,7 @@
- #include <asn_internal.h>
- #include <constr_TYPE.h>
+ #include "asn_internal.h"
+ #include "constr_TYPE.h"
  #include <errno.h>
 +#include <vstring.h>
  
@@ -41,14 +41,14 @@ index dc3c227..3615a36 100644
  
  /*
   * Some compilers do not support variable args macros.
-diff --git a/src/asn1/constr_TYPE.h b/src/asn1/constr_TYPE.h
+diff -u constr_TYPE.h.orig constr_TYPE.h
 index 908944b..adecc44 100644
---- a/src/asn1/constr_TYPE.h
-+++ b/src/asn1/constr_TYPE.h
+--- constr_TYPE.h.orig
++++ constr_TYPE.h
 @@ -42,6 +42,7 @@ typedef struct asn_struct_ctx_s {
- #include <per_decoder.h>	/* Packet Encoding Rules decoder */
- #include <per_encoder.h>	/* Packet Encoding Rules encoder */
- #include <constraints.h>	/* Subtype constraints support */
+ #include "per_decoder.h"	/* Packet Encoding Rules decoder */
+ #include "per_encoder.h"	/* Packet Encoding Rules encoder */
+ #include "constraints.h"	/* Subtype constraints support */
 +#include <vstring.h>		/* libacars vstring */
  
  /*
