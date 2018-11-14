@@ -331,3 +331,432 @@ diff -u xer_support.h.orig xer_support.h
  
  #ifdef __cplusplus
  extern "C" {
+diff -ur asn_codecs_prim.c.orig asn_codecs_prim.c
+--- asn_codecs_prim.c.orig
++++ asn_codecs_prim.c
+@@ -2,8 +2,8 @@
+  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <asn_codecs_prim.h>
++#include "asn_internal.h"
++#include "asn_codecs_prim.h"
+ #include <errno.h>
+ 
+ /*
+diff -ur asn_SEQUENCE_OF.c.orig asn_SEQUENCE_OF.c
+--- asn_SEQUENCE_OF.c.orig
++++ asn_SEQUENCE_OF.c
+@@ -2,8 +2,8 @@
+  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <asn_SEQUENCE_OF.h>
++#include "asn_internal.h"
++#include "asn_SEQUENCE_OF.h"
+ 
+ typedef A_SEQUENCE_OF(void) asn_sequence;
+ 
+diff -ur asn_SET_OF.c.orig asn_SET_OF.c
+--- asn_SET_OF.c.orig
++++ asn_SET_OF.c
+@@ -2,8 +2,8 @@
+  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <asn_SET_OF.h>
++#include "asn_internal.h"
++#include "asn_SET_OF.h"
+ #include <errno.h>
+ 
+ /*
+diff -ur ber_decoder.c.orig ber_decoder.c
+--- ber_decoder.c.orig
++++ ber_decoder.c
+@@ -2,7 +2,7 @@
+  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
++#include "asn_internal.h"
+ 
+ #undef	ADVANCE
+ #define	ADVANCE(num_bytes)	do {					\
+diff -ur ber_tlv_length.c.orig ber_tlv_length.c
+--- ber_tlv_length.c.orig
++++ ber_tlv_length.c
+@@ -2,9 +2,9 @@
+  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <ber_tlv_length.h>
+-#include <ber_tlv_tag.h>
++#include "asn_internal.h"
++#include "ber_tlv_length.h"
++#include "ber_tlv_tag.h"
+ 
+ ssize_t
+ ber_fetch_length(int _is_constructed, const void *bufptr, size_t size,
+diff -ur ber_tlv_tag.c.orig ber_tlv_tag.c
+--- ber_tlv_tag.c.orig
++++ ber_tlv_tag.c
+@@ -2,8 +2,8 @@
+  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <ber_tlv_tag.h>
++#include "asn_internal.h"
++#include "ber_tlv_tag.h"
+ #include <errno.h>
+ 
+ ssize_t
+diff -ur BIT_STRING.c.orig BIT_STRING.c
+--- BIT_STRING.c.orig
++++ BIT_STRING.c
+@@ -2,9 +2,9 @@
+  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <BIT_STRING.h>
+-#include <asn_internal.h>
++#include "asn_internal.h"
++#include "BIT_STRING.h"
++#include "asn_internal.h"
+ 
+ /*
+  * BIT STRING basic type description.
+diff -ur BOOLEAN.c.orig BOOLEAN.c
+--- BOOLEAN.c.orig
++++ BOOLEAN.c
+@@ -2,9 +2,9 @@
+  * Copyright (c) 2003, 2005 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <asn_codecs_prim.h>
+-#include <BOOLEAN.h>
++#include "asn_internal.h"
++#include "asn_codecs_prim.h"
++#include "BOOLEAN.h"
+ 
+ /*
+  * BOOLEAN basic type description.
+diff -ur constr_CHOICE.c.orig constr_CHOICE.c
+--- constr_CHOICE.c.orig
++++ constr_CHOICE.c
+@@ -3,9 +3,9 @@
+  * All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <constr_CHOICE.h>
+-#include <per_opentype.h>
++#include "asn_internal.h"
++#include "constr_CHOICE.h"
++#include "per_opentype.h"
+ 
+ /*
+  * Number of bytes left for this structure.
+diff -ur constr_SEQUENCE.c.orig constr_SEQUENCE.c
+--- constr_SEQUENCE.c.orig
++++ constr_SEQUENCE.c
+@@ -3,9 +3,9 @@
+  * All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <constr_SEQUENCE.h>
+-#include <per_opentype.h>
++#include "asn_internal.h"
++#include "constr_SEQUENCE.h"
++#include "per_opentype.h"
+ 
+ /*
+  * Number of bytes left for this structure.
+diff -ur constr_SEQUENCE_OF.c.orig constr_SEQUENCE_OF.c
+--- constr_SEQUENCE_OF.c.orig
++++ constr_SEQUENCE_OF.c
+@@ -3,9 +3,9 @@
+  * All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <constr_SEQUENCE_OF.h>
+-#include <asn_SEQUENCE_OF.h>
++#include "asn_internal.h"
++#include "constr_SEQUENCE_OF.h"
++#include "asn_SEQUENCE_OF.h"
+ 
+ /*
+  * The DER encoder of the SEQUENCE OF type.
+diff -ur constr_SET_OF.c.orig constr_SET_OF.c
+--- constr_SET_OF.c.orig
++++ constr_SET_OF.c
+@@ -3,9 +3,9 @@
+  * All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <constr_SET_OF.h>
+-#include <asn_SET_OF.h>
++#include "asn_internal.h"
++#include "constr_SET_OF.h"
++#include "asn_SET_OF.h"
+ 
+ /*
+  * Number of bytes left for this structure.
+diff -ur constr_TYPE.c.orig constr_TYPE.c
+--- constr_TYPE.c.orig
++++ constr_TYPE.c
+@@ -2,8 +2,8 @@
+  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <constr_TYPE.h>
++#include "asn_internal.h"
++#include "constr_TYPE.h"
+ #include <errno.h>
+
+ /*
+diff -ur converter-sample.c.orig converter-sample.c
+--- converter-sample.c.orig
++++ converter-sample.c
+@@ -18,8 +18,8 @@
+ #include <sysexits.h>	/* for EX_* exit codes */
+ #include <errno.h>	/* for errno */
+ 
+-#include <asn_application.h>
+-#include <asn_internal.h>	/* for ASN__DEFAULT_STACK_MAX */
++#include "asn_application.h"
++#include "asn_internal.h"	/* for ASN__DEFAULT_STACK_MAX */
+ 
+ /* Convert "Type" defined by -DPDU into "asn_DEF_Type" */
+ #define	ASN_DEF_PDU(t)	asn_DEF_ ## t
+diff -ur der_encoder.c.orig der_encoder.c
+--- der_encoder.c.orig
++++ der_encoder.c
+@@ -2,7 +2,7 @@
+  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
++#include "asn_internal.h"
+ #include <errno.h>
+ 
+ static ssize_t der_write_TL(ber_tlv_tag_t tag, ber_tlv_len_t len,
+diff -ur IA5String.c.orig IA5String.c
+--- IA5String.c.orig
++++ IA5String.c
+@@ -2,8 +2,8 @@
+  * Copyright (c) 2003 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <IA5String.h>
++#include "asn_internal.h"
++#include "IA5String.h"
+ 
+ /*
+  * IA5String basic type description.
+diff -ur INTEGER.c.orig INTEGER.c
+--- INTEGER.c.orig
++++ INTEGER.c
+@@ -3,9 +3,9 @@
+  * All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <INTEGER.h>
+-#include <asn_codecs_prim.h>	/* Encoder and decoder of a primitive type */
++#include "asn_internal.h"
++#include "INTEGER.h"
++#include "asn_codecs_prim.h"	/* Encoder and decoder of a primitive type */
+ #include <errno.h>
+ 
+ /*
+diff -ur NativeEnumerated.c.orig NativeEnumerated.c
+--- NativeEnumerated.c.orig
++++ NativeEnumerated.c
+@@ -9,8 +9,8 @@
+  * implementation deals with the standard (machine-specific) representation
+  * of them instead of using the platform-independent buffer.
+  */
+-#include <asn_internal.h>
+-#include <NativeEnumerated.h>
++#include "asn_internal.h"
++#include "NativeEnumerated.h"
+ 
+ /*
+  * NativeEnumerated basic type description.
+diff -ur NativeInteger.c.orig NativeInteger.c
+--- NativeInteger.c.orig
++++ NativeInteger.c
+@@ -10,8 +10,8 @@
+  * implementation deals with the standard (machine-specific) representation
+  * of them instead of using the platform-independent buffer.
+  */
+-#include <asn_internal.h>
+-#include <NativeInteger.h>
++#include "asn_internal.h"
++#include "NativeInteger.h"
+ 
+ /*
+  * NativeInteger basic type description.
+diff -ur NULL.c.orig NULL.c
+--- NULL.c.orig
++++ NULL.c
+@@ -2,10 +2,10 @@
+  * Copyright (c) 2003, 2005 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <asn_codecs_prim.h>
+-#include <NULL.h>
+-#include <BOOLEAN.h>	/* Implemented in terms of BOOLEAN type */
++#include "asn_internal.h"
++#include "asn_codecs_prim.h"
++#include "NULL.h"
++#include "BOOLEAN.h"	/* Implemented in terms of BOOLEAN type */
+ 
+ /*
+  * NULL basic type description.
+diff -ur NumericString.c.orig NumericString.c
+--- NumericString.c.orig
++++ NumericString.c
+@@ -2,8 +2,8 @@
+  * Copyright (c) 2003, 2006 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <NumericString.h>
++#include "asn_internal.h"
++#include "NumericString.h"
+ 
+ /*
+  * NumericString basic type description.
+diff -ur OCTET_STRING.c.orig OCTET_STRING.c
+--- OCTET_STRING.c.orig
++++ OCTET_STRING.c
+@@ -3,9 +3,9 @@
+  * All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <OCTET_STRING.h>
+-#include <BIT_STRING.h>	/* for .bits_unused member */
++#include "asn_internal.h"
++#include "OCTET_STRING.h"
++#include "BIT_STRING.h"	/* for .bits_unused member */
+ #include <errno.h>
+ 
+ /*
+Only in asn1/patches: quoted_includes2.diff
+diff -ur per_decoder.c.orig per_decoder.c
+--- per_decoder.c.orig
++++ per_decoder.c
+@@ -1,6 +1,6 @@
+-#include <asn_application.h>
+-#include <asn_internal.h>
+-#include <per_decoder.h>
++#include "asn_application.h"
++#include "asn_internal.h"
++#include "per_decoder.h"
+ 
+ /*
+  * Decode a "Production of a complete encoding", X.691#10.1.
+diff -ur per_encoder.c.orig per_encoder.c
+--- per_encoder.c.orig
++++ per_encoder.c
+@@ -1,6 +1,6 @@
+-#include <asn_application.h>
+-#include <asn_internal.h>
+-#include <per_encoder.h>
++#include "asn_application.h"
++#include "asn_internal.h"
++#include "per_encoder.h"
+ 
+ static asn_enc_rval_t uper_encode_internal(asn_TYPE_descriptor_t *td, asn_per_constraints_t *, void *sptr, asn_app_consume_bytes_f *cb, void *app_key);
+ 
+diff -ur per_opentype.c.orig per_opentype.c
+--- per_opentype.c.orig
++++ per_opentype.c
+@@ -2,10 +2,10 @@
+  * Copyright (c) 2007 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
+-#include <per_support.h>
+-#include <constr_TYPE.h>
+-#include <per_opentype.h>
++#include "asn_internal.h"
++#include "per_support.h"
++#include "constr_TYPE.h"
++#include "per_opentype.h"
+ 
+ typedef struct uper_ugot_key {
+ 	asn_per_data_t oldpd;	/* Old per data source */
+diff -ur per_support.c.orig per_support.c
+--- per_support.c.orig
++++ per_support.c
+@@ -3,9 +3,9 @@
+  * All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_system.h>
+-#include <asn_internal.h>
+-#include <per_support.h>
++#include "asn_system.h"
++#include "asn_internal.h"
++#include "per_support.h"
+ 
+ char *
+ per_data_string(asn_per_data_t *pd) {
+diff -ur xer_decoder.c.orig xer_decoder.c
+--- xer_decoder.c.orig
++++ xer_decoder.c
+@@ -2,9 +2,9 @@
+  * Copyright (c) 2004, 2005 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_application.h>
+-#include <asn_internal.h>
+-#include <xer_support.h>		/* XER/XML parsing support */
++#include "asn_application.h"
++#include "asn_internal.h"
++#include "xer_support.h"		/* XER/XML parsing support */
+ 
+ 
+ /*
+diff -ur xer_encoder.c.orig xer_encoder.c
+--- xer_encoder.c.orig
++++ xer_encoder.c
+@@ -2,7 +2,7 @@
+  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_internal.h>
++#include "asn_internal.h"
+ #include <stdio.h>
+ #include <errno.h>
+ 
+diff -ur xer_support.c.orig xer_support.c
+--- xer_support.c.orig
++++ xer_support.c
+@@ -4,8 +4,8 @@
+  * 	All rights reserved.
+  * Redistribution and modifications are permitted subject to BSD license.
+  */
+-#include <asn_system.h>
+-#include <xer_support.h>
++#include "asn_system.h"
++#include "xer_support.h"
+ 
+ /* Parser states */
+ typedef enum {

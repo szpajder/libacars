@@ -49,7 +49,7 @@ index 908944b..adecc44 100644
  #include "per_decoder.h"	/* Packet Encoding Rules decoder */
  #include "per_encoder.h"	/* Packet Encoding Rules encoder */
  #include "constraints.h"	/* Subtype constraints support */
-+#include <vstring.h>		/* libacars vstring */
++#include <libacars/vstring.h>	/* libacars vstring */
  
  /*
   * Free the structure according to its specification.
