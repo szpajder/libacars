@@ -30,3 +30,5 @@ regen:
 	patch -p0 < patches/asn_fprint_parameterized_indentation.diff
 # expose _fetch_present_idx from constr_CHOICE.c
 	patch -p0 < patches/CHOICE_expose__fetch_present_idx.diff
+# replace < > includes with quoted includes in static headers
+	patch -p0 < patches/quoted_includes.diff

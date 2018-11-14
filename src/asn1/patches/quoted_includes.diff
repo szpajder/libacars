@@ -1,0 +1,333 @@
+diff -u BIT_STRING.h.orig BIT_STRING.h
+--- BIT_STRING.h.orig
++++ BIT_STRING.h
+@@ -5,7 +5,7 @@
+ #ifndef	_BIT_STRING_H_
+ #define	_BIT_STRING_H_
+ 
+-#include <OCTET_STRING.h>	/* Some help from OCTET STRING */
++#include "OCTET_STRING.h"	/* Some help from OCTET STRING */
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u BOOLEAN.h.orig BOOLEAN.h
+--- BOOLEAN.h.orig
++++ BOOLEAN.h
+@@ -5,7 +5,7 @@
+ #ifndef	_BOOLEAN_H_
+ #define	_BOOLEAN_H_
+ 
+-#include <asn_application.h>
++#include "asn_application.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u IA5String.h.orig IA5String.h
+--- IA5String.h.orig
++++ IA5String.h
+@@ -5,7 +5,7 @@
+ #ifndef	_IA5String_H_
+ #define	_IA5String_H_
+ 
+-#include <OCTET_STRING.h>
++#include "OCTET_STRING.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u INTEGER.h.orig INTEGER.h
+--- INTEGER.h.orig
++++ INTEGER.h
+@@ -5,8 +5,8 @@
+ #ifndef	_INTEGER_H_
+ #define	_INTEGER_H_
+ 
+-#include <asn_application.h>
+-#include <asn_codecs_prim.h>
++#include "asn_application.h"
++#include "asn_codecs_prim.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u NULL.h.orig NULL.h
+--- NULL.h.orig
++++ NULL.h
+@@ -5,7 +5,7 @@
+ #ifndef	ASN_TYPE_NULL_H
+ #define	ASN_TYPE_NULL_H
+ 
+-#include <asn_application.h>
++#include "asn_application.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u NativeEnumerated.h.orig NativeEnumerated.h
+--- NativeEnumerated.h.orig
++++ NativeEnumerated.h
+@@ -13,7 +13,7 @@
+ #ifndef	_NativeEnumerated_H_
+ #define	_NativeEnumerated_H_
+ 
+-#include <NativeInteger.h>
++#include "NativeInteger.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u NativeInteger.h.orig NativeInteger.h
+--- NativeInteger.h.orig
++++ NativeInteger.h
+@@ -12,8 +12,8 @@
+ #ifndef	_NativeInteger_H_
+ #define	_NativeInteger_H_
+ 
+-#include <asn_application.h>
+-#include <INTEGER.h>
++#include "asn_application.h"
++#include "INTEGER.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u NumericString.h.orig NumericString.h
+--- NumericString.h.orig
++++ NumericString.h
+@@ -5,7 +5,7 @@
+ #ifndef	_NumericString_H_
+ #define	_NumericString_H_
+ 
+-#include <OCTET_STRING.h>
++#include "OCTET_STRING.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u OCTET_STRING.h.orig OCTET_STRING.h
+--- OCTET_STRING.h.orig
++++ OCTET_STRING.h
+@@ -5,7 +5,7 @@
+ #ifndef	_OCTET_STRING_H_
+ #define	_OCTET_STRING_H_
+ 
+-#include <asn_application.h>
++#include "asn_application.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u asn_SEQUENCE_OF.h.orig asn_SEQUENCE_OF.h
+--- asn_SEQUENCE_OF.h.orig
++++ asn_SEQUENCE_OF.h
+@@ -5,7 +5,7 @@
+ #ifndef	ASN_SEQUENCE_OF_H
+ #define	ASN_SEQUENCE_OF_H
+ 
+-#include <asn_SET_OF.h>
++#include "asn_SET_OF.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u asn_codecs_prim.h.orig asn_codecs_prim.h
+--- asn_codecs_prim.h.orig
++++ asn_codecs_prim.h
+@@ -5,7 +5,7 @@
+ #ifndef	ASN_CODECS_PRIM_H
+ #define	ASN_CODECS_PRIM_H
+ 
+-#include <asn_application.h>
++#include "asn_application.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u ber_decoder.h.orig ber_decoder.h
+--- ber_decoder.h.orig
++++ ber_decoder.h
+@@ -5,7 +5,7 @@
+ #ifndef	_BER_DECODER_H_
+ #define	_BER_DECODER_H_
+ 
+-#include <asn_application.h>
++#include "asn_application.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u constr_CHOICE.h.orig constr_CHOICE.h
+--- constr_CHOICE.h.orig
++++ constr_CHOICE.h
+@@ -6,7 +6,7 @@
+ #ifndef	_CONSTR_CHOICE_H_
+ #define	_CONSTR_CHOICE_H_
+ 
+-#include <asn_application.h>
++#include "asn_application.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u constr_SEQUENCE.h.orig constr_SEQUENCE.h
+--- constr_SEQUENCE.h.orig
++++ constr_SEQUENCE.h
+@@ -5,7 +5,7 @@
+ #ifndef	_CONSTR_SEQUENCE_H_
+ #define	_CONSTR_SEQUENCE_H_
+ 
+-#include <asn_application.h>
++#include "asn_application.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u constr_SEQUENCE_OF.h.orig constr_SEQUENCE_OF.h
+--- constr_SEQUENCE_OF.h.orig
++++ constr_SEQUENCE_OF.h
+@@ -5,8 +5,8 @@
+ #ifndef	_CONSTR_SEQUENCE_OF_H_
+ #define	_CONSTR_SEQUENCE_OF_H_
+ 
+-#include <asn_application.h>
+-#include <constr_SET_OF.h>		/* Implemented using SET OF */
++#include "asn_application.h"
++#include "constr_SET_OF.h"		/* Implemented using SET OF */
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u constr_SET_OF.h.orig constr_SET_OF.h
+--- constr_SET_OF.h.orig
++++ constr_SET_OF.h
+@@ -5,7 +5,7 @@
+ #ifndef	_CONSTR_SET_OF_H_
+ #define	_CONSTR_SET_OF_H_
+ 
+-#include <asn_application.h>
++#include "asn_application.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u constr_TYPE.h.orig constr_TYPE.h
+--- constr_TYPE.h.orig
++++ constr_TYPE.h
+@@ -12,8 +12,8 @@
+ #ifndef	_CONSTR_TYPE_H_
+ #define	_CONSTR_TYPE_H_
+ 
+-#include <ber_tlv_length.h>
+-#include <ber_tlv_tag.h>
++#include "ber_tlv_length.h"
++#include "ber_tlv_tag.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+@@ -35,13 +35,13 @@ typedef struct asn_struct_ctx_s {
+ 	ber_tlv_len_t left;	/* Number of bytes left, -1 for indefinite */
+ } asn_struct_ctx_t;
+ 
+-#include <ber_decoder.h>	/* Basic Encoding Rules decoder */
+-#include <der_encoder.h>	/* Distinguished Encoding Rules encoder */
+-#include <xer_decoder.h>	/* Decoder of XER (XML, text) */
+-#include <xer_encoder.h>	/* Encoder into XER (XML, text) */
+-#include <per_decoder.h>	/* Packet Encoding Rules decoder */
+-#include <per_encoder.h>	/* Packet Encoding Rules encoder */
+-#include <constraints.h>	/* Subtype constraints support */
++#include "ber_decoder.h"	/* Basic Encoding Rules decoder */
++#include "der_encoder.h"	/* Distinguished Encoding Rules encoder */
++#include "xer_decoder.h"	/* Decoder of XER (XML, text) */
++#include "xer_encoder.h"	/* Encoder into XER (XML, text) */
++#include "per_decoder.h"	/* Packet Encoding Rules decoder */
++#include "per_encoder.h"	/* Packet Encoding Rules encoder */
++#include "constraints.h"	/* Subtype constraints support */
+ 
+ /*
+  * Free the structure according to its specification.
+diff -u constraints.h.orig constraints.h
+--- constraints.h.orig
++++ constraints.h
+@@ -5,7 +5,7 @@
+ #ifndef	ASN1_CONSTRAINTS_VALIDATOR_H
+ #define	ASN1_CONSTRAINTS_VALIDATOR_H
+ 
+-#include <asn_system.h>		/* Platform-dependent types */
++#include "asn_system.h"		/* Platform-dependent types */
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u der_encoder.h.orig der_encoder.h
+--- der_encoder.h.orig
++++ der_encoder.h
+@@ -5,7 +5,7 @@
+ #ifndef	_DER_ENCODER_H_
+ #define	_DER_ENCODER_H_
+ 
+-#include <asn_application.h>
++#include "asn_application.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u per_decoder.h.orig per_decoder.h
+--- per_decoder.h.orig
++++ per_decoder.h
+@@ -5,8 +5,8 @@
+ #ifndef	_PER_DECODER_H_
+ #define	_PER_DECODER_H_
+ 
+-#include <asn_application.h>
+-#include <per_support.h>
++#include "asn_application.h"
++#include "per_support.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u per_encoder.h.orig per_encoder.h
+--- per_encoder.h.orig
++++ per_encoder.h
+@@ -5,8 +5,8 @@
+ #ifndef	_PER_ENCODER_H_
+ #define	_PER_ENCODER_H_
+ 
+-#include <asn_application.h>
+-#include <per_support.h>
++#include "asn_application.h"
++#include "per_support.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u per_support.h.orig per_support.h
+--- per_support.h.orig
++++ per_support.h
+@@ -6,7 +6,7 @@
+ #ifndef	_PER_SUPPORT_H_
+ #define	_PER_SUPPORT_H_
+ 
+-#include <asn_system.h>		/* Platform-specific types */
++#include "asn_system.h"		/* Platform-specific types */
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u xer_decoder.h.orig xer_decoder.h
+--- xer_decoder.h.orig
++++ xer_decoder.h
+@@ -5,7 +5,7 @@
+ #ifndef	_XER_DECODER_H_
+ #define	_XER_DECODER_H_
+ 
+-#include <asn_application.h>
++#include "asn_application.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u xer_encoder.h.orig xer_encoder.h
+--- xer_encoder.h.orig
++++ xer_encoder.h
+@@ -5,7 +5,7 @@
+ #ifndef	_XER_ENCODER_H_
+ #define	_XER_ENCODER_H_
+ 
+-#include <asn_application.h>
++#include "asn_application.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -u xer_support.h.orig xer_support.h
+--- xer_support.h.orig
++++ xer_support.h
+@@ -6,7 +6,7 @@
+ #ifndef	_XER_SUPPORT_H_
+ #define	_XER_SUPPORT_H_
+ 
+-#include <asn_system.h>		/* Platform-specific types */
++#include "asn_system.h"		/* Platform-specific types */
+ 
+ #ifdef __cplusplus
+ extern "C" {
