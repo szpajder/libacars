@@ -525,20 +525,6 @@ diff -ur constr_TYPE.c.orig constr_TYPE.c
  #include <errno.h>
 
  /*
-diff -ur converter-sample.c.orig converter-sample.c
---- converter-sample.c.orig
-+++ converter-sample.c
-@@ -18,8 +18,8 @@
- #include <sysexits.h>	/* for EX_* exit codes */
- #include <errno.h>	/* for errno */
- 
--#include <asn_application.h>
--#include <asn_internal.h>	/* for ASN__DEFAULT_STACK_MAX */
-+#include "asn_application.h"
-+#include "asn_internal.h"	/* for ASN__DEFAULT_STACK_MAX */
- 
- /* Convert "Type" defined by -DPDU into "asn_DEF_Type" */
- #define	ASN_DEF_PDU(t)	asn_DEF_ ## t
 diff -ur der_encoder.c.orig der_encoder.c
 --- der_encoder.c.orig
 +++ der_encoder.c
