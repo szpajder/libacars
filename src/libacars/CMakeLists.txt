@@ -14,7 +14,7 @@ add_library(acars SHARED
 	util.c
 	vstring.c
 )
-target_link_libraries (acars asn1)
+target_link_libraries (acars asn1 m)
 set_property (TARGET acars PROPERTY SOVERSION ${LIBACARS_VERSION_MAJOR})
 
 configure_file(
