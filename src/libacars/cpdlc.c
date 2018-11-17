@@ -27,7 +27,7 @@
 #include <libacars/asn1-util.h>				// la_asn1_decode_as()
 #include <libacars/asn1-format-cpdlc.h>			// la_asn1_output_cpdlc()
 #include <libacars/cpdlc.h>				// la_cpdlc_msg
-#include <libacars/libacars.h>				// la_proto_node, la_config
+#include <libacars/libacars.h>				// la_proto_node, la_config, la_proto_tree_find_protocol
 #include <libacars/util.h>				// la_debug_print(), LA_CAST_PTR
 #include <libacars/vstring.h>				// la_vstring, la_vstring_append_sprintf()
 
@@ -101,3 +101,7 @@ la_type_descriptor const la_DEF_cpdlc_message = {
 	.format_text = la_cpdlc_format_text,
 	.destroy = la_cpdlc_destroy
 };
+
+la_proto_node *la_proto_tree_find_cpdlc(la_proto_node *root) {
+	return la_proto_tree_find_protocol(root, &la_DEF_cpdlc_message);
+}

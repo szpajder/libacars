@@ -21,6 +21,7 @@
 #define LA_ACARS_H 1
 #include <stdint.h>
 #include <stdbool.h>
+#include <libacars/libacars.h>			// la_proto_node, la_type_descriptor
 #include <libacars/vstring.h>			// la_vstring
 
 #ifdef __cplusplus
@@ -45,6 +46,7 @@ typedef struct {
 extern la_type_descriptor const la_DEF_acars_message;
 la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir);
 void la_acars_format_text(la_vstring *vstr, void const * const data, int indent);
+la_proto_node *la_proto_tree_find_acars(la_proto_node *root);
 #ifdef __cplusplus
 }
 #endif

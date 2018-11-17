@@ -58,6 +58,7 @@ extern la_config_struct la_config;
 la_proto_node *la_proto_node_new();
 la_vstring *la_proto_tree_format_text(la_vstring *vstr, la_proto_node const * const root);
 void la_proto_tree_destroy(la_proto_node *root);
+la_proto_node *la_proto_tree_find_protocol(la_proto_node *root, la_type_descriptor const * const td);
 
 #ifdef __cplusplus
 }

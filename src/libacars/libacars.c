@@ -69,3 +69,13 @@ void la_proto_tree_destroy(la_proto_node *root) {
 	}
 	LA_XFREE(root);
 }
+
+la_proto_node *la_proto_tree_find_protocol(la_proto_node *root, la_type_descriptor const * const td) {
+	while(root != NULL) {
+		if(root->td == td) {
+			return root;
+		}
+		root = root->next;
+	}
+	return NULL;
+}

@@ -22,7 +22,7 @@
 #include <math.h>
 #include <libacars/macros.h>		// la_debug_print, LA_CAST_PTR
 #include <libacars/bitstream.h>		// la_bitstream_*
-#include <libacars/libacars.h>		// la_msg_dir
+#include <libacars/libacars.h>		// la_msg_dir, la_proto_node, la_proto_tree_find_protocol
 #include <libacars/arinc.h>		// la_arinc_imi
 #include <libacars/list.h>		// la_list_*
 #include <libacars/util.h>		// la_dict, la_dict_search(), LA_XCALLOC, LA_XFREE
@@ -1444,3 +1444,7 @@ la_type_descriptor const la_DEF_adsc_message = {
 	.format_text = la_adsc_format_text,
 	.destroy = la_adsc_destroy
 };
+
+la_proto_node *la_proto_tree_find_adsc(la_proto_node *root) {
+	return la_proto_tree_find_protocol(root, &la_DEF_adsc_message);
+}

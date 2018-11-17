@@ -21,6 +21,7 @@
 #define LA_ADSC_H 1
 
 #include <stdint.h>
+#include <libacars/libacars.h>	// la_proto_node, la_type_descriptor
 #include <libacars/arinc.h>	// la_arinc_imi
 #include <libacars/list.h>	// la_list
 #include <libacars/vstring.h>	// la_vstring
@@ -181,6 +182,7 @@ extern la_type_descriptor const la_DEF_adsc_message;
 la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc_imi imi);
 void la_adsc_format_text(la_vstring * const vstr, void const * const data, int indent);
 void la_adsc_destroy(void *data);
+la_proto_node *la_proto_tree_find_adsc(la_proto_node *root);
 
 #ifdef __cplusplus
 }

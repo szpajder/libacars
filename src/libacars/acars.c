@@ -18,7 +18,7 @@
  */
 
 #include <string.h>				// memcpy()
-#include <libacars/libacars.h>			// la_proto_node
+#include <libacars/libacars.h>			// la_proto_node, la_proto_tree_find_protocol
 #include <libacars/macros.h>			// la_assert()
 #include <libacars/arinc.h>			// la_arinc_parse()
 #include <libacars/crc.h>			// la_crc16_ccitt()
@@ -209,3 +209,7 @@ la_type_descriptor const la_DEF_acars_message = {
 	.format_text = la_acars_format_text,
 	.destroy = la_acars_destroy
 };
+
+la_proto_node *la_proto_tree_find_acars(la_proto_node *root) {
+	return la_proto_tree_find_protocol(root, &la_DEF_acars_message);
+}

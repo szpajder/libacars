@@ -20,6 +20,7 @@
 #include <stdbool.h>
 #include <ctype.h>			// isupper(), isdigit()
 #include <string.h>			// strstr()
+#include <libacars/libacars.h>		// la_proto_node, la_proto_tree_find_protocol
 #include <libacars/arinc.h>		// la_arinc_msg, LA_ARINC_IMI_CNT
 #include <libacars/crc.h>		// la_crc16_arinc()
 #include <libacars/macros.h>		// la_debug_print()
@@ -213,3 +214,7 @@ la_type_descriptor const la_DEF_arinc_message = {
 	.format_text = la_arinc_format_text,
 	.destroy = NULL
 };
+
+la_proto_node *la_proto_tree_find_arinc(la_proto_node *root) {
+	return la_proto_tree_find_protocol(root, &la_DEF_arinc_message);
+}
