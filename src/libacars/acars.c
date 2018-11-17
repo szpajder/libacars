@@ -187,7 +187,12 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 	LA_ISPRINTF(vstr, indent, "Mode: %1c Label: %s Blk id: %c Ack: %c Msg no.: %s\n",
 		msg->mode, msg->label, msg->block_id, msg->ack, msg->no);
 	LA_ISPRINTF(vstr, indent, "%s\n", "Message:");
-	LA_ISPRINTF(vstr, indent+1, "%s\n", msg->txt);
+// Indent multi-line messages properly
+	char *line = msg->txt, *next_line = NULL;
+	while((line = strtok_r(line, "\n", &next_line)) != NULL) {
+		LA_ISPRINTF(vstr, indent+1, "%s\n", line);
+		line = next_line;
+	}
 }
 
 void la_acars_destroy(void *data) {
