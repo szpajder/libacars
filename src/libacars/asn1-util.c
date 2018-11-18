@@ -40,8 +40,9 @@ int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t *buf
 		la_debug_print("uper_decode_complete left %zd unparsed octets\n", size - rval.consumed);
 		return size - rval.consumed;
 	}
-	if(DEBUG)
-		asn_fprint(stderr, td, *struct_ptr, 1);
+#ifdef DEBUG
+	asn_fprint(stderr, td, *struct_ptr, 1);
+#endif
 	return 0;
 }
 
