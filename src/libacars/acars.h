@@ -30,15 +30,15 @@ extern "C" {
 
 typedef struct {
 	bool crc_ok;
-	int err;
-	uint8_t mode;
-	uint8_t reg[8];
-	uint8_t ack;
-	uint8_t label[3];
-	uint8_t block_id;
-	uint8_t bs;
-	uint8_t no[5];
-	uint8_t flight_id[7];
+	bool err;
+	char mode;
+	char reg[8];
+	char ack;
+	char label[3];
+	char block_id;
+	char bs;
+	char no[5];
+	char flight_id[7];
 	char *txt;
 } la_acars_msg;
 
