@@ -38,11 +38,33 @@ typedef void (la_destroy_type_f)(void *data);
 
 typedef struct {
 	bool dump_asn1;
+// padding for ABI compatibility
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
+	void (*reserved4)(void);
+	void (*reserved5)(void);
+	void (*reserved6)(void);
+	void (*reserved7)(void);
+	void (*reserved8)(void);
+	void (*reserved9)(void);
 } la_config_struct;
 
 typedef struct {
 	la_print_type_f *format_text;
 	la_destroy_type_f *destroy;
+// padding for ABI compatibility
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
+	void (*reserved4)(void);
+	void (*reserved5)(void);
+	void (*reserved6)(void);
+	void (*reserved7)(void);
+	void (*reserved8)(void);
+	void (*reserved9)(void);
 } la_type_descriptor;
 
 typedef struct la_proto_node la_proto_node;
@@ -51,6 +73,11 @@ struct la_proto_node {
 	la_type_descriptor const *td;
 	void *data;
 	la_proto_node *next;
+// padding for ABI compatibility
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
 };
 
 // libacars.c
