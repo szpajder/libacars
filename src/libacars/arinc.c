@@ -210,7 +210,6 @@ void la_arinc_format_text(la_vstring * const vstr, void const * const data, int 
 }
 
 la_type_descriptor const la_DEF_arinc_message = {
-	.header = NULL,
 	.format_text = la_arinc_format_text,
 	.destroy = NULL
 };

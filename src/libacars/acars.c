@@ -207,7 +207,6 @@ void la_acars_destroy(void *data) {
 }
 
 la_type_descriptor const la_DEF_acars_message = {
-	.header = NULL,
 	.format_text = la_acars_format_text,
 	.destroy = la_acars_destroy
 };

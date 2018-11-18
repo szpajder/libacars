@@ -41,7 +41,6 @@ typedef struct {
 } la_config_struct;
 
 typedef struct {
-	char const * const header;
 	la_print_type_f *format_text;
 	la_destroy_type_f *destroy;
 } la_type_descriptor;

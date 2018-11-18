@@ -1440,7 +1440,6 @@ void la_adsc_destroy(void *data) {
 }
 
 la_type_descriptor const la_DEF_adsc_message = {
-	.header = NULL,
 	.format_text = la_adsc_format_text,
 	.destroy = la_adsc_destroy
 };

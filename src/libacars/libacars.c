@@ -30,9 +30,6 @@ static void la_proto_node_format_text(la_vstring * const vstr, la_proto_node con
 	la_assert(indent >= 0);
 	if(node->data != NULL) {
 		la_assert(node->td);
-		if(node->td->header != NULL) {
-			LA_ISPRINTF(vstr, indent, "%s:\n", node->td->header);
-		}
 		node->td->format_text(vstr, node->data, indent);
 	}
 	if(node->next != NULL) {
