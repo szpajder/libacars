@@ -533,7 +533,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_flight_id) {
 		return -1;
 	}
 	uint32_t tmp = 0;
-	for(int i = 0; i < sizeof(f->id) - 1; i++) {
+	for(size_t i = 0; i < sizeof(f->id) - 1; i++) {
 // ISO5 alphabet on 6 bits, valid characters: A-Z, 0-9, space
 // (00) 10 0000 - space
 // (01) 0x xxxx - A-Z
@@ -754,6 +754,8 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_dis_reason_code) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_noncomp_group) {
+// -Wunused-parameter
+	(void)label;
 	LA_CAST_PTR(g, la_adsc_noncomp_group_t *, data);
 
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Tag %u:\n", g->noncomp_tag);
@@ -1124,6 +1126,8 @@ static void la_adsc_destroy_contract_request(void *data) {
  ****************/
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_empty_tag) {
+// -Wunused-parameter
+	(void)data;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s\n", label);
 }
 

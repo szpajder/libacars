@@ -37,6 +37,5 @@ LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_any);
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_IA5String);
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_NULL);
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_ENUM);
-LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_Deg);
 
 #endif // !LA_ASN1_FORMAT_COMMON_H

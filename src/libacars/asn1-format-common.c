@@ -36,6 +36,8 @@ char const *la_value2enum(asn_TYPE_descriptor_t *td, long const value) {
 
 void la_format_INTEGER_with_unit(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td,
 	void const *sptr, int indent, char const * const unit, double multiplier, int decimal_places) {
+// -Wunused-parameter
+	(void)td;
 	LA_CAST_PTR(val, long *, sptr);
 	LA_ISPRINTF(vstr, indent, "%s: %.*f%s\n", label, decimal_places, (double)(*val) * multiplier, unit);
 }
@@ -142,6 +144,12 @@ LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_IA5String) {
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_NULL) {
+// -Wunused-parameter
+	(void)vstr;
+	(void)label;
+	(void)td;
+	(void)sptr;
+	(void)indent;
 	// NOOP
 }
 
@@ -153,8 +161,4 @@ LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_ENUM) {
 	} else {
 		LA_ISPRINTF(vstr, indent, "%s: %ld\n", label, value);
 	}
-}
-
-LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_Deg) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " deg", 1, 0);
 }

@@ -380,6 +380,10 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSAltitudeFlightLevelMe
 	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " m", 10, 0);
 }
 
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_Degrees) {
+	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " deg", 1, 0);
+}
+
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSDistanceOffsetNm) {
 	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " nm", 1, 0);
 }
@@ -453,6 +457,8 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSVerticalRateMetric) {
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSBeaconCode) {
+// -Wunused-parameter
+	(void)td;
 	LA_CAST_PTR(code, FANSBeaconCode_t *, sptr);
 	long **cptr = code->list.array;
 	LA_ISPRINTF(vstr, indent, "%s: %ld%ld%ld%ld\n",
@@ -465,16 +471,22 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSBeaconCode) {
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSTime) {
+// -Wunused-parameter
+	(void)td;
 	LA_CAST_PTR(t, FANSTime_t *, sptr);
 	LA_ISPRINTF(vstr, indent, "%s: %02ld:%02ld\n", label, t->hours, t->minutes);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSTimestamp) {
+// -Wunused-parameter
+	(void)td;
 	LA_CAST_PTR(t, FANSTimestamp_t *, sptr);
 	LA_ISPRINTF(vstr, indent, "%s: %02ld:%02ld:%02ld\n", label, t->hours, t->minutes, t->seconds);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLatitude) {
+// -Wunused-parameter
+	(void)td;
 	LA_CAST_PTR(lat, FANSLatitude_t *, sptr);
 	long const ldir = lat->latitudeDirection;
 	char const *ldir_name = la_value2enum(&asn_DEF_FANSLatitudeDirection, ldir);
@@ -495,6 +507,8 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLatitude) {
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLongitude) {
+// -Wunused-parameter
+	(void)td;
 	LA_CAST_PTR(lat, FANSLongitude_t *, sptr);
 	long const ldir = lat->longitudeDirection;
 	char const *ldir_name = la_value2enum(&asn_DEF_FANSLongitudeDirection, ldir);
@@ -521,6 +535,8 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLongitude) {
 // the label to be printed for each element in the sequence). The same applies
 // to la_asn1_format_text_FANSATCDownlinkMessage.
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCUplinkMessage) {
+// -Wunused-parameter
+	(void)td;
 	LA_CAST_PTR(msg, FANSATCUplinkMessage_t *, sptr);
 	if(label != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s:\n", label);
@@ -536,6 +552,8 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCUplinkMessage) {
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCDownlinkMessage) {
+// -Wunused-parameter
+	(void)td;
 	LA_CAST_PTR(msg, FANSATCDownlinkMessage_t *, sptr);
 	if(label != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s:\n", label);
@@ -604,10 +622,10 @@ static la_asn_formatter const la_asn1_cpdlc_formatter_table[] = {
 	{ .type = &asn_DEF_FANSCOMNAVApproachEquipmentAvailable, .format = la_asn1_format_text_any, .label = "COMM/NAV/Approach equipment available" },
 	{ .type = &asn_DEF_FANSCOMNAVEquipmentStatus, .format = la_asn1_format_text_ENUM, .label = "COMM/NAV equipment status" },
 	{ .type = &asn_DEF_FANSCOMNAVEquipmentStatusSequence, .format = la_asn1_format_text_SEQUENCE_OF_cpdlc, .label = "COMM/NAV Equipment status list" },
-	{ .type = &asn_DEF_FANSDegreeIncrement, .format = la_asn1_format_text_Deg, .label = "Degree increment" },
+	{ .type = &asn_DEF_FANSDegreeIncrement, .format = la_asn1_format_text_Degrees, .label = "Degree increment" },
 	{ .type = &asn_DEF_FANSDegrees, .format = la_asn1_format_text_CHOICE_cpdlc, .label = NULL },
-	{ .type = &asn_DEF_FANSDegreesMagnetic, .format = la_asn1_format_text_Deg, .label = "Degrees (magnetic)" },
-	{ .type = &asn_DEF_FANSDegreesTrue, .format = la_asn1_format_text_Deg, .label = "Degrees (true)" },
+	{ .type = &asn_DEF_FANSDegreesMagnetic, .format = la_asn1_format_text_Degrees, .label = "Degrees (magnetic)" },
+	{ .type = &asn_DEF_FANSDegreesTrue, .format = la_asn1_format_text_Degrees, .label = "Degrees (true)" },
 	{ .type = &asn_DEF_FANSDirection, .format = la_asn1_format_text_ENUM, .label = "Direction" },
 	{ .type = &asn_DEF_FANSDirectionDegrees, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSDistance, .format = la_asn1_format_text_CHOICE_cpdlc, .label = NULL },
@@ -646,7 +664,7 @@ static la_asn_formatter const la_asn1_cpdlc_formatter_table[] = {
 	{ .type = &asn_DEF_FANSInterceptCourseFromSelection, .format = la_asn1_format_text_CHOICE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSInterceptCourseFromSequence, .format = la_asn1_format_text_SEQUENCE_OF_cpdlc, .label = "Intercept courses" },
 	{ .type = &asn_DEF_FANSLatitude, .format = la_asn1_format_text_FANSLatitude, .label = "Latitude" },
-	{ .type = &asn_DEF_FANSLatitudeDegrees, .format = la_asn1_format_text_Deg, .label = "Latitude" },
+	{ .type = &asn_DEF_FANSLatitudeDegrees, .format = la_asn1_format_text_Degrees, .label = "Latitude" },
 	{ .type = &asn_DEF_FANSLatitudeDirection, .format = la_asn1_format_text_ENUM, .label = "Direction" },
 	{ .type = &asn_DEF_FANSLatitudeLongitude, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSLatitudeLongitudeSequence, .format = la_asn1_format_text_SEQUENCE_OF_cpdlc, .label = "Coordinate list" },
@@ -658,7 +676,7 @@ static la_asn_formatter const la_asn1_cpdlc_formatter_table[] = {
 	{ .type = &asn_DEF_FANSLegTime, .format = la_asn1_format_text_FANSLegTime, .label = "Leg time" },
 	{ .type = &asn_DEF_FANSLegType, .format = la_asn1_format_text_CHOICE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSLongitude, .format = la_asn1_format_text_FANSLongitude, .label = "Longitude" },
-	{ .type = &asn_DEF_FANSLongitudeDegrees, .format = la_asn1_format_text_Deg, .label = "Longitude" },
+	{ .type = &asn_DEF_FANSLongitudeDegrees, .format = la_asn1_format_text_Degrees, .label = "Longitude" },
 	{ .type = &asn_DEF_FANSLongitudeDirection, .format = la_asn1_format_text_ENUM, .label = "Direction" },
 	{ .type = &asn_DEF_FANSLongitudeReportingPoints, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSMsgIdentificationNumber, .format = la_asn1_format_text_any, .label = "Msg ID" },
@@ -762,7 +780,7 @@ static la_asn_formatter const la_asn1_cpdlc_formatter_table[] = {
 	{ .type = &asn_DEF_FANSVerticalRateMetric, .format = la_asn1_format_text_FANSVerticalRateMetric, .label = "Vertical rate" },
 	{ .type = &asn_DEF_FANSWaypointSpeedAltitude, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSWaypointSpeedAltitudesequence, .format = la_asn1_format_text_SEQUENCE_OF_cpdlc, .label = "Waypoints, speeds and altitudes" },
-	{ .type = &asn_DEF_FANSWindDirection, .format = la_asn1_format_text_Deg, .label = "Wind direction" },
+	{ .type = &asn_DEF_FANSWindDirection, .format = la_asn1_format_text_Degrees, .label = "Wind direction" },
 	{ .type = &asn_DEF_FANSWinds, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSWindSpeed, .format = la_asn1_format_text_CHOICE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSWindSpeedEnglish, .format = la_asn1_format_text_FANSWindSpeedEnglish, .label = "Wind speed" },
