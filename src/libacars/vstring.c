@@ -79,11 +79,9 @@ void la_vstring_append_sprintf(la_vstring * const vstr, char const *fmt, ...) {
 	la_assert(ret >= 0);
 	result_size = 1 + (size_t)ret;
 	if(result_size < space_left) {	// we have enough space
-		la_debug_print("result_size %zu < space_left %zu - no need to grow\n", result_size, space_left);
 		goto end;
 	} else {
 		// Not enough space - realloc and retry once
-		la_debug_print("result_size %zu >= space_left %zu - need to grow\n", result_size, space_left);
 		la_vstring_grow(vstr, result_size);
 		space_left = la_vstring_space_left(vstr);
 		va_start(ap, fmt);
@@ -95,8 +93,6 @@ void la_vstring_append_sprintf(la_vstring * const vstr, char const *fmt, ...) {
 	}
 end:
 	vstr->len += result_size - 1;	// not including '\0'
-	la_debug_print("sprintf completed: allocated_size=%zu len=%zu\n",
-		vstr->allocated_size, vstr->len);
 	return;
 }
 
@@ -107,7 +103,6 @@ void la_vstring_append_buffer(la_vstring * const vstr, void const * buffer, size
 	}
 	size_t space_left = la_vstring_space_left(vstr);
 	if(len >= space_left) {
-		la_debug_print("len %zu >= space_left %zu - need to grow\n", len, space_left);
 		la_vstring_grow(vstr, len);
 	}
 	la_assert(vstr->len + len <= LA_VSTR_SIZE_MAX);

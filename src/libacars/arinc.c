@@ -88,7 +88,6 @@ static char *guess_arinc_msg_type(char const *txt, la_arinc_msg *msg) {
 	char *imi_ptr = NULL;
 	for(la_arinc_imi_map const *p = imi_map; ; p++) {
 		if(p->imi_string == NULL) break;
-		la_debug_print("Checking %s\n", p->imi_string);
 		if((imi_ptr = strstr(txt, p->imi_string)) != NULL) {
 			imi = p->imi;
 			break;
@@ -135,7 +134,6 @@ static bool la_is_crc_ok(char const * const text_part, uint8_t const * const bin
 	uint8_t *buf = LA_XCALLOC(buflen, sizeof(uint8_t));
 	memcpy(buf, text_part, LA_ARINC_IMI_LEN + LA_ARINC_AIR_REG_LEN);
 	memcpy(buf + LA_ARINC_IMI_LEN + LA_ARINC_AIR_REG_LEN, binary_part, binary_part_len);
-	la_debug_print_buf_hex(buf, buflen, "%s", "CRC buffer:\n");
 	bool result = la_check_crc16_arinc(buf, buflen);
 	LA_XFREE(buf);
 	la_debug_print("crc_ok? %d\n", result);

@@ -98,7 +98,6 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	for(i = 0; i < len; i++) {
 		buf2[i] = buf[i] & 0x7f;
 	}
-	la_debug_print_buf_hex(buf2, len, "%s", "Msg data after parity bits removal:\n");
 
 	int k = 0;
 	msg->mode = buf2[k++];
