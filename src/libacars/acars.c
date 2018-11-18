@@ -189,10 +189,11 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 	LA_ISPRINTF(vstr, indent, "%s\n", "Message:");
 // Indent multi-line messages properly
 	char *line = strdup(msg->txt);	// have to work on a copy, because strtok modifies its first argument
+	char *ptr = line;
 	char *next_line = NULL;
-	while((line = strtok_r(line, "\n", &next_line)) != NULL) {
-		LA_ISPRINTF(vstr, indent+1, "%s\n", line);
-		line = next_line;
+	while((ptr = strtok_r(ptr, "\n", &next_line)) != NULL) {
+		LA_ISPRINTF(vstr, indent+1, "%s\n", ptr);
+		ptr = next_line;
 	}
 	LA_XFREE(line);
 }
