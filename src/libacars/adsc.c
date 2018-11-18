@@ -1359,6 +1359,7 @@ la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc
 		tag_table = la_adsc_downlink_tag_descriptor_table;
 	la_assert(tag_table != NULL);
 
+	msg->err = false;
 	switch(imi) {
 	case ARINC_MSG_ADS:
 		while(len > 0) {
@@ -1366,7 +1367,7 @@ la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc
 			tag = LA_XCALLOC(1, sizeof(la_adsc_tag_t));
 			msg->tag_list = la_list_append(msg->tag_list, tag);
 			if((consumed_bytes = la_adsc_parse_tag(tag, tag_table, buf, len)) < 0) {
-				msg->err = 1;
+				msg->err = true;
 				break;
 			}
 			buf += consumed_bytes; len -= consumed_bytes;
@@ -1377,7 +1378,7 @@ la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc
 // Let's insert a fake tag value of 255.
 		if(len < 1) {
 			la_debug_print("%s", "DIS message too short");
-			msg->err = 1;
+			msg->err = true;
 			break;
 		}
 		tag = LA_XCALLOC(1, sizeof(la_adsc_tag_t));
@@ -1387,7 +1388,7 @@ la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc
 		tmpbuf[0] = 255;
 		tmpbuf[1] = buf[0];
 		if(la_adsc_parse_tag(tag, tag_table, tmpbuf, len) < 0) {
-			msg->err = 1;
+			msg->err = true;
 		}
 		LA_XFREE(tmpbuf);
 		break;
@@ -1427,7 +1428,7 @@ void la_adsc_format_text(la_vstring * const vstr, void const * const data, int i
 		return;
 	}
 	la_list_foreach(msg->tag_list, la_adsc_output_tag, &ctx);
-	if(msg->err != 0) {
+	if(msg->err == true) {
 		LA_ISPRINTF(ctx.vstr, ctx.indent, "%s", "-- Malformed ADS-C message\n");
 	}
 }
@@ -1439,7 +1440,7 @@ void la_adsc_destroy(void *data) {
 	LA_CAST_PTR(msg, la_adsc_msg_t *, data);
 	la_list_free_full(msg->tag_list, la_adsc_tag_destroy);
 	msg->tag_list = NULL;
-	msg->err = 0;
+	msg->err = false;
 	LA_XFREE(data);
 }
 

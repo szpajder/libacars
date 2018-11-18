@@ -17,6 +17,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -54,7 +55,9 @@ la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 
 	la_debug_print("Decoding as %s, len: %d\n", msg->asn_type->name, len);
 	if(la_asn1_decode_as(msg->asn_type, &msg->data, buf, len) != 0) {
-		msg->err = 1;
+		msg->err = true;
+	} else {
+		msg->err = false;
 	}
 	return node;
 }
@@ -65,7 +68,7 @@ void la_cpdlc_format_text(la_vstring *vstr, void const * const data, int indent)
 	la_assert(indent >= 0);
 
 	LA_CAST_PTR(msg, la_cpdlc_msg *, data);
-	if(msg->err) {
+	if(msg->err == true) {
 		LA_ISPRINTF(vstr, indent, "%s", "-- Unparseable FANS-1/A message\n");
 		return;
 	}

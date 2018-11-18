@@ -20,6 +20,7 @@
 #ifndef LA_CPDLC_H
 #define LA_CPDLC_H 1
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <libacars/libacars.h>		// la_type_descriptor, la_proto_node
 #include <libacars/vstring.h>		// la_vstring
@@ -32,7 +33,7 @@ extern "C" {
 typedef struct {
 	asn_TYPE_descriptor_t *asn_type;
 	void *data;
-	int err;
+	bool err;
 } la_cpdlc_msg;
 
 // cpdlc.c

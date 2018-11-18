@@ -20,6 +20,7 @@
 #ifndef LA_ADSC_H
 #define LA_ADSC_H 1
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <libacars/libacars.h>	// la_proto_node, la_type_descriptor
 #include <libacars/arinc.h>	// la_arinc_imi
@@ -48,7 +49,7 @@ typedef struct {
 
 // ADS-C message
 typedef struct {
-	uint8_t err;
+	bool err;
 	la_list *tag_list;
 } la_adsc_msg_t;
 
