@@ -30,17 +30,20 @@
 extern "C" {
 #endif
 
-// formatter context (FIXME: make this private)
 typedef struct {
 	la_vstring *vstr;
 	int indent;
 } la_adsc_formatter_ctx_t;
 
+typedef int(la_adsc_parse_type_f)(void *dest, uint8_t *buf, uint32_t len);
+typedef void(la_adsc_format_type_f)(la_adsc_formatter_ctx_t * const ctx, char const * const label, void const * const data);
+typedef void(la_adsc_destroy_type_f)(void *data);
+
 typedef struct {
 	char const * const label;
-	int (*parse)(void *dest, uint8_t *buf, uint32_t len);
-	void (*format)(la_adsc_formatter_ctx_t * const, char const * const, void const * const);
-	void (*destroy)(void *data);
+	la_adsc_parse_type_f *parse;
+	la_adsc_format_type_f *format;
+	la_adsc_destroy_type_f *destroy;
 } la_adsc_type_descriptor_t;
 
 // ADS-C message
