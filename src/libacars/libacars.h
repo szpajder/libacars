@@ -20,6 +20,7 @@
 #ifndef LA_LIBACARS_H
 #define LA_LIBACARS_H 1
 #include <stdbool.h>
+#include <libacars/version.h>
 #include <libacars/vstring.h>		// la_vstring
 
 #ifdef __cplusplus

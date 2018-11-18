@@ -1,3 +1,9 @@
+configure_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/version.h.in"
+	"${CMAKE_CURRENT_SOURCE_DIR}/version.h"
+	@ONLY
+)
+
 add_subdirectory (asn1)
 add_library(acars SHARED
 	acars.c
@@ -31,6 +37,7 @@ install(FILES
 	cpdlc.h
 	libacars.h
 	list.h
+	version.h
 	vstring.h
 	DESTINATION include/libacars
 )
