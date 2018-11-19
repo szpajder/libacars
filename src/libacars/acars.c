@@ -30,33 +30,37 @@
 #define DEL 0x7f
 #define ETX 0x03
 
-static la_proto_node *la_try_acars_apps(la_acars_msg const * const msg, la_msg_dir const msg_dir) {
+la_proto_node *la_acars_decode_apps(char const * const label,
+char const * const txt, la_msg_dir const msg_dir) {
 	la_proto_node *ret = NULL;
-	switch(msg->label[0]) {
+	if(label == NULL || txt == NULL) {
+		goto end;
+	}
+	switch(label[0]) {
 	case 'A':
-		switch(msg->label[1]) {
+		switch(label[1]) {
 		case '6':
 		case 'A':
-			if((ret = la_arinc_parse(msg->txt, msg_dir)) != NULL) {
+			if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
 				goto end;
 			}
 			break;
 		}
 		break;
 	case 'B':
-		switch(msg->label[1]) {
+		switch(label[1]) {
 		case '6':
 		case 'A':
-			if((ret = la_arinc_parse(msg->txt, msg_dir)) != NULL) {
+			if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
 				goto end;
 			}
 			break;
 		}
 		break;
 	case 'H':
-		switch(msg->label[1]) {
+		switch(label[1]) {
 		case '1':
-			if((ret = la_arinc_parse(msg->txt, msg_dir)) != NULL) {
+			if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
 				goto end;
 			}
 			break;
@@ -158,7 +162,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 			if(msg->txt[i] == 0)
 				msg->txt[i] = '.';
 		}
-		node->next = la_try_acars_apps(msg, msg_dir);
+		node->next = la_acars_decode_apps(msg->label, msg->txt, msg_dir);
 	}
 	goto end;
 fail:
