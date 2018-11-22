@@ -38,7 +38,7 @@ void la_bitstream_destroy(la_bitstream_t *bs) {
 int la_bitstream_append_msbfirst(la_bitstream_t *bs, uint8_t const *v, uint32_t const numbytes, uint32_t const numbits) {
 	if(bs->end + numbits * numbytes > bs->len)
 		return -1;
-	for(int i = 0; i < numbytes; i++) {
+	for(uint32_t i = 0; i < numbytes; i++) {
 		uint8_t t = v[i];
 		for(int j = numbits - 1; j >= 0; j--)
 			bs->buf[bs->end++] = (t >> j) & 0x01;
