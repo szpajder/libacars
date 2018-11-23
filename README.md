@@ -11,7 +11,11 @@ libacars is a library for decoding various ACARS message payloads.
 
 You need a C compiler and cmake.
 
-Clone the repository and execute:
+Clone the repository:
+
+	git clone https://github.com/szpajder/libacars
+
+Compile and install:
 
 	cd libacars
 	mkdir build
