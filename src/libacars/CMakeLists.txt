@@ -5,7 +5,7 @@ configure_file(
 )
 
 add_subdirectory (asn1)
-add_library(acars SHARED
+add_library (acars_core OBJECT
 	acars.c
 	adsc.c
 	arinc.c
@@ -20,8 +20,16 @@ add_library(acars SHARED
 	util.c
 	vstring.c
 )
-target_link_libraries (acars asn1 m)
+set_property(TARGET acars_core PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+set(acars_obj_files $<TARGET_OBJECTS:asn1> $<TARGET_OBJECTS:acars_core>)
+
+add_library(acars SHARED ${acars_obj_files})
+target_link_libraries (acars)
 set_property (TARGET acars PROPERTY SOVERSION ${LIBACARS_VERSION_MAJOR})
+
+add_library(acars_static ${acars_obj_files})
+set_target_properties(acars_static PROPERTIES OUTPUT_NAME "acars")
 
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.pc.in"
