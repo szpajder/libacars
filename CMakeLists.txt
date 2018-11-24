@@ -40,3 +40,14 @@ if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
 add_custom_target(uninstall
 	COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 endif()
+
+# build a CPack driven installer package
+include (InstallRequiredSystemLibraries)
+set (CPACK_RESOURCE_FILE_LICENSE
+	"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set (CPACK_RESOURCE_FILE_README
+	"${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+set (CPACK_PACKAGE_VERSION_MAJOR "${LA_VERSION_MAJOR}")
+set (CPACK_PACKAGE_VERSION_MINOR "${LA_VERSION_MINOR}")
+set (CPACK_PACKAGE_VERSION_PATCH "${LA_VERSION_PATCH}")
+include (CPack)
