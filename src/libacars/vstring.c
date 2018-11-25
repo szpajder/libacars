@@ -18,6 +18,7 @@
  */
 
 #include <limits.h>			// INT_MAX
+#include <stdio.h>			// vsnprintf
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
