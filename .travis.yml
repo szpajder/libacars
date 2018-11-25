@@ -1,0 +1,15 @@
+language: c
+
+os:
+  - linux
+  - osx
+
+compiler:
+  - gcc
+
+script:
+  - mkdir build
+  - cd build
+  - cmake ../
+  - make
+  - sudo make install
