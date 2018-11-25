@@ -9,9 +9,9 @@ env:
 
 matrix:
   include:
-    os: linux
+    - os: linux
       compiler: gcc
-    os: osx
+    - os: osx
       compiler: clang
 
 script:
