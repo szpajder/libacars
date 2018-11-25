@@ -25,7 +25,7 @@ set_property(TARGET acars_core PROPERTY POSITION_INDEPENDENT_CODE ON)
 set(acars_obj_files $<TARGET_OBJECTS:asn1> $<TARGET_OBJECTS:acars_core>)
 
 add_library(acars SHARED ${acars_obj_files})
-target_link_libraries (acars)
+target_link_libraries (acars m)
 set_property (TARGET acars PROPERTY SOVERSION ${LIBACARS_VERSION_MAJOR})
 
 add_library(acars_static ${acars_obj_files})
