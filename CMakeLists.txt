@@ -18,8 +18,6 @@ endif(NOT CMAKE_BUILD_TYPE)
 option(EMIT_ASN_DEBUG, "Enable debugging of ASN.1 decoder (requires
 CMAKE_BUILD_TYPE=Debug" OFF)
 
-add_definitions(-D_XOPEN_SOURCE=600)
-
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DDEBUG")
 
