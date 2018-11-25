@@ -4,6 +4,9 @@ configure_file(
 	@ONLY
 )
 
+# strdup, strtok_r
+add_definitions(-D_XOPEN_SOURCE=600)
+
 add_subdirectory (asn1)
 add_library (acars_core OBJECT
 	acars.c
