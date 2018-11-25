@@ -21,6 +21,6 @@ script:
   - make VERBOSE=1
   - sudo make install
   - ${DECODE_ARINC} ${SAMPLE_ADSC}
-  - ${DECODE_ARINC} ${SAMPLE_ADSC} | grep -q 'Temperature: -62.75 C'
+  - '${DECODE_ARINC} ${SAMPLE_ADSC} | grep -q "Temperature: -62.75 C"'
   - ${DECODE_ARINC} ${SAMPLE_CPDLC}
-  - ${DECODE_ARINC} ${SAMPLE_CPDLC} | grep -q 'Flight level: 360'
+  - '${DECODE_ARINC} ${SAMPLE_CPDLC} | grep -q "Flight level: 360"'
