@@ -4,7 +4,7 @@ if (EMIT_ASN_DEBUG)
 endif()
 
 # force inclusion of alloca.h from stdlib.h on macos
-remove_definitions(-D_XOPEN_SOURCE=500)
+remove_definitions(-D_XOPEN_SOURCE=600)
 
 add_library (asn1 OBJECT ${ASN_MODULE_SOURCES})
 set_property(TARGET asn1 PROPERTY POSITION_INDEPENDENT_CODE ON)
