@@ -22,9 +22,9 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <libacars/libacars.h>		// la_type_descriptor, la_proto_node
-#include <libacars/vstring.h>		// la_vstring
-#include <libacars/asn1/constr_TYPE.h>	// asn_TYPE_descriptor_t
+#include <libacars/libacars.h>			// la_type_descriptor, la_proto_node
+#include <libacars/vstring.h>			// la_vstring
+#include <libacars/asn1/asn_application.h>	// asn_TYPE_descriptor_t
 
 #ifdef __cplusplus
 extern "C" {

@@ -19,7 +19,7 @@
 
 #ifndef LA_ASN1_FORMAT_CPDLC_H
 #define LA_ASN1_FORMAT_CPDLC_H 1
-#include <libacars/asn1/constr_TYPE.h>		// asn_TYPE_descriptor_t
+#include <libacars/asn1/asn_application.h>	// asn_TYPE_descriptor_t
 #include <libacars/vstring.h>			// la_vstring
 
 // asn1-format-cpdlc.c
