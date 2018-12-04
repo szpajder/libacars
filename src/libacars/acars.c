@@ -58,7 +58,7 @@ end:
 	return ret;
 }
 
-la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
+la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 	if(buf == NULL) {
 		return NULL;
 	}
@@ -148,6 +148,15 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 		for(i = 0; i < len; i++) {
 			if(msg->txt[i] == 0)
 				msg->txt[i] = '.';
+		}
+// If the message direction is unknown, guess it using the block ID character.
+		if(msg_dir == LA_MSG_DIR_UNKNOWN) {
+			if(msg->block_id >= '0' && msg->block_id <= '9') {
+		                msg_dir = LA_MSG_DIR_AIR2GND;
+			} else {
+				msg_dir = LA_MSG_DIR_GND2AIR;
+			}
+			la_debug_print("Assuming msg_dir=%d\n", msg_dir);
 		}
 		node->next = la_acars_decode_apps(msg->label, msg->txt, msg_dir);
 	}
