@@ -6,6 +6,7 @@
 
 #ifndef LA_ASN1_UTIL_H
 #define LA_ASN1_UTIL_H 1
+#include <stddef.h>				// size_t
 #include <stdint.h>				// uint8_t
 #include <libacars/asn1/asn_application.h>	// asn_TYPE_descriptor_t
 #include <libacars/vstring.h>			// la_vstring

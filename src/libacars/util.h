@@ -6,6 +6,7 @@
 #ifndef LA_UTIL_H
 #define LA_UTIL_H 1
 #include <stdint.h>
+#include <stddef.h>		// size_t
 #include <stdlib.h>		// free()
 
 typedef struct {

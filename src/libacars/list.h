@@ -6,6 +6,8 @@
 #ifndef LA_LIST_H
 #define LA_LIST_H 1
 
+#include <stddef.h>		// size_t
+
 #ifdef __cplusplus
 extern "C" {
 #endif

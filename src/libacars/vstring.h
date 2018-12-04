@@ -7,6 +7,7 @@
 #ifndef LA_VSTRING_H
 #define LA_VSTRING_H 1
 
+#include <stddef.h>		// size_t
 #include <stdbool.h>
 
 #ifdef __cplusplus
