@@ -48,7 +48,10 @@ for instructions.
 
 ### API documentation
 
-TODO
+Refer to the following documents:
+
+- `doc/PROG_GUIDE.md` - libacars Programmer's Guide
+- `doc/API_REFERENCE.md` - libacars API Reference
 
 ### Licenses
 
