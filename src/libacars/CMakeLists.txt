@@ -29,7 +29,7 @@ set(acars_obj_files $<TARGET_OBJECTS:asn1> $<TARGET_OBJECTS:acars_core>)
 
 add_library(acars SHARED ${acars_obj_files})
 target_link_libraries (acars m)
-set_property (TARGET acars PROPERTY SOVERSION ${LIBACARS_VERSION_MAJOR})
+set_property (TARGET acars PROPERTY SOVERSION ${LA_VERSION_MAJOR})
 
 add_library(acars_static ${acars_obj_files})
 set_target_properties(acars_static PROPERTIES OUTPUT_NAME "acars")
