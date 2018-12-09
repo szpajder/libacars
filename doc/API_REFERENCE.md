@@ -1,5 +1,7 @@
 # libacars API Reference
+
 API version: 1.0
+
 Copyright (c) 2018 Tomasz Lemiech <szpajder@gmail.com>
 
 ## Basic data types
@@ -178,7 +180,7 @@ message text, they will be decoded as well.
 The buffer shall start with the first byte **after** the initial SOH byte
 (`'\x01'`) and should end with DEL byte (`'\x7f'`). `msg_dir` shall indicate the
 direction of the transmission.  If it's set to `LA_MSG_DIR_UNKNOWN`, the
-function will guess it using block ID field in the ACARS header.
+function will determine it using block ID field in the ACARS header.
 
 The function returns a pointer to a newly allocated `la_proto_node` structure
 which is the root of the decoded protocol tree. The `data` pointer of the top
@@ -213,7 +215,7 @@ la_proto_node *la_acars_decode_apps(char const * const label,
         char const * const txt, la_msg_dir const msg_dir);
 ```
 
-Tries to guess the ACARS application using message label stored in `label`. If
+Tries to determine the ACARS application using message label stored in `label`. If
 the label corresponds to any supported applications, respective application
 decoders are executed in sequence to decode the message text `txt`. `msg_dir`
 must be set to a correct transmission direction for the decoding to succeed.
@@ -241,7 +243,7 @@ found in the tree, the function returns NULL.
 ARINC-622 describes a generic format for carrying Air Traffic Services (ATS)
 applications in ACARS message text. The API is defined in `<libacars/arinc.h>`.
 It might be used in a program which already performs basic ACARS decoding.
-Refer to the [Programmer's Guide](PROG.GUIDE.md) and to `src/examples/decode_arinc.c`
+Refer to the [Programmer's Guide](PROG_GUIDE.md) and to `src/examples/decode_arinc.c`
 for a working example which uses this API.
 
 ### la_arinc_msg
@@ -258,7 +260,7 @@ typedef struct {
 } la_arinc_msg;
 ```
 
-A structure representing decoded ARINC-622 message.
+A structure representing a decoded ARINC-622 message.
 
 - `gs_addr` - ground facility address (NULL-terminated)
 - `air_reg` - aircraft address (NULL-terminated)
@@ -600,8 +602,8 @@ and free it later with `free()`.
 
 void la_vstring_append_sprintf(la_vstring * const vstr, char const *fmt, ...)
 ```
-Appends formatted string to the end of `vstr`.  Automatically grows `vstr` if
-it's too small for the result.
+Appends formatted string to the end of `vstr`.  Automatically extends `vstr` if
+it's too short to fit the result.
 
 ### la_vstring_append_buffer()
 
@@ -612,8 +614,8 @@ void la_vstring_append_buffer(la_vstring * const vstr, void const * buffer, size
 ```
 
 Appends the contents of `buffer` of length `size` to the end of `vstr`.
-Automatically grows `vstr` if it's too small for the result. Use this function
-to append non-NULL-terminated strings to the `la_vstring`.
+Automatically extends `vstr` if it's too short to fit the result. Use this
+function to append non-NULL-terminated strings to the `la_vstring`.
 
 ## la_list API
 

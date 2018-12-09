@@ -121,7 +121,7 @@ function call or start printing at an intermediate protocol node of your choice.
 
 ### Compiler and linker flags
 
-The preferred way to figure out `CFLAGS` and `LDLIBS` required to compile your
+The preferred way to determine `CFLAGS` and `LDLIBS` required to compile your
 program with libacars is to use `pkg-config`. libacars installs a file
 named `libacars.pc` which contains include paths and library paths, so don't
 hardcode them in your Makefiles. Instead just do:
@@ -274,12 +274,12 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir);
   applications need this information to decode application layer data correctly
   and unambiguously. A value of `LA_MSG_DIR_AIR2GND` indicates that the message
   has been transmitted by an aircraft while `LA_MSG_DIR_GND2AIR` indicates
-  transmission from ground station.  For most media types this information can be
-  read from lower layer headers. The only exception for this is Plain Old ACARS on
-  VHF, where the direction can be guessed only from the value of block ID field,
-  which means the ACARS header has to be decoded first. For this reason, there is
-  a third value `LA_MSG_DIR_UNKNOWN`. It tells `la_acars_parse()` to guess the
-  direction automatically.
+  transmission from ground station.  For most media types this information can
+  be read from lower layer headers. The only exception for this is Plain Old ACARS
+  on VHF, where the direction can be determined only from the value of block ID
+  field, which means the ACARS header has to be decoded first. For this reason,
+  there is a third value `LA_MSG_DIR_UNKNOWN`. It tells `la_acars_parse()` to
+  determine the direction automatically.
 
 - `la_acars_parse()` (and other protocol parsers too) returns a pointer to a
   `la_proto_node` structure which is the root of the decoded protocol tree. In
@@ -373,9 +373,9 @@ ADS-C message:
   Vertical speed: 0 ft/min
 ```
 
-`la_acars_decode_apps()` attempts to guess the application by looking at the
-message label and text. If it finds a supported one, it decodes it and returns a
-pointer to a `proto_node` containing decoded data.
+`la_acars_decode_apps()` tries to determine the application using message label
+and text. If it finds a supported one, it decodes it and returns a pointer to a
+`proto_node` containing decoded data.
 
 What's important to note is that you invoke a different parser than before, but
 serializing the result is still done with `la_proto_tree_format_text()`. This
@@ -409,7 +409,7 @@ int main() {
 	uint8_t *data = "\x21\xD0\x75\x5D\x84\xAD\x06\x74\x48\x39\x87\x22\x94\x9A\x75\x21\xC8\xAB\x4A\x1C\x8E\xAB\x5C";
 	la_msg_dir direction = LA_MSG_DIR_GND2AIR;
 
-// Figure out the message type from the IMI field
+// Determine the message type from the IMI field
 	if(!strcmp(imi, "ADS")) {
 		/* It's an ADS-C message - launch our built-in decoder here */
 	} else if(
@@ -455,12 +455,13 @@ CPDLC Uplink Message:
 
 ### Accessing message fields
 
-Being able to only pretty-print the message would be quite boring. We want to
-get the values of data fields to do all sorts of stuff with them - print them in
-a different format, analyze them, load them into a database, right? Good news -
-each and every data field decoded by libacars is accessible to the application.
-It's just a matter of including appropriate headers and getting acquainted with
-relevant data structures defined there.
+Having only an option to pretty-print decoded messages would be quite a
+limitation. What's really cool is to access the values of data fields to do all
+sorts of stuff with them - print them in a different format, analyze them, load
+them into a database, right? Good news - each and every data field decoded by
+libacars is accessible to the application.  It's just a matter of including
+appropriate headers and getting acquainted with relevant data structures defined
+there.
 
 First, let's see how the `la_proto_node` structure looks like:
 
@@ -565,7 +566,7 @@ if(acars_node != NULL) {
 }
 ```
 
-Refer to libacars API Reference for a full list of fields and their types.
+Refer to the [API Reference](API_REFERENCE.md) for a full list of fields and their types.
 
 #### Accessing ARINC-622 fields
 
@@ -583,7 +584,7 @@ if(arinc_node != NULL) {
 }
 ```
 
-Refer to libacars API Reference for a full list of fields and their types.
+Refer to the [API Reference](API_REFERENCE.md) for a full list of fields and their types.
 
 #### Accessing ADS-C fields
 
@@ -594,7 +595,7 @@ ARINC-622, because ADS-C messages have their own hierarchy consisting of tags
 
 - The `tag_list` field in `la_adsc_msg_t` is a pointer to the first tag in the
   message. The tag list is a single-linked list implemented as a `la_list` type.
-  Refer to libacars API Reference for a complete description of this type and
+  Refer to the [API Reference](API_REFERENCE.md) for a complete description of this type and
   related functions.
 - To access a particular parameter, you have to know the tag under which it
   exists (refer to definitions of tag types in `<libacars/adsc.h>`). Then you
