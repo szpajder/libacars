@@ -114,7 +114,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 	if (msg->block_id == 0)
 		msg->block_id = ' ';
 
-	char *txt_start = buf2[k++];
+	char txt_start = buf2[k++];
 
 	msg->no[0] = '\0';
 	msg->flight_id[0] = '\0';
