@@ -42,9 +42,8 @@ A few example programs are provided in `src/examples` subdirectory:
   fields from CPDLC position reports.
 
 These programs will be compiled together with the library.
-`make install` won't install them - you can find binaries in
-`build/src/examples` subdirectory. Run each program with `-h` option
-for instructions.
+`make install` installs them to /usr/local/bin.
+Run each program with `-h` option for instructions.
 
 ### API documentation
 

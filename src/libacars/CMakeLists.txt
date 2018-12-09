@@ -61,3 +61,7 @@ install(FILES
 	"${PROJECT_SOURCE_DIR}/LICENSE"
 	DESTINATION "share/doc/${PROJECT_NAME}"
 )
+install(DIRECTORY
+	"${PROJECT_SOURCE_DIR}/doc/"
+	DESTINATION "share/doc/${PROJECT_NAME}"
+)
