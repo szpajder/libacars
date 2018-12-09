@@ -114,13 +114,12 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 	if (msg->block_id == 0)
 		msg->block_id = ' ';
 
-	/* txt start  */
-	msg->bs = buf2[k++];
+	char *txt_start = buf2[k++];
 
 	msg->no[0] = '\0';
 	msg->flight_id[0] = '\0';
 
-	if(k >= len || msg->bs == ETX) {	// empty message text
+	if(k >= len || txt_start == ETX) {	// empty message text
 		msg->txt = strdup("");
 		goto end;
 	}

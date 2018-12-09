@@ -23,7 +23,6 @@ typedef struct {
 	char ack;
 	char label[3];
 	char block_id;
-	char bs;
 	char no[5];
 	char flight_id[7];
 	char *txt;
