@@ -32,7 +32,7 @@ void *la_xrealloc(void *ptr, size_t size, const char *file, const int line, cons
 	return ptr;
 }
 
-void *la_dict_search(const la_dict *list, uint8_t id) {
+void *la_dict_search(const la_dict *list, int id) {
 	if(list == NULL) return NULL;
 	la_dict *ptr;
 	for(ptr = (la_dict *)list; ; ptr++) {

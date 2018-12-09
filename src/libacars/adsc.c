@@ -731,12 +731,12 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_dis_reason_code) {
 		{ 0, NULL }
 	};
 	LA_CAST_PTR(rc, uint8_t *, data);
-	uint8_t reason = *rc >> 4;
+	int reason = (int)(*rc >> 4);
 	char *descr = la_dict_search(dis_reason_code_table, reason);
 	if(descr) {
 		LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: %s\n", label, descr);
 	} else {
-		LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: unknown (%u)\n", label, reason);
+		LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: unknown (%d)\n", label, reason);
 	}
 }
 
@@ -1307,7 +1307,7 @@ static int la_adsc_parse_tag(la_adsc_tag_t *t, la_dict const *tag_descriptor_tab
 
 	t->tag = buf[0];
 	buf++; len--;
-	LA_CAST_PTR(type, la_adsc_type_descriptor_t *, la_dict_search(tag_descriptor_table, t->tag));
+	LA_CAST_PTR(type, la_adsc_type_descriptor_t *, la_dict_search(tag_descriptor_table, (int)t->tag));
 	if(type == NULL) {
 		la_debug_print("Unknown tag %u\n", t->tag);
 		return -1;
