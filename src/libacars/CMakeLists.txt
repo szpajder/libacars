@@ -7,6 +7,9 @@ configure_file(
 # strdup, strtok_r
 add_definitions(-D_XOPEN_SOURCE=600)
 
+set(acars_ldscript "${CMAKE_CURRENT_SOURCE_DIR}/symversions.ldscript")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script,${acars_ldscript}")
+
 add_subdirectory (asn1)
 add_library (acars_core OBJECT
 	acars.c
@@ -30,6 +33,7 @@ set(acars_obj_files $<TARGET_OBJECTS:asn1> $<TARGET_OBJECTS:acars_core>)
 add_library(acars SHARED ${acars_obj_files})
 target_link_libraries (acars m)
 set_property (TARGET acars PROPERTY SOVERSION ${LA_VERSION_MAJOR})
+set_property (TARGET acars PROPERTY LINK_DEPENDS ${acars_ldscript})
 
 add_library(acars_static ${acars_obj_files})
 set_target_properties(acars_static PROPERTIES OUTPUT_NAME "acars")
