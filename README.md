@@ -2,22 +2,54 @@
 
 libacars is a library for decoding various ACARS message payloads.
 
-### Supported message types
+## Supported message types
 
 - [X] FANS-1/A ADS-C (Automatic Dependent Surveillance - Contract)
 - [X] FANS-1/A CPDLC (Controller-Pilot Data Link Communications)
 
-### Installation
+## Installation
 
-You need a C compiler and cmake.
+### Binary packages
 
-Clone the repository:
+64-bit Windows binary packages of stable releases are provided in the
+[Releases](https://github.com/szpajder/libacars/releases) section.
+
+Unzip the archive into any directory. You should be able to run example programs
+directly from `bin` subdirectory.
+
+### Building from source
+
+Requirements:
+
+- c11-capable C compiler
+- cmake 3.1 or later
+
+The project should build and run correctly on the following platforms:
+
+- Linux i686 and x86_64 (gcc)
+- MacOS (clang)
+- Windows (mingw)
+
+Build steps;
+
+- To run a stable and tested version, download a release tarball from
+  [Releases](https://github.com/szpajder/libacars/releases) section and unpack it:
+
+	unzip libacars-x.y.z.zip
+	cd libacars-x.y.z
+
+- To run the latest code which has not yet made it into a stable release, clone
+  the source repository instead:
 
 	git clone https://github.com/szpajder/libacars
-
-Compile and install:
-
 	cd libacars
+
+`master` branch is always in sync with the latest stable release. `unstable`
+branch is where the latest cutting-edge code goes first. Select your branch of
+choice with `git checkout <branch_name>`.
+
+- Compile and install:
+
 	mkdir build
 	cd build
 	cmake ../
@@ -25,14 +57,14 @@ Compile and install:
 	sudo make install
 	sudo ldconfig
 
-By default the library will be installed to `/usr/local/lib`.
+On Unix the library will be installed to `/usr/local/lib` by default.
 Header files will land in `/usr/local/include/libacars`.
 
-### Example programs
+## Example programs
 
 A few example programs are provided in `src/examples` subdirectory:
 
-- `decode_arinc.c` - decodes ARINC 622 messages supplied at the
+- `decode_arinc.c` - decodes ARINC-622 messages supplied at the
   command line or from a file.
 
 - `adsc_get_position` - illustrates how to extract position-related
@@ -41,18 +73,18 @@ A few example programs are provided in `src/examples` subdirectory:
 - `cpdlc_get_position` - illustrates how to extract position-related
   fields from CPDLC position reports.
 
-These programs will be compiled together with the library.
-`make install` installs them to /usr/local/bin.
-Run each program with `-h` option for instructions.
+These programs will be compiled together with the library.  `make install`
+installs them to `/usr/local/bin`.  Run each program with `-h` option for
+usage instructions.
 
-### API documentation
+## API documentation
 
 Refer to the following documents:
 
 - `doc/PROG_GUIDE.md` - libacars Programmer's Guide
 - `doc/API_REFERENCE.md` - libacars API Reference
 
-### Licenses
+## Licenses
 
 libacars, Copyright (c) 2018 Tomasz Lemiech <szpajder@gmail.com>
 
@@ -105,3 +137,4 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
+// vim: textwidth=80
