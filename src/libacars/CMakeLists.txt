@@ -65,7 +65,11 @@ configure_file(
 	@ONLY
 )
 
-install(TARGETS acars DESTINATION lib)
+install(TARGETS acars
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+)
 install(FILES
 	acars.h
 	adsc.h
