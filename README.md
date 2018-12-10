@@ -2,6 +2,8 @@
 
 libacars is a library for decoding various ACARS message payloads.
 
+Current stable version: **1.0.0** (released Dec 10, 2018)
+
 ## Supported message types
 
 - [X] FANS-1/A ADS-C (Automatic Dependent Surveillance - Contract)
