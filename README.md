@@ -37,14 +37,18 @@ Build steps;
 - To run a stable and tested version, download a release tarball from
   [Releases](https://github.com/szpajder/libacars/releases) section and unpack it:
 
-	unzip libacars-x.y.z.zip
-	cd libacars-x.y.z
+```
+unzip libacars-x.y.z.zip
+cd libacars-x.y.z
+```
 
 - To run the latest code which has not yet made it into a stable release, clone
   the source repository instead:
 
-	git clone https://github.com/szpajder/libacars
-	cd libacars
+```
+git clone https://github.com/szpajder/libacars
+cd libacars
+```
 
 `master` branch is always in sync with the latest stable release. `unstable`
 branch is where the latest cutting-edge code goes first. Select your branch of
@@ -52,19 +56,21 @@ choice with `git checkout <branch_name>`.
 
 - Compile and install:
 
-	mkdir build
-	cd build
-	cmake ../
-	make
-	sudo make install
-	sudo ldconfig
+```
+mkdir build
+cd build
+cmake ../
+make
+sudo make install
+sudo ldconfig
+```
 
 On Unix the library will be installed to `/usr/local/lib` by default.
 Header files will land in `/usr/local/include/libacars`.
 
 ## Example programs
 
-A few example programs are provided in `src/examples` subdirectory:
+Example programs are provided in `src/examples` subdirectory:
 
 - `decode_arinc.c` - decodes ARINC-622 messages supplied at the
   command line or from a file.
@@ -85,6 +91,13 @@ Refer to the following documents:
 
 - `doc/PROG_GUIDE.md` - libacars Programmer's Guide
 - `doc/API_REFERENCE.md` - libacars API Reference
+
+## Applications using libacars
+
+- [dumpvdl2](https://github.com/szpajder/dumpvdl2), a VDL-2 decoder
+- [acarsdec](https://github.com/TLeconte/acarsdec/), an ACARS decoder
+- [vdlm2dec](https://github.com/TLeconte/vdlm2dec), a VDL-2 decoder
+- [JAERO](https://github.com/jontio/JAERO/), a Satcom ACARS decoder
 
 ## Licenses
 
