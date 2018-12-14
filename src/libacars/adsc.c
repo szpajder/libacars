@@ -1152,7 +1152,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_lat_dev_change) {
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_vspd_change) {
 	LA_CAST_PTR(e, la_adsc_vspd_chg_event_t const * const, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent,
-		"%s: %c%d ft\n",
+		"%s: %c%d ft/min\n",
 		label,
 		e->vspd_threshold >= 0 ? '>' : '<',
 		abs(e->vspd_threshold)
