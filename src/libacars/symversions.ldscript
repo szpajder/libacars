@@ -31,6 +31,7 @@ ACARS_1.0 {
     la_proto_tree_find_adsc;
     la_proto_tree_find_arinc;
     la_proto_tree_find_cpdlc;
+    la_proto_tree_find_media_adv;
     la_proto_tree_find_protocol;
     la_proto_tree_format_text;
     la_vstring_append_buffer;

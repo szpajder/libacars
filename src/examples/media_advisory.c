@@ -1,6 +1,6 @@
 /*
- *  adsc_get_position - an example program showing how to extract
- *  aircraft position information from downlink ADS-C messages.
+ *  media_advisory - an example program for decoding
+ *  ACARS Media Advisory messages.
  *
  *  Copyright (c) 2018 Tomasz Lemiech <szpajder@gmail.com>
  */
@@ -10,7 +10,6 @@
 #include <string.h>
 #include <libacars/libacars.h>
 #include <libacars/media-adv.h>
-#include <libacars/list.h>
 
 void usage() {
 	fprintf(stderr,
@@ -34,13 +33,13 @@ void usage() {
 }
 
 void parse(char *txt) {
-        // Parse the message and build the protocol tree
+	// Parse the message and build the protocol tree
 	la_proto_node *node = la_media_adv_parse(txt);
 	printf("%s\n", txt);
 	if(node != NULL) {
-          la_vstring *vstr = la_proto_tree_format_text(NULL, node);
-          printf("%s\n", vstr->str);
-          la_vstring_destroy(vstr, true);
+		la_vstring *vstr = la_proto_tree_format_text(NULL, node);
+		printf("%s\n", vstr->str);
+		la_vstring_destroy(vstr, true);
 	}
 	la_proto_tree_destroy(node);
 }

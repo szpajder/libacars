@@ -27,4 +27,4 @@ script:
   - ${DECODE_ARINC} ${SAMPLE_CPDLC}
   - '${DECODE_ARINC} ${SAMPLE_CPDLC} | grep -q "Flight level: 360"'
   - ${DECODE_MEDIA_ADV} ${SAMPLE_MEDIA_ADV}
-  - '${DECODE_MEDIA_ADV} ${SAMPLE_MEDIA_ADV} | grep -q "Link VDL Mod 2 was established at 12:32:45 UTC"'
+  - '${DECODE_MEDIA_ADV} ${SAMPLE_MEDIA_ADV} | grep -q "Link VDL2 established at 12:32:45 UTC"'
