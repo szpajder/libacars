@@ -42,6 +42,7 @@ add_library (acars_core OBJECT
 	crc.c
 	libacars.c
 	list.c
+	media-adv.c
 	util.c
 	vstring.c
 )
@@ -77,6 +78,7 @@ install(FILES
 	cpdlc.h
 	libacars.h
 	list.h
+	media-adv.h
 	version.h
 	vstring.h
 	DESTINATION include/libacars
