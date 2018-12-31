@@ -1287,6 +1287,13 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_contract_request) {
 
 	while(len > 0) {
 		la_debug_print("Remaining length: %u\n", len);
+// First lookup the tag value - if it's unknown, then it's probably a next request
+// in a multi-request ADS message. We don't want la_adsc_parse_tag() to parse it,
+// because we would get a nasty "-- Unparseable tag" error message in the output.
+		if(la_dict_search(la_adsc_request_tag_descriptor_table, (int)buf[0]) == NULL) {
+			la_debug_print("Tag %d unknown - assuming end-of-request\n", (int)buf[0]);
+			break;
+		}
 		la_adsc_tag_t *req_tag = LA_XCALLOC(1, sizeof(la_adsc_tag_t));
 		r->req_tag_list = la_list_append(r->req_tag_list, req_tag);
 		if((consumed_bytes = la_adsc_parse_tag(req_tag, la_adsc_request_tag_descriptor_table, buf, len)) < 0) {
