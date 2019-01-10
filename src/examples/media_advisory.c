@@ -22,19 +22,33 @@ void usage() {
 	"special shell characters, like '#'.\n\n"
 	"Example: ./media_advisory '0EV123324HS2/Test text'\n\n"
 	"To decode multiple messages from a text file:\n\n"
-	"1. Prepare a file with multiple messages, one per line."
-	"   Example:\n\n"
+	"1. Prepare a file with multiple messages, one per line. Each message\n"
+	"   may optionally be prepended with an arbitrary prefix and a space,\n"
+	"   but make sure there are no trailing spaces. Example:\n\n"
 	"0EV134509V\n"
 	"0L2034509HS\n"
-	"0EH104509H/\n"
-	"0EH104509HV/TEST DATA\n"
+	"any string 0EH104509H/\n"
+	"05/01/2019 00:04:40 SQ0321 9V-SKR or something 0EH104509HV/\n\n"
 	"2. Run media_advisory and pipe the the file contents on standard input:\n\n"
 	"\t./media_advisory < messages.txt\n\n");
 }
 
 void parse(char *txt) {
+	char *ptr = txt;
+	char *end = strchr(txt, '\n');
+	if(end) {
+		*end = '\0';
+	}
+// Skip arbitrary string at the beginning.
+// Warning: this won't work correctly if the message text itself contains a
+// free text field (after '/' character) containing a space. However, free text
+// field is not used in practice, so it's not a big deal.
+	char *start = strrchr(txt, ' ');
+	if(start) {
+		ptr = start + 1;
+	}
 	// Parse the message and build the protocol tree
-	la_proto_node *node = la_media_adv_parse(txt);
+	la_proto_node *node = la_media_adv_parse(ptr);
 	printf("%s\n", txt);
 	if(node != NULL) {
 		la_vstring *vstr = la_proto_tree_format_text(NULL, node);
@@ -59,9 +73,6 @@ int main(int argc, char **argv) {
 			memset(buf, 0, sizeof(buf));
 			if(fgets(buf, sizeof(buf), stdin) == NULL)
 				break;
-			char *end = strchr(buf, '\n');
-			if(end)
-				*end = '\0';
 			parse(buf);
 		}
 	} else if(argc == 2) {
