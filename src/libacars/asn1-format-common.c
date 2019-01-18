@@ -1,7 +1,7 @@
 /*
  *  This file is a part of libacars
  *
- *  Copyright (c) 2018 Tomasz Lemiech <szpajder@gmail.com>
+ *  Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
  */
 
 #include <libacars/asn1/asn_application.h>	// asn_TYPE_descriptor_t, asn_sprintf

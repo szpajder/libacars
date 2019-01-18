@@ -2,7 +2,7 @@
  *  adsc_get_position - an example program showing how to extract
  *  aircraft position information from downlink ADS-C messages.
  *
- *  Copyright (c) 2018 Tomasz Lemiech <szpajder@gmail.com>
+ *  Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
  */
 #include <stdbool.h>
 #include <stdio.h>
@@ -16,7 +16,7 @@
 void usage() {
 	fprintf(stderr,
 	"adsc_get_position - extracts position information from ADS-C Basic Report\n"
-	"(c) 2018 Tomasz Lemiech <szpajder@gmail.com>\n\n"
+	"(c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>\n\n"
 	"Usage:\n\n"
 	"To decode a single message from command line:\n\n"
 	"\t./adsc_get_position <acars_message_text>\n\n"

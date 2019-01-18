@@ -8,6 +8,7 @@ Current stable version: **1.0.0** (released Dec 10, 2018)
 
 - [X] FANS-1/A ADS-C (Automatic Dependent Surveillance - Contract)
 - [X] FANS-1/A CPDLC (Controller-Pilot Data Link Communications)
+- [X] Media Advisory (Status of data links: VDL2, HF, Satcom, VHF ACARS)
 
 ## Installation
 
@@ -80,6 +81,9 @@ Example programs are provided in `src/examples` subdirectory:
 
 - `cpdlc_get_position` - illustrates how to extract position-related
   fields from CPDLC position reports.
+
+- `media_advisory` - decodes Media Advisory messages (ACARS label SA
+  reports).
 
 These programs will be compiled together with the library.  `make install`
 installs them to `/usr/local/bin`.  Run each program with `-h` option for

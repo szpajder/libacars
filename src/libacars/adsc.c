@@ -1,7 +1,7 @@
 /*
  *  This file is a part of libacars
  *
- *  Copyright (c) 2018 Tomasz Lemiech <szpajder@gmail.com>
+ *  Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
  */
 
 #include <stdint.h>
@@ -1152,7 +1152,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_lat_dev_change) {
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_vspd_change) {
 	LA_CAST_PTR(e, la_adsc_vspd_chg_event_t const * const, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent,
-		"%s: %c%d ft\n",
+		"%s: %c%d ft/min\n",
 		label,
 		e->vspd_threshold >= 0 ? '>' : '<',
 		abs(e->vspd_threshold)
@@ -1287,6 +1287,13 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_contract_request) {
 
 	while(len > 0) {
 		la_debug_print("Remaining length: %u\n", len);
+// First lookup the tag value - if it's unknown, then it's probably a next request
+// in a multi-request ADS message. We don't want la_adsc_parse_tag() to parse it,
+// because we would get a nasty "-- Unparseable tag" error message in the output.
+		if(la_dict_search(la_adsc_request_tag_descriptor_table, (int)buf[0]) == NULL) {
+			la_debug_print("Tag %d unknown - assuming end-of-request\n", (int)buf[0]);
+			break;
+		}
 		la_adsc_tag_t *req_tag = LA_XCALLOC(1, sizeof(la_adsc_tag_t));
 		r->req_tag_list = la_list_append(r->req_tag_list, req_tag);
 		if((consumed_bytes = la_adsc_parse_tag(req_tag, la_adsc_request_tag_descriptor_table, buf, len)) < 0) {

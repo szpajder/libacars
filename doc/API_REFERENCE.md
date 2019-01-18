@@ -1,8 +1,8 @@
 # libacars API Reference
 
-API version: 1.0
+API version: 1.1
 
-Copyright (c) 2018 Tomasz Lemiech <szpajder@gmail.com>
+Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
 
 ## Basic data types
 
@@ -546,6 +546,89 @@ encountered node containing a CPDLC message (ie. having a type descriptor of
 `la_DEF_cpdlc_message`). If `root` is NULL or no matching protocol node has been
 found in the tree, the function returns NULL.
 
+## Media Advisory API
+
+### la_media_adv_msg
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/media-adv.h>
+
+typedef struct {
+	char version[2];
+	char state[2];
+	char current_link[2];
+	char hour[3];
+	char minute[3];
+	char second[3];
+	char available_links[10];
+	char text[255];
+	bool err;
+} la_media_adv_msg;
+```
+
+- `version` - message version number (NULL-terminated string of length 1)
+  Currently only version 0 is supported (which is probably the only version
+  in existence).
+- `state` - a NULL-terminated string of length 1 describing the event which
+  triggered this Media Advisory message. Possible values: "E" (link
+  established), "L" (link lost).
+- `current_link` - a NULL-terminated string of length 1 indicating the type
+  of the link which state change has triggered this Media Advisory message.
+  Refer to the structure `link_type_map` in `src/libacars/media-adv.c` for
+  a list of all types and their textual descriptions.
+- `hour`, `minute`, `second` - 2-digit NULL-terminated strings containing
+  the UTC time of the event
+- `available_links` - a NULL-terminated string with concatenated letter codes
+  of links which are currently available.
+- `err` - `true` if the decoder failed to decode the message, `false` otherwise.
+
+### la_media_adv_parse()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/media-adv.h>
+
+la_proto_node *la_media_adv_parse(char const *txt);
+```
+
+Parses the NULL-terminated string pointed to by `txt` as a Media Advisory
+message.
+
+The function returns a pointer to a newly allocated `la_proto_node` structure
+which is the root of the decoded protocol tree. The `data` pointer of the top
+`la_proto_node` will point at a `la_media_adv_msg` structure.  If the message
+could not be decoded, the `err` flag will be set to true.
+
+### la_media_adv_format_text
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/media-adv.h>
+
+void la_media_adv_format_text(la_vstring * const vstr, void const * const data, int indent);
+```
+
+Serializes a decoded Media Advisory message pointed to by `data` into a
+human-readable text indented by `indent` spaces and appends the result to `vstr`
+(which must be non-NULL). As the Media Advisory protocol node is always the leaf
+(terminating) node in the protocol tree, this function will have the same effect
+as `la_proto_tree_format_text()` which should be used instead in most cases.
+
+### la_proto_tree_find_media_adv()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/media-adv.h>
+
+la_proto_node *la_proto_tree_find_media_adv(la_proto_node *root);
+```
+
+Walks the protocol tree pointed to by `root` and returns a pointer to the first
+encountered node containing a Media Advisory message (ie. having a type
+descriptor of `la_DEF_media_adv_message`). If `root` is NULL or no matching
+protocol node has been found in the tree, the function returns NULL.
+
 ## la_vstring API
 
 libacars uses `la_vstring` data type for storing results of message
@@ -722,6 +805,19 @@ node_free(l->data);
 
 This function should be used when data chunks are complex structures composed of
 multiple allocated memory chunks.
+
+## Miscellaneous functions and variables
+
+### LA_VERSION
+
+```C
+#include <libacars/version.h>
+
+extern char const * const LA_VERSION;
+```
+
+A variable containing the version string of the libacars library currently
+running.
 
 ## libacars configuration parameters
 

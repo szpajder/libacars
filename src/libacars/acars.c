@@ -1,13 +1,14 @@
 /*
  *  This file is a part of libacars
  *
- *  Copyright (c) 2018 Tomasz Lemiech <szpajder@gmail.com>
+ *  Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
  */
 
 #include <string.h>				// memcpy()
 #include <libacars/libacars.h>			// la_proto_node, la_proto_tree_find_protocol
 #include <libacars/macros.h>			// la_assert()
 #include <libacars/arinc.h>			// la_arinc_parse()
+#include <libacars/media-adv.h>			// la_media_adv_parse()
 #include <libacars/crc.h>			// la_crc16_ccitt()
 #include <libacars/vstring.h>			// la_vstring, LA_ISPRINTF()
 #include <libacars/util.h>			// la_debug_print(), LA_CAST_PTR()
@@ -48,6 +49,15 @@ char const * const txt, la_msg_dir const msg_dir) {
 		switch(label[1]) {
 		case '1':
 			if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
+				goto end;
+			}
+			break;
+		}
+		break;
+	case 'S':
+		switch(label[1]) {
+		case 'A':
+			if((ret = la_media_adv_parse(txt)) != NULL) {
 				goto end;
 			}
 			break;

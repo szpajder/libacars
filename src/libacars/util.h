@@ -1,7 +1,7 @@
 /*
  *  This file is a part of libacars
  *
- *  Copyright (c) 2018 Tomasz Lemiech <szpajder@gmail.com>
+ *  Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
  */
 #ifndef LA_UTIL_H
 #define LA_UTIL_H 1

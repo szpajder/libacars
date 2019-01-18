@@ -37,3 +37,14 @@ ACARS_1.0 {
   local:
     *;
 };
+
+ACARS_1.1 {
+  global:
+    la_DEF_media_adv_message;
+    la_media_adv_format_text;
+    la_media_adv_parse;
+    la_proto_tree_find_media_adv;
+    LA_VERSION;
+  local:
+    *;
+} ACARS_1.0;
