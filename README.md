@@ -2,7 +2,7 @@
 
 libacars is a library for decoding various ACARS message payloads.
 
-Current stable version: **1.0.0** (released Dec 10, 2018)
+Current stable version: **1.1.0** (released Jan 18, 2019)
 
 ## Supported message types
 
@@ -103,9 +103,18 @@ Refer to the following documents:
 - [vdlm2dec](https://github.com/TLeconte/vdlm2dec), a VDL-2 decoder
 - [JAERO](https://github.com/jontio/JAERO/), a Satcom ACARS decoder
 
+## Credits and thanks
+
+I hereby express my gratitude to everybody who helped with the development and
+testing of dumpvdl2. Special thanks go to:
+
+- Fabrice Crohas
+- Dick van Noort
+- acarslogger
+
 ## Licenses
 
-libacars, Copyright (c) 2018 Tomasz Lemiech <szpajder@gmail.com>
+libacars, Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
