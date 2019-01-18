@@ -2,7 +2,7 @@
  *  media_advisory - an example program for decoding
  *  ACARS Media Advisory messages.
  *
- *  Copyright (c) 2018 Tomasz Lemiech <szpajder@gmail.com>
+ *  Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
  */
 #include <stdbool.h>
 #include <stdio.h>
@@ -14,7 +14,7 @@
 void usage() {
 	fprintf(stderr,
 	"media_advisory - extracts media advisory\n"
-	"(c) 2018 Tomasz Lemiech <szpajder@gmail.com>\n\n"
+	"(c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>\n\n"
 	"Usage:\n\n"
 	"To decode a single message from command line:\n\n"
 	"\t./media_advisory <acars_message_text>\n\n"
