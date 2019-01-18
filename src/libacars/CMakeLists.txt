@@ -15,12 +15,6 @@ check_c_source_compiles("int main(void){return 0;}" HAVE_LD_VERSION_SCRIPT)
 set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_SAVE})
 file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/conftest.ldscript")
 
-configure_file(
-	"${CMAKE_CURRENT_SOURCE_DIR}/version.h.in"
-	"${CMAKE_CURRENT_SOURCE_DIR}/version.h"
-	@ONLY
-)
-
 # strdup, strtok_r
 add_definitions(-D_XOPEN_SOURCE=600)
 
@@ -28,6 +22,12 @@ if (HAVE_LD_VERSION_SCRIPT)
 	set(acars_ldscript "${CMAKE_CURRENT_SOURCE_DIR}/symversions.ldscript")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script,${acars_ldscript}")
 endif()
+
+add_custom_command(
+	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/version.c
+		${CMAKE_CURRENT_BINARY_DIR}/_version.c
+	COMMAND ${CMAKE_COMMAND} -DLA_VERSION=${LA_VERSION} -P ${CMAKE_CURRENT_SOURCE_DIR}/version.cmake
+)
 
 add_subdirectory (asn1)
 add_library (acars_core OBJECT
@@ -45,6 +45,7 @@ add_library (acars_core OBJECT
 	media-adv.c
 	util.c
 	vstring.c
+	${CMAKE_CURRENT_BINARY_DIR}/version.c
 )
 set_property(TARGET acars_core PROPERTY POSITION_INDEPENDENT_CODE ON)
 

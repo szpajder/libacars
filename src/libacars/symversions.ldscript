@@ -41,3 +41,10 @@ ACARS_1.0 {
   local:
     *;
 };
+
+ACARS_1.1 {
+  global:
+    LA_VERSION;
+  local:
+    *;
+} ACARS_1.0;
