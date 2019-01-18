@@ -1,7 +1,7 @@
 #!/bin/bash
 # This file is a part of libacars
 #
-# Copyright (c) 2018 Tomasz Lemiech <szpajder@gmail.com>
+# Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
 
 ASN_MODULES="fans-cpdlc.asn1"
 set -e

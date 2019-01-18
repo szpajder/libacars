@@ -1,7 +1,7 @@
 /*
  *  decode_arinc - an example of ARINC 622 ATS message decoder
  *
- *  Copyright (c) 2018 Tomasz Lemiech <szpajder@gmail.com>
+ *  Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
  */
 #include <stdbool.h>
 #include <stdio.h>
@@ -15,7 +15,7 @@
 void usage() {
 	fprintf(stderr,
 	"decode_arinc - an example of ARINC 622 ATS message decoder (CPDLC, ADS-C)\n"
-	"(c) 2018 Tomasz Lemiech <szpajder@gmail.com>\n\n"
+	"(c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>\n\n"
 	"Usage:\n\n"
 	"To decode a single message from command line:\n\n"
 	"\t./decode_arinc <direction> <acars_message_text>\n\n"
