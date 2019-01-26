@@ -9,6 +9,7 @@
 #include <libacars/macros.h>			// la_assert()
 #include <libacars/arinc.h>			// la_arinc_parse()
 #include <libacars/media-adv.h>			// la_media_adv_parse()
+#include <libacars/miam.h>			// la_miam_parse()
 #include <libacars/crc.h>			// la_crc16_ccitt()
 #include <libacars/vstring.h>			// la_vstring, LA_ISPRINTF()
 #include <libacars/util.h>			// la_debug_print(), LA_CAST_PTR()
@@ -49,6 +50,18 @@ char const * const txt, la_msg_dir const msg_dir) {
 		switch(label[1]) {
 		case '1':
 			if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
+				goto end;
+			}
+			if((ret = la_miam_parse(label, txt, msg_dir)) != NULL) {
+				goto end;
+			}
+			break;
+		}
+		break;
+	case 'M':
+		switch(label[1]) {
+		case 'A':
+			if((ret = la_miam_parse(label, txt, msg_dir)) != NULL) {
 				goto end;
 			}
 			break;

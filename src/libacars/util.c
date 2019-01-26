@@ -6,7 +6,7 @@
 #include <stdio.h>		// fprintf
 #include <stdint.h>
 #include <stdlib.h>		// calloc, realloc, free
-#include <string.h>		// strerror, strlen
+#include <string.h>		// strerror, strlen, strdup
 #include <errno.h>		// errno
 #include <unistd.h>		// _exit
 #include <libacars/macros.h>	// la_debug_print()
@@ -68,4 +68,57 @@ size_t la_slurp_hexstring(char* string, uint8_t **buf) {
 		(*buf)[(i/2)] |= value << (((i + 1) % 2) * 4);
 	}
 	return dlen;
+}
+
+char *la_hexdump(uint8_t *data, size_t len) {
+	static const char hex[] = "0123456789abcdef";
+	if(data == NULL) return strdup("<undef>");
+	if(len == 0) return strdup("<none>");
+
+	size_t rows = len / 16;
+	if((len & 0xf) != 0) {
+		rows++;
+	}
+	size_t rowlen = 16 * 2 + 16;		// 32 hex digits + 16 spaces per row
+	rowlen += 16;				// ASCII characters per row
+	rowlen += 10;				// extra space for separators
+	size_t alloc_size = rows * rowlen + 1;	// terminating NULL
+	char *buf = LA_XCALLOC(alloc_size, sizeof(char));
+	char *ptr = buf;
+	size_t i = 0, j = 0;
+	while(i < len) {
+		for(j = i; j < i + 16; j++) {
+			if(j < len) {
+				*ptr++ = hex[((data[j] >> 4) & 0xf)];
+				*ptr++ = hex[data[j] & 0xf];
+			} else {
+				*ptr++ = ' ';
+				*ptr++ = ' ';
+			}
+			*ptr++ = ' ';
+			if(j == i + 7) {
+				*ptr++ = ' ';
+			}
+		}
+		*ptr++ = ' ';
+		*ptr++ = '|';
+		for(j = i; j < i + 16; j++) {
+			if(j < len) {
+				if(data[j] < 32 || data[j] > 126) {
+					*ptr++ = '.';
+				} else {
+					*ptr++ = data[j];
+				}
+			} else {
+				*ptr++ = ' ';
+			}
+			if(j == i + 7) {
+				*ptr++ = ' ';
+			}
+		}
+		*ptr++ = '|';
+		*ptr++ = '\n';
+		i += 16;
+	}
+	return buf;
 }

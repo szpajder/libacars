@@ -23,4 +23,5 @@ void *la_xrealloc(void *ptr, size_t size, const char *file, const int line, cons
 
 void *la_dict_search(const la_dict *list, int id);
 size_t la_slurp_hexstring(char *string, uint8_t **buf);
+char *la_hexdump(uint8_t *data, size_t len);
 #endif // !LA_UTIL_H

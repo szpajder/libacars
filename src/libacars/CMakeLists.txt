@@ -43,6 +43,8 @@ add_library (acars_core OBJECT
 	libacars.c
 	list.c
 	media-adv.c
+	miam.c
+	miam-core.c
 	util.c
 	vstring.c
 	${CMAKE_CURRENT_BINARY_DIR}/version.c
@@ -52,7 +54,8 @@ set_property(TARGET acars_core PROPERTY POSITION_INDEPENDENT_CODE ON)
 set(acars_obj_files $<TARGET_OBJECTS:asn1> $<TARGET_OBJECTS:acars_core>)
 
 add_library(acars SHARED ${acars_obj_files})
-target_link_libraries (acars m)
+# FIXME: libz search
+target_link_libraries (acars m z)
 set_property (TARGET acars PROPERTY SOVERSION ${LA_VERSION_MAJOR})
 if (HAVE_LD_VERSION_SCRIPT)
 	set_property (TARGET acars PROPERTY LINK_DEPENDS ${acars_ldscript})
@@ -80,6 +83,8 @@ install(FILES
 	libacars.h
 	list.h
 	media-adv.h
+	miam.h
+	miam-core.h
 	version.h
 	vstring.h
 	DESTINATION include/libacars
