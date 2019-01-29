@@ -23,6 +23,8 @@ if (HAVE_LD_VERSION_SCRIPT)
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script,${acars_ldscript}")
 endif()
 
+find_library(LIBM m REQUIRED)
+
 option(MIAM "Enable decoder of MIAM messages (requires zlib)" ON)
 set(WITH_MIAM FALSE)
 
