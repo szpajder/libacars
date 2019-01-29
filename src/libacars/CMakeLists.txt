@@ -23,10 +23,33 @@ if (HAVE_LD_VERSION_SCRIPT)
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script,${acars_ldscript}")
 endif()
 
+option(MIAM "Enable decoder of MIAM messages (requires zlib)" ON)
+set(WITH_MIAM FALSE)
+
+if(MIAM)
+	find_package(ZLIB)
+	if(ZLIB_FOUND)
+		set(WITH_MIAM TRUE)
+		list(APPEND acars_extra_sources miam.c miam-core.c)
+		list(APPEND acars_extra_install_files miam.h miam-core.h)
+		list(APPEND acars_extra_libs ${ZLIB_LIBRARIES})
+		list(APPEND acars_include_dirs ${ZLIB_INCLUDE_DIRS})
+	endif()
+endif()
+
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/version.c
 		${CMAKE_CURRENT_BINARY_DIR}/_version.c
 	COMMAND ${CMAKE_COMMAND} -DLA_VERSION=${LA_VERSION} -P ${CMAKE_CURRENT_SOURCE_DIR}/version.cmake
+)
+
+message(STATUS "libacars configuration summary:")
+message(STATUS "- MIAM:\trequested: ${MIAM}\tenabled: ${WITH_MIAM}")
+
+configure_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
+	"${CMAKE_CURRENT_SOURCE_DIR}/config.h"
+	@ONLY
 )
 
 add_subdirectory (asn1)
@@ -43,19 +66,18 @@ add_library (acars_core OBJECT
 	libacars.c
 	list.c
 	media-adv.c
-	miam.c
-	miam-core.c
 	util.c
 	vstring.c
 	${CMAKE_CURRENT_BINARY_DIR}/version.c
+	${acars_extra_sources}
 )
 set_property(TARGET acars_core PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_include_directories(acars_core PUBLIC ${acars_include_dirs})
 
 set(acars_obj_files $<TARGET_OBJECTS:asn1> $<TARGET_OBJECTS:acars_core>)
 
 add_library(acars SHARED ${acars_obj_files})
-# FIXME: libz search
-target_link_libraries (acars m z)
+target_link_libraries (acars m ${acars_extra_libs})
 set_property (TARGET acars PROPERTY SOVERSION ${LA_VERSION_MAJOR})
 if (HAVE_LD_VERSION_SCRIPT)
 	set_property (TARGET acars PROPERTY LINK_DEPENDS ${acars_ldscript})
@@ -83,10 +105,9 @@ install(FILES
 	libacars.h
 	list.h
 	media-adv.h
-	miam.h
-	miam-core.h
 	version.h
 	vstring.h
+	${acars_extra_install_files}
 	DESTINATION include/libacars
 )
 install(FILES
