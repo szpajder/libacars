@@ -6,7 +6,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>			// calloc
-//#include <stdio.h>			// printf
 #include <string.h>			// strchr(), strdup(), strtok_r(), strlen
 #include <zlib.h>			// z_stream, inflateInit2(), inflate(), inflateEnd()
 #include <libacars/macros.h>		// la_assert()
@@ -22,6 +21,8 @@ la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrlen, uin
 la_proto_node *la_miam_core_v1_ack_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
 la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
 la_proto_node *la_miam_core_v2_ack_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
+la_proto_node *la_miam_core_v1v2_alo_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
+la_proto_node *la_miam_core_v1v2_alr_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
 
 /*************************************************
  * MIAM CORE v1/v2 common definitions and routines
@@ -33,14 +34,30 @@ typedef la_proto_node* (la_miam_core_pdu_parse_f)(uint8_t const *hdrbuf, int hdr
 static la_dict const la_miam_core_v1_pdu_parser_table[] = {
 	{ .id = LA_MIAM_CORE_PDU_DATA,	.val = &la_miam_core_v1_data_parse },
 	{ .id = LA_MIAM_CORE_PDU_ACK,	.val = &la_miam_core_v1_ack_parse },
+	{ .id = LA_MIAM_CORE_PDU_ALO,	.val = &la_miam_core_v1v2_alo_parse },
+	{ .id = LA_MIAM_CORE_PDU_ALR,	.val = &la_miam_core_v1v2_alr_parse },
 	{ .id = LA_MIAM_CORE_PDU_UNKNOWN, .val = NULL }
-// TODO: ALO, ALR
 };
 static la_dict const la_miam_core_v2_pdu_parser_table[] = {
 	{ .id = LA_MIAM_CORE_PDU_DATA,	.val = &la_miam_core_v2_data_parse },
-//	{ .id = LA_MIAM_CORE_PDU_ACK,	.val = &la_miam_core_v2_ack_parse },
+	{ .id = LA_MIAM_CORE_PDU_ACK,	.val = &la_miam_core_v2_ack_parse },
+	{ .id = LA_MIAM_CORE_PDU_ALO,	.val = &la_miam_core_v1v2_alo_parse },
+	{ .id = LA_MIAM_CORE_PDU_ALR,	.val = &la_miam_core_v1v2_alr_parse },
 	{ .id = LA_MIAM_CORE_PDU_UNKNOWN, .val = NULL }
-// TODO: ALO, ALR
+};
+
+static la_dict const la_miam_core_v1v2_alo_alr_compression_names[] = {
+	{ .id = 0, .val = "deflate" },
+	{ .id = 0, .val = NULL }
+};
+
+static la_dict const la_miam_core_v1v2_alo_alr_network_names[] = {
+	{ .id = 0, .val = "ACARS" },
+	{ .id = 1, .val = "IP Middleware" },
+	{ .id = 2, .val = "TCP/IP" },
+	{ .id = 3, .val = "Satcom Data 3" },
+	{ .id = 4, .val = "UDP" },
+	{ .id = 5, .val = NULL }
 };
 
 typedef struct {
@@ -149,6 +166,57 @@ void la_isprintf_multiline_text(la_vstring * const vstr, int const indent, char 
 		ptr = next_line;
 	}
 	LA_XFREE(line);
+}
+
+// MIAM CORE v1/v2 common parsers
+
+static la_proto_node *v1v2_alo_alr_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf,
+int bodylen, la_miam_core_pdu_type const pdu_type) {
+// -Wunused-parameter
+	(void)bodybuf;
+	(void)bodylen;
+
+	la_assert(hdrbuf != NULL);
+	la_assert(pdu_type == LA_MIAM_CORE_PDU_ALO || pdu_type == LA_MIAM_CORE_PDU_ALR);
+
+	la_miam_core_v1v2_alo_alr_pdu *pdu = LA_XCALLOC(1, sizeof(la_miam_core_v1v2_alo_alr_pdu));
+	la_proto_node *node = la_proto_node_new();
+	if(pdu_type == LA_MIAM_CORE_PDU_ALO) {
+		node->td = &la_DEF_miam_core_v1v2_alo_pdu;
+	} else if(pdu_type == LA_MIAM_CORE_PDU_ALR) {
+		node->td = &la_DEF_miam_core_v1v2_alr_pdu;
+	}
+	node->data = pdu;
+	node->next = NULL;
+
+	if(hdrlen < 13) {	// should be 16, but let's not be overly pedantic on unused octets
+		la_debug_print("Header too short: %d < 16\n", hdrlen);
+		pdu->err |= LA_MIAM_ERR_HDR_TRUNCATED;
+		goto end;
+	}
+
+	pdu->pdu_len = (hdrbuf[1] << 16) | (hdrbuf[2] << 8) | hdrbuf[3];
+	hdrbuf += 4; hdrlen -= 4;
+
+	memcpy(&pdu->aircraft_id, hdrbuf, 7);
+	pdu->aircraft_id[7] = '\0';
+	la_debug_print("len: %u aircraft_id: %s\n", pdu->pdu_len, pdu->aircraft_id);
+	hdrbuf += 7; hdrlen -= 7;
+
+	pdu->compression = hdrbuf[0];
+	pdu->networks = hdrbuf[1];
+	la_debug_print("compression: 0x%02x networks: 0x%02x\n",
+		pdu->compression, pdu->networks);
+end:
+	return node;
+}
+
+la_proto_node *la_miam_core_v1v2_alo_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
+	return v1v2_alo_alr_parse(hdrbuf, hdrlen, bodybuf, bodylen, LA_MIAM_CORE_PDU_ALO);
+}
+
+la_proto_node *la_miam_core_v1v2_alr_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
+	return v1v2_alo_alr_parse(hdrbuf, hdrlen, bodybuf, bodylen, LA_MIAM_CORE_PDU_ALR);
 }
 
 la_proto_node *la_miam_core_pdu_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
@@ -285,34 +353,57 @@ void la_miam_errors_format_text(la_vstring * const vstr, uint32_t err, int inden
 	}
 }
 
-void la_miam_core_v1v2_alo_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_bitmask_format_text(la_vstring * const vstr, uint8_t const bitmask,
+la_dict const * const dict, int indent) {
+	la_assert(vstr != NULL);
+	la_assert(dict != NULL);
+	la_assert(indent >= 0);
+
+	for(int i = 0; i < 8; i++) {
+		if((bitmask & (1 << i)) != 0) {
+			char *name = la_dict_search(dict, i);
+			if(name != NULL) {
+				LA_ISPRINTF(vstr, indent, "%s\n", name);
+			} else {
+				LA_ISPRINTF(vstr, indent, "unknown (%u)\n", 1 << i);
+			}
+		}
+	}
+}
+
+static void v1v2_alo_alr_format_text(la_vstring * const vstr, void const * const data, int indent,
+la_miam_core_pdu_type const pdu_type) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 	la_assert(indent >= 0);
-/*
-		h->alo_alr_compression = buf[0];
-		h->alo_alr_network = buf[1];
-		la_debug_print("alo_comp_supported: 0x%02x alo_networks_supported: 0x%02x\n",
-			h->alo_alr_compression, h->alo_alr_network);
-		buf += 5; len -= 5;
-		break;
-*/
-// TODO
+
+	if(pdu_type != LA_MIAM_CORE_PDU_ALO && pdu_type != LA_MIAM_CORE_PDU_ALR) {
+		return;
+	}
+
+	LA_CAST_PTR(pdu, la_miam_core_v1v2_alo_alr_pdu *, data);
+	if(pdu->err & LA_MIAM_ERR_HDR) {
+		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_HDR, indent);
+		return;
+	}
+	LA_ISPRINTF(vstr, indent, "PDU Length: %u\n", pdu->pdu_len);
+	LA_ISPRINTF(vstr, indent, "Aircraft ID: %s\n", pdu->aircraft_id);
+	LA_ISPRINTF(vstr, indent, "Compressions %s:\n",
+		(pdu_type == LA_MIAM_CORE_PDU_ALO ? "supported" : "selected"));
+	la_miam_bitmask_format_text(vstr, pdu->compression,
+		la_miam_core_v1v2_alo_alr_compression_names, indent + 1);
+	LA_ISPRINTF(vstr, indent, "%s", "Networks supported:\n");
+	la_miam_bitmask_format_text(vstr, pdu->networks,
+		la_miam_core_v1v2_alo_alr_network_names, indent + 1);
+// Not checking for body errors here, as there is no body in ALO and ALR PDUs
+}
+
+void la_miam_core_v1v2_alo_format_text(la_vstring * const vstr, void const * const data, int indent) {
+	v1v2_alo_alr_format_text(vstr, data, indent, LA_MIAM_CORE_PDU_ALO);
 }
 
 void la_miam_core_v1v2_alr_format_text(la_vstring * const vstr, void const * const data, int indent) {
-	la_assert(vstr != NULL);
-	la_assert(data != NULL);
-	la_assert(indent >= 0);
-/*
-		h->alo_alr_compression = buf[0];
-		h->alo_alr_network = buf[1];
-		la_debug_print("alr_comp_selected: 0x%02x alo_networks_supported: 0x%02x\n",
-			h->alo_alr_compression, h->alo_alr_network);
-		buf += 5; len -= 5;
-		break;
-*/
-// TODO
+	v1v2_alo_alr_format_text(vstr, data, indent, LA_MIAM_CORE_PDU_ALR);
 }
 
 void la_miam_core_format_text(la_vstring * const vstr, void const * const data, int indent) {

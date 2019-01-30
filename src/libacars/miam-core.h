@@ -85,20 +85,11 @@ typedef struct {
 	uint32_t pdu_len;
 	uint32_t data_len;
 	char aircraft_id[8];
-	uint8_t compression_support;
-	uint8_t network_support;
+	uint8_t compression;
+	uint8_t networks;
 	uint32_t err;
-} la_miam_core_v1v2_alo_pdu;
+} la_miam_core_v1v2_alo_alr_pdu;
 
-typedef struct {
-	void *data;
-	uint32_t pdu_len;
-	uint32_t data_len;
-	char aircraft_id[8];
-	uint8_t compression_selected;
-	uint8_t network_support;
-	uint32_t err;
-} la_miam_core_v1v2_alr_pdu;
 #define LA_MIAM_CORE_VER_MAX 2
 
 typedef enum {
