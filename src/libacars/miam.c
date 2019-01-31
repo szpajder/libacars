@@ -10,7 +10,7 @@
 #include <string.h>		// strchr(), strlen(), strncmp()
 #include <libacars/macros.h>	// la_assert()
 #include <libacars/libacars.h>	// la_proto_node, la_type_descriptor
-#include <libacars/util.h>	// la_dict, la_dict_search()
+#include <libacars/util.h>	// la_dict, la_dict_search(), la_strntouint16_t()
 #include <libacars/miam-core.h> // la_miam_core_pdu_parse(), la_miam_core_format_text()
 #include <libacars/miam.h>
 
@@ -64,33 +64,31 @@ la_proto_node *la_miam_single_transfer_parse(char const * const label, char cons
 
 la_proto_node *la_miam_file_segment_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
 	la_assert(txt != NULL);
-
-	if(strlen(txt) < 6) {
-		la_debug_print("%s\n", "Header too short");
-		return NULL;
-	}
-	for(int i = 0; i < 6; i++) {
-		if(txt[i] < '0' || txt[i] > '9') {
-			la_debug_print("%s\n", "Not a file_segment header");
-			return NULL;
-		}
-	}
-
 	la_miam_file_segment_msg *msg = LA_XCALLOC(1, sizeof(la_miam_file_segment_msg));
-// strtoul() without strdup()
-	msg->file_id = 100 * (txt[0] - '0');
-	msg->file_id += 10 * (txt[1] - '0');
-	msg->file_id +=  1 * (txt[2] - '0');
-	msg->segment_id = 100 * (txt[3] - '0');
-	msg->segment_id += 10 * (txt[4] - '0');
-	msg->segment_id +=  1 * (txt[5] - '0');
+	int i;
+
+	if((i = la_strntouint16_t(txt, 3)) < 0) {
+		goto hdr_error;
+	}
+	msg->file_id = (uint16_t)i;
+	txt += 3;
+
+	if((i = la_strntouint16_t(txt, 3)) < 0) {
+		goto hdr_error;
+	}
+	msg->segment_id = (uint16_t)i;
+	txt += 3;
+
 	la_debug_print("file_id: %u segment_id: %u\n", msg->file_id, msg->segment_id);
 
 	la_proto_node *node = la_proto_node_new();
 	node->td = &la_DEF_miam_file_segment_message;
 	node->data = msg;
-	node->next = la_miam_core_pdu_parse(label, txt + 6, msg_dir);
+	node->next = la_miam_core_pdu_parse(label, txt, msg_dir);
 	return node;
+hdr_error:
+	la_debug_print("%s\n", "Not a file_segment_header");
+	return NULL;
 }
 
 la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {

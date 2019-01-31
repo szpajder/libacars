@@ -18,6 +18,9 @@ file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/conftest.ldscript")
 # strdup, strtok_r
 add_definitions(-D_XOPEN_SOURCE=600)
 
+# strnlen
+add_definitions(-D_POSIX_C_SOURCE=200809L)
+
 if (HAVE_LD_VERSION_SCRIPT)
 	set(acars_ldscript "${CMAKE_CURRENT_SOURCE_DIR}/symversions.ldscript")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script,${acars_ldscript}")

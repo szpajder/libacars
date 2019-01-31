@@ -6,7 +6,7 @@
 #include <stdio.h>		// fprintf
 #include <stdint.h>
 #include <stdlib.h>		// calloc, realloc, free
-#include <string.h>		// strerror, strlen, strdup
+#include <string.h>		// strerror, strlen, strdup, strnlen
 #include <errno.h>		// errno
 #include <unistd.h>		// _exit
 #include <libacars/macros.h>	// la_debug_print()
@@ -121,4 +121,26 @@ char *la_hexdump(uint8_t *data, size_t len) {
 		i += 16;
 	}
 	return buf;
+}
+
+int la_strntouint16_t(char const *txt, int const charcnt) {
+	if(	txt == NULL ||
+		charcnt < 1 ||
+		charcnt > 9 ||	// prevent overflowing int
+		strnlen(txt, charcnt) < (size_t)charcnt)
+	{
+		return -1;
+	}
+	int ret = 0;
+	int base = 1;
+	int j;
+	for(int i = 0; i < charcnt; i++) {
+		j = charcnt - 1 - i;
+		if(txt[j] < '0' || txt[j] > '9') {
+			return -2;
+		}
+		ret += (txt[j] - '0') * base;
+		base *= 10;
+	}
+	return ret;
 }
