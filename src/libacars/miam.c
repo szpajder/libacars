@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stdlib.h>		// calloc()
 #include <string.h>		// strchr(), strlen(), strncmp()
+#include <time.h>		// time_t, strptime(), strftime()
 #include <libacars/macros.h>	// la_assert()
 #include <libacars/libacars.h>	// la_proto_node, la_type_descriptor
 #include <libacars/util.h>	// la_dict, la_dict_search(), la_strntouint16_t()
@@ -45,6 +46,13 @@ static la_dict const la_miam_frame_id_descriptor_table[] = {
 		}
 	},
 	{
+		.id = LA_MIAM_FID_FILE_TRANSFER_REQ,
+		.val = &(la_miam_frame_id_descriptor){
+			.description = "MIAM File Transfer Request",
+			.parse = &la_miam_file_transfer_request_parse
+		}
+	},
+	{
 		.id = LA_MIAM_FID_FILE_SEGMENT,
 		.val = &(la_miam_frame_id_descriptor){
 			.description = "MIAM File Segment",
@@ -60,6 +68,43 @@ static la_dict const la_miam_frame_id_descriptor_table[] = {
 
 la_proto_node *la_miam_single_transfer_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
 	return la_miam_core_pdu_parse(label, txt, msg_dir);
+}
+
+la_proto_node *la_miam_file_transfer_request_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
+// -Wunused-parameter
+	(void)label;
+	(void)msg_dir;
+	la_assert(txt != NULL);
+	la_miam_file_transfer_request_msg *msg = LA_XCALLOC(1, sizeof(la_miam_file_transfer_request_msg));
+	int i;
+
+	if((i = la_strntouint16_t(txt, 3)) < 0) {
+		goto hdr_error;
+	}
+	msg->file_id = (uint16_t)i;
+	txt += 3;
+
+	if((i = la_strntouint16_t(txt, 6)) < 0) {
+		goto hdr_error;
+	}
+	msg->file_size = (size_t)i;
+	txt += 6;
+
+	la_debug_print("file_id: %u file_size: %zu\n", msg->file_id, msg->file_size);
+	char const *ptr = strptime(txt, "%y%m%d%H%M%S", &msg->validity_time);
+	if(ptr == NULL) {
+		goto hdr_error;
+	}
+
+	la_proto_node *node = la_proto_node_new();
+	node->td = &la_DEF_miam_file_transfer_request_message;
+	node->data = msg;
+	node->next = NULL;
+	return node;
+hdr_error:
+	la_debug_print("%s\n", "Not a file_transfer_request header");
+	LA_XFREE(msg);
+	return NULL;
 }
 
 la_proto_node *la_miam_file_segment_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
@@ -87,7 +132,8 @@ la_proto_node *la_miam_file_segment_parse(char const * const label, char const *
 	node->next = la_miam_core_pdu_parse(label, txt, msg_dir);
 	return node;
 hdr_error:
-	la_debug_print("%s\n", "Not a file_segment_header");
+	la_debug_print("%s\n", "Not a file_segment header");
+	LA_XFREE(msg);
 	return NULL;
 }
 
@@ -156,6 +202,20 @@ void la_miam_single_transfer_format_text(la_vstring * const vstr, void const * c
 	la_miam_core_format_text(vstr, data, indent);
 }
 
+void la_miam_file_transfer_request_format_text(la_vstring * const vstr, void const * const data, int indent) {
+	la_assert(vstr);
+	la_assert(data);
+	la_assert(indent >= 0);
+
+	LA_CAST_PTR(msg, la_miam_file_transfer_request_msg *, data);
+	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
+	LA_ISPRINTF(vstr, indent, "File size: %zu bytes\n", msg->file_size);
+	char *buf = LA_XCALLOC(32, sizeof(char));
+	la_assert(strftime(buf, 32, "%F %T", &msg->validity_time) != 0);
+	LA_ISPRINTF(vstr, indent, "Complete until: %s\n", buf);
+	LA_XFREE(buf);
+}
+
 void la_miam_file_segment_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
@@ -184,6 +244,11 @@ la_type_descriptor const la_DEF_miam_message = {
 
 la_type_descriptor const la_DEF_miam_single_transfer_message = {
 	.format_text = la_miam_single_transfer_format_text,
+	.destroy = NULL
+};
+
+la_type_descriptor const la_DEF_miam_file_transfer_request_message = {
+	.format_text = la_miam_file_transfer_request_format_text,
 	.destroy = NULL
 };
 
