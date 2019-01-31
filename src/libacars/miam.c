@@ -6,15 +6,13 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>		// calloc
-#include <stdio.h>		// printf
-#include <string.h>		// strchr
-#include <zlib.h>
-#include <libacars/macros.h>	// la_assert
-#include <libacars/libacars.h>	// la_proto_node
+#include <stdlib.h>		// calloc()
+#include <string.h>		// strchr(), strlen(), strncmp()
+#include <libacars/macros.h>	// la_assert()
+#include <libacars/libacars.h>	// la_proto_node, la_type_descriptor
 #include <libacars/util.h>	// la_dict, la_dict_search()
+#include <libacars/miam-core.h> // la_miam_core_pdu_parse(), la_miam_core_format_text()
 #include <libacars/miam.h>
-#include <libacars/miam-core.h>
 
 typedef struct {
 	char fid_char;
@@ -38,24 +36,19 @@ typedef struct {
 	la_miam_frame_parse_f *parse;
 } la_miam_frame_id_descriptor;
 
-/*
-static char const * const miam_frame_id_descriptor_table[LA_MIAM_FRAME_ID_CNT] = {
-	[LA_MIAM_FID_UNKNOWN]			= "Unknown MIAM frame type",
-	[LA_MIAM_FID_SINGLE_TRANSFER]		= "MIAM Single Transfer",
-	[LA_MIAM_FID_FILE_TRANSFER_REQ]		= "MIAM File Transfer Request",
-	[LA_MIAM_FID_FILE_TRANSFER_ACCEPT]	= "MIAM File Transfer Accept",
-	[LA_MIAM_FID_FILE_SEGMENT]		= "MIAM File Segment",
-	[LA_MIAM_FID_TRANSFER_ABORT]		= "MIAM Transfer Abort",
-	[LA_MIAM_FID_XOFF_IND]			= "MIAM XOFF Indication",
-	[LA_MIAM_FID_XON_IND]			= "MIAM XON Indication"
-}; */
-
 static la_dict const la_miam_frame_id_descriptor_table[] = {
 	{
 		.id = LA_MIAM_FID_SINGLE_TRANSFER,
 		.val = &(la_miam_frame_id_descriptor){
 			.description = "MIAM Single Transfer",
 			.parse = &la_miam_single_transfer_parse
+		}
+	},
+	{
+		.id = LA_MIAM_FID_FILE_SEGMENT,
+		.val = &(la_miam_frame_id_descriptor){
+			.description = "MIAM File Segment",
+			.parse = &la_miam_file_segment_parse
 		}
 	},
 // TODO: add all types
@@ -67,6 +60,37 @@ static la_dict const la_miam_frame_id_descriptor_table[] = {
 
 la_proto_node *la_miam_single_transfer_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
 	return la_miam_core_pdu_parse(label, txt, msg_dir);
+}
+
+la_proto_node *la_miam_file_segment_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
+	la_assert(txt != NULL);
+
+	if(strlen(txt) < 6) {
+		la_debug_print("%s\n", "Header too short");
+		return NULL;
+	}
+	for(int i = 0; i < 6; i++) {
+		if(txt[i] < '0' || txt[i] > '9') {
+			la_debug_print("%s\n", "Not a file_segment header");
+			return NULL;
+		}
+	}
+
+	la_miam_file_segment_msg *msg = LA_XCALLOC(1, sizeof(la_miam_file_segment_msg));
+// strtoul() without strdup()
+	msg->file_id = 100 * (txt[0] - '0');
+	msg->file_id += 10 * (txt[1] - '0');
+	msg->file_id +=  1 * (txt[2] - '0');
+	msg->segment_id = 100 * (txt[3] - '0');
+	msg->segment_id += 10 * (txt[4] - '0');
+	msg->segment_id +=  1 * (txt[5] - '0');
+	la_debug_print("file_id: %u segment_id: %u\n", msg->file_id, msg->segment_id);
+
+	la_proto_node *node = la_proto_node_new();
+	node->td = &la_DEF_miam_file_segment_message;
+	node->data = msg;
+	node->next = la_miam_core_pdu_parse(label, txt + 6, msg_dir);
+	return node;
 }
 
 la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
@@ -134,6 +158,16 @@ void la_miam_single_transfer_format_text(la_vstring * const vstr, void const * c
 	la_miam_core_format_text(vstr, data, indent);
 }
 
+void la_miam_file_segment_format_text(la_vstring * const vstr, void const * const data, int indent) {
+	la_assert(vstr);
+	la_assert(data);
+	la_assert(indent >= 0);
+
+	LA_CAST_PTR(msg, la_miam_file_segment_msg *, data);
+	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
+	LA_ISPRINTF(vstr, indent, "Segment ID: %u\n", msg->segment_id);
+}
+
 void la_miam_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
@@ -152,6 +186,11 @@ la_type_descriptor const la_DEF_miam_message = {
 
 la_type_descriptor const la_DEF_miam_single_transfer_message = {
 	.format_text = la_miam_single_transfer_format_text,
+	.destroy = NULL
+};
+
+la_type_descriptor const la_DEF_miam_file_segment_message = {
+	.format_text = la_miam_file_segment_format_text,
 	.destroy = NULL
 };
 
