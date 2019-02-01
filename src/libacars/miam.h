@@ -23,7 +23,7 @@ typedef enum {
 	LA_MIAM_FID_FILE_TRANSFER_REQ,
 	LA_MIAM_FID_FILE_TRANSFER_ACCEPT,
 	LA_MIAM_FID_FILE_SEGMENT,
-	LA_MIAM_FID_TRANSFER_ABORT,
+	LA_MIAM_FID_FILE_TRANSFER_ABORT,
 	LA_MIAM_FID_XOFF_IND,
 	LA_MIAM_FID_XON_IND
 } la_miam_frame_id;
@@ -41,26 +41,61 @@ typedef struct {
 	struct tm validity_time;
 } la_miam_file_transfer_request_msg;
 
+// MIAM File Transfer Accept
+typedef struct {
+	uint16_t file_id;
+	uint16_t segment_size;
+	uint16_t onground_segment_tempo;
+	uint16_t inflight_segment_tempo;
+} la_miam_file_transfer_accept_msg;
+
 // MIAM File Segment
 typedef struct {
 	uint16_t file_id;
 	uint16_t segment_id;
 } la_miam_file_segment_msg;
 
+// MIAM File Transfer Abort
+typedef struct {
+	uint16_t file_id;
+	uint16_t reason;
+} la_miam_file_transfer_abort_msg;
+
+// MIAM XOFF IND
+typedef struct {
+	uint16_t file_id;	// 0-127 or 0xFFF = pause all transfers
+} la_miam_xoff_ind_msg;
+//
+// MIAM XON IND
+typedef struct {
+	uint16_t file_id;	// 0-127 or 0xFFF = resume all transfers
+	uint16_t onground_segment_tempo;
+	uint16_t inflight_segment_tempo;
+} la_miam_xon_ind_msg;
+
 la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
 la_proto_node *la_miam_single_transfer_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
 la_proto_node *la_miam_file_transfer_request_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
+la_proto_node *la_miam_file_transfer_accept_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
 la_proto_node *la_miam_file_segment_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
+la_proto_node *la_miam_file_transfer_abort_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
+la_proto_node *la_miam_xoff_ind_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
+la_proto_node *la_miam_xon_ind_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
 
 void la_miam_format_text(la_vstring * const vstr, void const * const data, int indent);
 void la_miam_single_transfer_format_text(la_vstring * const vstr, void const * const data, int indent);
 void la_miam_file_transfer_request_format_text(la_vstring * const vstr, void const * const data, int indent);
+void la_miam_file_transfer_accept_format_text(la_vstring * const vstr, void const * const data, int indent);
 void la_miam_file_segment_format_text(la_vstring * const vstr, void const * const data, int indent);
 
 extern la_type_descriptor const la_DEF_miam_message;
 extern la_type_descriptor const la_DEF_miam_single_transfer_message;
 extern la_type_descriptor const la_DEF_miam_file_transfer_request_message;
+extern la_type_descriptor const la_DEF_miam_file_transfer_accept_message;
 extern la_type_descriptor const la_DEF_miam_file_segment_message;
+extern la_type_descriptor const la_DEF_miam_file_transfer_abort_message;
+extern la_type_descriptor const la_DEF_miam_xoff_ind_message;
+extern la_type_descriptor const la_DEF_miam_xon_ind_message;
 la_proto_node *la_proto_tree_find_miam(la_proto_node *root);
 
 #ifdef __cplusplus

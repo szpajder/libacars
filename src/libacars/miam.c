@@ -25,7 +25,7 @@ static la_miam_frame_id_map const frame_id_map[LA_MIAM_FRAME_ID_CNT] = {
 	{ .fid_char= 'F',  .frame_id = LA_MIAM_FID_FILE_TRANSFER_REQ },
 	{ .fid_char= 'K',  .frame_id = LA_MIAM_FID_FILE_TRANSFER_ACCEPT },
 	{ .fid_char= 'S',  .frame_id = LA_MIAM_FID_FILE_SEGMENT },
-	{ .fid_char= 'A',  .frame_id = LA_MIAM_FID_TRANSFER_ABORT },
+	{ .fid_char= 'A',  .frame_id = LA_MIAM_FID_FILE_TRANSFER_ABORT },
 	{ .fid_char= 'Y',  .frame_id = LA_MIAM_FID_XOFF_IND },
 	{ .fid_char= 'X',  .frame_id = LA_MIAM_FID_XON_IND },
 	{ .fid_char= '\0', .frame_id = LA_MIAM_FID_UNKNOWN },
@@ -53,13 +53,40 @@ static la_dict const la_miam_frame_id_descriptor_table[] = {
 		}
 	},
 	{
+		.id = LA_MIAM_FID_FILE_TRANSFER_ACCEPT,
+		.val = &(la_miam_frame_id_descriptor){
+			.description = "MIAM File Transfer Accept",
+			.parse = &la_miam_file_transfer_accept_parse
+		}
+	},
+	{
 		.id = LA_MIAM_FID_FILE_SEGMENT,
 		.val = &(la_miam_frame_id_descriptor){
 			.description = "MIAM File Segment",
 			.parse = &la_miam_file_segment_parse
 		}
 	},
-// TODO: add all types
+	{
+		.id = LA_MIAM_FID_FILE_TRANSFER_ABORT,
+		.val = &(la_miam_frame_id_descriptor){
+			.description = "MIAM File Transfer Abort",
+			.parse = &la_miam_file_transfer_abort_parse
+		}
+	},
+	{
+		.id = LA_MIAM_FID_XOFF_IND,
+		.val = &(la_miam_frame_id_descriptor){
+			.description = "MIAM File Transfer Pause",
+			.parse = &la_miam_xoff_ind_parse
+		}
+	},
+	{
+		.id = LA_MIAM_FID_XON_IND,
+		.val = &(la_miam_frame_id_descriptor){
+			.description = "MIAM File Transfer Resume",
+			.parse = &la_miam_xon_ind_parse
+		}
+	},
 	{
 		.id = 0,
 		.val = NULL
@@ -107,6 +134,55 @@ hdr_error:
 	return NULL;
 }
 
+la_proto_node *la_miam_file_transfer_accept_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
+// -Wunused-parameter
+	(void)label;
+	(void)msg_dir;
+	la_assert(txt != NULL);
+	la_miam_file_transfer_accept_msg *msg = LA_XCALLOC(1, sizeof(la_miam_file_transfer_accept_msg));
+	int i;
+
+	if((i = la_strntouint16_t(txt, 3)) < 0) {
+		goto hdr_error;
+	}
+	msg->file_id = (uint16_t)i;
+	txt += 3;
+
+	if(txt[0] >= '0' && txt[0] <= '9') {
+		msg->segment_size = txt[0] - '0';
+	} else if(txt[0] >= 'A' && txt[0] <= 'F') {
+		msg->segment_size = txt[0] - 'A' + 10;
+	} else {
+		goto hdr_error;
+	}
+	txt++;
+
+	if((i = la_strntouint16_t(txt, 3)) < 0) {
+		goto hdr_error;
+	}
+	msg->onground_segment_tempo = (uint16_t)i;
+	txt += 3;
+
+	if((i = la_strntouint16_t(txt, 3)) < 0) {
+		goto hdr_error;
+	}
+	msg->inflight_segment_tempo = (uint16_t)i;
+	txt += 3;
+
+	la_debug_print("file_id: %u seg_size: %u onground_tempo: %u inflight_tempo: %u\n",
+		msg->file_id, msg->segment_size, msg->onground_segment_tempo, msg->inflight_segment_tempo);
+
+	la_proto_node *node = la_proto_node_new();
+	node->td = &la_DEF_miam_file_transfer_accept_message;
+	node->data = msg;
+	node->next = NULL;
+	return node;
+hdr_error:
+	la_debug_print("%s\n", "Not a file_transfer_accept header");
+	LA_XFREE(msg);
+	return NULL;
+}
+
 la_proto_node *la_miam_file_segment_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
 	la_assert(txt != NULL);
 	la_miam_file_segment_msg *msg = LA_XCALLOC(1, sizeof(la_miam_file_segment_msg));
@@ -137,6 +213,117 @@ hdr_error:
 	return NULL;
 }
 
+la_proto_node *la_miam_file_transfer_abort_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
+// -Wunused-parameter
+	(void)label;
+	(void)msg_dir;
+
+	la_assert(txt != NULL);
+	la_miam_file_transfer_abort_msg *msg = LA_XCALLOC(1, sizeof(la_miam_file_transfer_abort_msg));
+	int i;
+
+	if((i = la_strntouint16_t(txt, 3)) < 0) {
+		goto hdr_error;
+	}
+	msg->file_id = (uint16_t)i;
+	txt += 3;
+
+	if(txt[0] >= '0' && txt[0] <= '9') {
+		msg->reason = txt[0] - '0';
+	} else {
+		goto hdr_error;
+	}
+	txt++;
+
+	la_debug_print("file_id: %u reason: %u\n", msg->file_id, msg->reason);
+
+	la_proto_node *node = la_proto_node_new();
+	node->td = &la_DEF_miam_file_transfer_abort_message;
+	node->data = msg;
+	node->next = NULL;
+	return node;
+hdr_error:
+	la_debug_print("%s\n", "Not a file_transfer_abort header");
+	LA_XFREE(msg);
+	return NULL;
+}
+
+la_proto_node *la_miam_xoff_ind_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
+// -Wunused-parameter
+	(void)label;
+	(void)msg_dir;
+
+	la_assert(txt != NULL);
+	la_miam_xoff_ind_msg *msg = LA_XCALLOC(1, sizeof(la_miam_xoff_ind_msg));
+	int i;
+
+	if((i = la_strntouint16_t(txt, 3)) < 0) {
+		if(strncmp(txt, "FFF", 3) == 0) {
+			i = 0xFFF;
+		} else {
+			goto hdr_error;
+		}
+	}
+	msg->file_id = (uint16_t)i;
+	txt += 3;
+	la_debug_print("file_id: %u\n", msg->file_id);
+
+	la_proto_node *node = la_proto_node_new();
+	node->td = &la_DEF_miam_xoff_ind_message;
+	node->data = msg;
+	node->next = NULL;
+	return node;
+hdr_error:
+	la_debug_print("%s\n", "Not a xoff_ind header");
+	LA_XFREE(msg);
+	return NULL;
+}
+
+la_proto_node *la_miam_xon_ind_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
+// -Wunused-parameter
+	(void)label;
+	(void)msg_dir;
+
+	la_assert(txt != NULL);
+	la_miam_xon_ind_msg *msg = LA_XCALLOC(1, sizeof(la_miam_xon_ind_msg));
+	int i;
+
+	if((i = la_strntouint16_t(txt, 3)) < 0) {
+		if(strncmp(txt, "FFF", 3) == 0) {
+			i = 0xFFF;
+		} else {
+			goto hdr_error;
+		}
+	}
+	msg->file_id = (uint16_t)i;
+	txt += 3;
+
+	if((i = la_strntouint16_t(txt, 3)) < 0) {
+		goto hdr_error;
+	}
+	msg->onground_segment_tempo = (uint16_t)i;
+	txt += 3;
+
+	if((i = la_strntouint16_t(txt, 3)) < 0) {
+		goto hdr_error;
+	}
+	msg->inflight_segment_tempo = (uint16_t)i;
+	txt += 3;
+
+	la_debug_print("file_id: %u onground_tempo: %u inflight_tempo: %u\n",
+		msg->file_id, msg->onground_segment_tempo, msg->inflight_segment_tempo);
+
+	la_proto_node *node = la_proto_node_new();
+	node->td = &la_DEF_miam_xon_ind_message;
+	node->data = msg;
+	node->next = NULL;
+	return node;
+hdr_error:
+	la_debug_print("%s\n", "Not a xon_ind header");
+	LA_XFREE(msg);
+	return NULL;
+}
+
 la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
 	if(txt == NULL) {
 		return NULL;
@@ -145,8 +332,6 @@ la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_d
 	la_assert(strlen(label) >= 2);
 
 	size_t len = strlen(txt);
-// FIXME
-	la_debug_print("%s\n", txt);
 
 // Handle messages to ACARS peripherals (label H1):
 // - uplinks with OAT prefix "- #<2-char-sublabel>",
@@ -216,6 +401,18 @@ void la_miam_file_transfer_request_format_text(la_vstring * const vstr, void con
 	LA_XFREE(buf);
 }
 
+void la_miam_file_transfer_accept_format_text(la_vstring * const vstr, void const * const data, int indent) {
+	la_assert(vstr);
+	la_assert(data);
+	la_assert(indent >= 0);
+
+	LA_CAST_PTR(msg, la_miam_file_transfer_accept_msg *, data);
+	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
+	LA_ISPRINTF(vstr, indent, "Segment size: %u\n", msg->segment_size);
+	LA_ISPRINTF(vstr, indent, "On-ground segment temporization: %u sec\n", msg->onground_segment_tempo);
+	LA_ISPRINTF(vstr, indent, "In-flight segment temporization: %u sec\n", msg->inflight_segment_tempo);
+}
+
 void la_miam_file_segment_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
@@ -224,6 +421,54 @@ void la_miam_file_segment_format_text(la_vstring * const vstr, void const * cons
 	LA_CAST_PTR(msg, la_miam_file_segment_msg *, data);
 	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	LA_ISPRINTF(vstr, indent, "Segment ID: %u\n", msg->segment_id);
+}
+
+void la_miam_file_transfer_abort_format_text(la_vstring * const vstr, void const * const data, int indent) {
+	static la_dict const abort_reasons[] = {
+		{ .id = 0, .val = "File transfer request refused by receiver" },
+		{ .id = 1, .val = "File segment out of context" },
+		{ .id = 2, .val = "File transfer stopped by sender" },
+		{ .id = 3, .val = "File transfer stopped by receiver" },
+		{ .id = 4, .val = "File segment transmission failed" },
+		{ .id = 0, .val = NULL }
+	};
+	la_assert(vstr);
+	la_assert(data);
+	la_assert(indent >= 0);
+
+	LA_CAST_PTR(msg, la_miam_file_transfer_abort_msg *, data);
+	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
+	char *descr = la_dict_search(abort_reasons, msg->reason);
+	LA_ISPRINTF(vstr, indent, "Reason: %u (%s)\n", msg->reason,
+		(descr != NULL ? descr : "unknown"));
+}
+
+void la_miam_xoff_ind_format_text(la_vstring * const vstr, void const * const data, int indent) {
+	la_assert(vstr);
+	la_assert(data);
+	la_assert(indent >= 0);
+
+	LA_CAST_PTR(msg, la_miam_xoff_ind_msg *, data);
+	if(msg->file_id == 0xFFF) {
+		LA_ISPRINTF(vstr, indent, "%s\n", "File ID: 0xFFF (all)");
+	} else {
+		LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
+	}
+}
+
+void la_miam_xon_ind_format_text(la_vstring * const vstr, void const * const data, int indent) {
+	la_assert(vstr);
+	la_assert(data);
+	la_assert(indent >= 0);
+
+	LA_CAST_PTR(msg, la_miam_xon_ind_msg *, data);
+	if(msg->file_id == 0xFFF) {
+		LA_ISPRINTF(vstr, indent, "%s\n", "File ID: 0xFFF (all)");
+	} else {
+		LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
+	}
+	LA_ISPRINTF(vstr, indent, "On-ground segment temporization: %u sec\n", msg->onground_segment_tempo);
+	LA_ISPRINTF(vstr, indent, "In-flight segment temporization: %u sec\n", msg->inflight_segment_tempo);
 }
 
 void la_miam_format_text(la_vstring * const vstr, void const * const data, int indent) {
@@ -252,8 +497,28 @@ la_type_descriptor const la_DEF_miam_file_transfer_request_message = {
 	.destroy = NULL
 };
 
+la_type_descriptor const la_DEF_miam_file_transfer_accept_message = {
+	.format_text = la_miam_file_transfer_accept_format_text,
+	.destroy = NULL
+};
+
 la_type_descriptor const la_DEF_miam_file_segment_message = {
 	.format_text = la_miam_file_segment_format_text,
+	.destroy = NULL
+};
+
+la_type_descriptor const la_DEF_miam_file_transfer_abort_message = {
+	.format_text = la_miam_file_transfer_abort_format_text,
+	.destroy = NULL
+};
+
+la_type_descriptor const la_DEF_miam_xoff_ind_message = {
+	.format_text = la_miam_xoff_ind_format_text,
+	.destroy = NULL
+};
+
+la_type_descriptor const la_DEF_miam_xon_ind_message = {
+	.format_text = la_miam_xon_ind_format_text,
 	.destroy = NULL
 };
 
