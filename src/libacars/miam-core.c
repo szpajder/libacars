@@ -173,6 +173,23 @@ void la_isprintf_multiline_text(la_vstring * const vstr, int const indent, char 
 	LA_XFREE(line);
 }
 
+static bool is_printable(uint8_t const *buf, uint32_t data_len) {
+	if(buf == NULL || data_len == 0) {
+		return false;
+	}
+	for(uint32_t i = 0; i < data_len; i++) {
+		if((buf[i] >= 7  && buf[i] <= 13) ||
+		   (buf[i] >= 32 && buf[i] <= 126)) {
+			// noop
+		} else {
+			la_debug_print("false due to character %u at position %u\n", buf[i], i);
+			return false;
+		}
+	}
+	la_debug_print("%s\n", "true");
+	return true;
+}
+
 // MIAM CORE v1/v2 common parsers
 
 static la_proto_node *v1v2_alo_alr_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf,
@@ -692,7 +709,10 @@ void la_miam_core_v1_data_format_text(la_vstring * const vstr, void const * cons
 	LA_ISPRINTF(vstr, indent, "%s", "Message:\n");
 	indent++;
 	if(pdu->data != NULL) {
-		if(pdu->encoding == LA_MIAM_CORE_V1_ENC_ISO5) {
+// Don't trust pdu->encoding - if the payload is printable, then print it as text.
+// Otherwise print a hexdump.
+		if(is_printable(pdu->data, pdu->data_len)) {
+// Parser has appended '\0' at the end, so it's safe to print it directly
 			la_isprintf_multiline_text(vstr, indent, (char *)pdu->data);
 		} else {
 			char *hexdump = la_hexdump((uint8_t *)pdu->data, pdu->data_len);
@@ -993,7 +1013,10 @@ void la_miam_core_v2_data_format_text(la_vstring * const vstr, void const * cons
 	LA_ISPRINTF(vstr, indent, "%s", "Message:\n");
 	indent++;
 	if(pdu->data != NULL) {
-		if(pdu->encoding == LA_MIAM_CORE_V2_ENC_ISO5) {
+// Don't trust pdu->encoding - if the payload is printable, then print it as text.
+// Otherwise print a hexdump.
+		if(is_printable(pdu->data, pdu->data_len)) {
+// Parser has appended '\0' at the end, so it's safe to print it directly
 			la_isprintf_multiline_text(vstr, indent, (char *)pdu->data);
 		} else {
 			char *hexdump = la_hexdump((uint8_t *)pdu->data, pdu->data_len);
