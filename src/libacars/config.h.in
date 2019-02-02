@@ -1,0 +1,11 @@
+/*
+ *  This file is a part of libacars
+ *
+ *  Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
+ */
+#ifndef _CONFIG_H
+#define _CONFIG_H
+
+#cmakedefine WITH_ZLIB
+
+#endif // !_CONFIG_H

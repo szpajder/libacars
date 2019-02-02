@@ -18,15 +18,41 @@ file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/conftest.ldscript")
 # strdup, strtok_r
 add_definitions(-D_XOPEN_SOURCE=600)
 
+# strnlen
+add_definitions(-D_POSIX_C_SOURCE=200809L)
+
 if (HAVE_LD_VERSION_SCRIPT)
 	set(acars_ldscript "${CMAKE_CURRENT_SOURCE_DIR}/symversions.ldscript")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script,${acars_ldscript}")
+endif()
+
+find_library(LIBM m REQUIRED)
+
+option(ZLIB "Enable ZLIB support for MIAM" ON)
+set(WITH_ZLIB FALSE)
+
+if(ZLIB)
+	find_package(ZLIB)
+	if(ZLIB_FOUND)
+		set(WITH_ZLIB TRUE)
+		list(APPEND acars_extra_libs ${ZLIB_LIBRARIES})
+		list(APPEND acars_include_dirs ${ZLIB_INCLUDE_DIRS})
+	endif()
 endif()
 
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/version.c
 		${CMAKE_CURRENT_BINARY_DIR}/_version.c
 	COMMAND ${CMAKE_COMMAND} -DLA_VERSION=${LA_VERSION} -P ${CMAKE_CURRENT_SOURCE_DIR}/version.cmake
+)
+
+message(STATUS "libacars configuration summary:")
+message(STATUS "- ZLIB:\trequested: ${ZLIB}\tenabled: ${WITH_ZLIB}")
+
+configure_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
+	"${CMAKE_CURRENT_SOURCE_DIR}/config.h"
+	@ONLY
 )
 
 add_subdirectory (asn1)
@@ -43,16 +69,19 @@ add_library (acars_core OBJECT
 	libacars.c
 	list.c
 	media-adv.c
+	miam.c
+	miam-core.c
 	util.c
 	vstring.c
 	${CMAKE_CURRENT_BINARY_DIR}/version.c
 )
 set_property(TARGET acars_core PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_include_directories(acars_core PUBLIC ${acars_include_dirs})
 
 set(acars_obj_files $<TARGET_OBJECTS:asn1> $<TARGET_OBJECTS:acars_core>)
 
 add_library(acars SHARED ${acars_obj_files})
-target_link_libraries (acars m)
+target_link_libraries (acars m ${acars_extra_libs})
 set_property (TARGET acars PROPERTY SOVERSION ${LA_VERSION_MAJOR})
 if (HAVE_LD_VERSION_SCRIPT)
 	set_property (TARGET acars PROPERTY LINK_DEPENDS ${acars_ldscript})
@@ -80,6 +109,8 @@ install(FILES
 	libacars.h
 	list.h
 	media-adv.h
+	miam.h
+	miam-core.h
 	version.h
 	vstring.h
 	DESTINATION include/libacars
