@@ -6,6 +6,6 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#cmakedefine WITH_MIAM
+#cmakedefine WITH_ZLIB
 
 #endif // !_CONFIG_H

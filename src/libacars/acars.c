@@ -5,14 +5,11 @@
  */
 
 #include <string.h>				// memcpy()
-#include "config.h"
 #include <libacars/libacars.h>			// la_proto_node, la_proto_tree_find_protocol
 #include <libacars/macros.h>			// la_assert()
 #include <libacars/arinc.h>			// la_arinc_parse()
 #include <libacars/media-adv.h>			// la_media_adv_parse()
-#ifdef WITH_MIAM
 #include <libacars/miam.h>			// la_miam_parse()
-#endif
 #include <libacars/crc.h>			// la_crc16_ccitt()
 #include <libacars/vstring.h>			// la_vstring, LA_ISPRINTF()
 #include <libacars/util.h>			// la_debug_print(), LA_CAST_PTR()
@@ -55,22 +52,18 @@ char const * const txt, la_msg_dir const msg_dir) {
 			if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
 				goto end;
 			}
-#ifdef WITH_MIAM
 			if((ret = la_miam_parse(label, txt, msg_dir)) != NULL) {
 				goto end;
 			}
-#endif
 			break;
 		}
 		break;
 	case 'M':
 		switch(label[1]) {
 		case 'A':
-#ifdef WITH_MIAM
 			if((ret = la_miam_parse(label, txt, msg_dir)) != NULL) {
 				goto end;
 			}
-#endif
 			break;
 		}
 		break;

@@ -28,15 +28,13 @@ endif()
 
 find_library(LIBM m REQUIRED)
 
-option(MIAM "Enable decoder of MIAM messages (requires zlib)" ON)
-set(WITH_MIAM FALSE)
+option(ZLIB "Enable ZLIB support for MIAM" ON)
+set(WITH_ZLIB FALSE)
 
-if(MIAM)
+if(ZLIB)
 	find_package(ZLIB)
 	if(ZLIB_FOUND)
-		set(WITH_MIAM TRUE)
-		list(APPEND acars_extra_sources miam.c miam-core.c)
-		list(APPEND acars_extra_install_files miam.h miam-core.h)
+		set(WITH_ZLIB TRUE)
 		list(APPEND acars_extra_libs ${ZLIB_LIBRARIES})
 		list(APPEND acars_include_dirs ${ZLIB_INCLUDE_DIRS})
 	endif()
@@ -49,7 +47,7 @@ add_custom_command(
 )
 
 message(STATUS "libacars configuration summary:")
-message(STATUS "- MIAM:\trequested: ${MIAM}\tenabled: ${WITH_MIAM}")
+message(STATUS "- ZLIB:\trequested: ${ZLIB}\tenabled: ${WITH_ZLIB}")
 
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
@@ -71,10 +69,11 @@ add_library (acars_core OBJECT
 	libacars.c
 	list.c
 	media-adv.c
+	miam.c
+	miam-core.c
 	util.c
 	vstring.c
 	${CMAKE_CURRENT_BINARY_DIR}/version.c
-	${acars_extra_sources}
 )
 set_property(TARGET acars_core PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(acars_core PUBLIC ${acars_include_dirs})
@@ -110,9 +109,10 @@ install(FILES
 	libacars.h
 	list.h
 	media-adv.h
+	miam.h
+	miam-core.h
 	version.h
 	vstring.h
-	${acars_extra_install_files}
 	DESTINATION include/libacars
 )
 install(FILES

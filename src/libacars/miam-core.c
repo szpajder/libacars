@@ -7,7 +7,10 @@
 #include <stdbool.h>
 #include <stdlib.h>			// calloc
 #include <string.h>			// strchr(), strdup(), strtok_r(), strlen
+#include "config.h"
+#ifdef WITH_ZLIB
 #include <zlib.h>			// z_stream, inflateInit2(), inflate(), inflateEnd()
+#endif
 #include <libacars/macros.h>		// la_assert()
 #include <libacars/libacars.h>		// la_proto_node
 #include <libacars/util.h>		// la_dict, la_dict_search(), XCALLOC(), la_hexdump()
@@ -62,14 +65,15 @@ static la_dict const la_miam_core_v1v2_alo_alr_network_names[] = {
 
 typedef struct {
 	uint8_t *buf;
+	int len;
+} la_base85_decode_result;
+
+#ifdef WITH_ZLIB
+typedef struct {
+	uint8_t *buf;
 	size_t buflen;
 	bool success;
 } la_inflate_result;
-
-typedef struct {
-	uint8_t *buf;
-	int len;
-} la_base85_decode_result;
 
 la_inflate_result la_inflate(uint8_t const *buf, int const inlen) {
 	la_assert(buf != NULL);
@@ -102,6 +106,7 @@ la_inflate_result la_inflate(uint8_t const *buf, int const inlen) {
 end:
 	return result;
 }
+#endif
 
 la_base85_decode_result la_base85_decode(char const *str, char const *end) {
 	static uint32_t const base85[] = {
@@ -336,7 +341,8 @@ void la_miam_errors_format_text(la_vstring * const vstr, uint32_t err, int inden
 		{ .id = LA_MIAM_ERR_HDR_TRUNCATED,		.val = "Header truncated" },
 		{ .id = LA_MIAM_ERR_HDR_APP_TYPE_UNKNOWN,	.val = "Unknown application type" },
 		{ .id = LA_MIAM_ERR_BODY_TRUNCATED,		.val = "Message truncated" },
-		{ .id = LA_MIAM_ERR_BODY_INFLATE_FAILED,	.val = "Decompresion failed" },
+		{ .id = LA_MIAM_ERR_BODY_INFLATE_FAILED,	.val = "Decompression failed" },
+		{ .id = LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED,	.val = "Unsupported compression algorithm" },
 		{ .id = 0,					.val = NULL }
 	};
 	la_assert(vstr != NULL);
@@ -537,6 +543,7 @@ la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrlen, uin
 		la_debug_print("Warning: %u bytes left after MIAM header\n", hdrlen);
 	}
 	if(bodybuf != NULL && bodylen > 0) {
+#ifdef WITH_ZLIB
 		if(pdu->compression == LA_MIAM_CORE_V1_COMP_DEFLATE) {
 			la_inflate_result inflated = la_inflate(bodybuf, bodylen);
 			la_debug_print_buf_hex(inflated.buf, (int)inflated.buflen, "%s", "Decompressed content:\n");
@@ -548,12 +555,16 @@ la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrlen, uin
 			if(inflated.success == false) {
 				pdu->err |= LA_MIAM_ERR_BODY_INFLATE_FAILED;
 			}
-		} else if(pdu->compression == LA_MIAM_CORE_V1_COMP_NONE) {
+		} else
+#endif
+		if(pdu->compression == LA_MIAM_CORE_V1_COMP_NONE) {
 			uint8_t *pdu_data = LA_XCALLOC(bodylen + 1, sizeof(uint8_t));
 			memcpy(pdu_data, bodybuf, bodylen);
 			pdu_data[bodylen] = '\0';
 			pdu->data = pdu_data;
 			pdu->data_len = bodylen;
+		} else {
+			pdu->err |= LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED;
 		}
 	}
 end:
@@ -835,6 +846,7 @@ la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrlen, uin
 // TODO: check CRC
 // FIXME: move this to a separate routine and dedup with v1
 	if(bodybuf != NULL && bodylen > 0) {
+#ifdef WITH_ZLIB
 		if(pdu->compression == LA_MIAM_CORE_V2_COMP_DEFLATE) {
 			la_inflate_result inflated = la_inflate(bodybuf, bodylen);
 			la_debug_print_buf_hex(inflated.buf, (int)inflated.buflen, "%s", "Decompressed content:\n");
@@ -846,12 +858,16 @@ la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrlen, uin
 			if(inflated.success == false) {
 				pdu->err |= LA_MIAM_ERR_BODY_INFLATE_FAILED;
 			}
-		} else if(pdu->compression == LA_MIAM_CORE_V2_COMP_NONE) {
+		} else
+#endif
+		if(pdu->compression == LA_MIAM_CORE_V2_COMP_NONE) {
 			uint8_t *pdu_data = LA_XCALLOC(bodylen + 1, sizeof(uint8_t));
 			memcpy(pdu_data, bodybuf, bodylen);
 			pdu_data[bodylen] = '\0';
 			pdu->data = pdu_data;
 			pdu->data_len = bodylen;
+		} else {
+			pdu->err |= LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED;
 		}
 	}
 end:

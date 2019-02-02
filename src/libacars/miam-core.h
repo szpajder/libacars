@@ -22,10 +22,11 @@ extern "C" {
 #define LA_MIAM_ERR_HDR_PDU_TYPE_UNKNOWN	(1 << 1)
 #define LA_MIAM_ERR_HDR_PDU_VERSION_UNKNOWN	(1 << 2)
 #define LA_MIAM_ERR_HDR_TRUNCATED		(1 << 3)
-#define LA_MIAM_ERR_HDR_APP_TYPE_UNKNOWN	(1 << 4)
+#define LA_MIAM_ERR_HDR_APP_TYPE_UNKNOWN 	(1 << 4)
 
 #define LA_MIAM_ERR_BODY_TRUNCATED		(1 << 16)
-#define LA_MIAM_ERR_BODY_INFLATE_FAILED		(1 << 17)
+#define LA_MIAM_ERR_BODY_INFLATE_FAILED 	(1 << 17)
+#define LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED	(1 << 18)
 
 // header/body error masks
 #define LA_MIAM_ERR_HDR				0x0000ffffu
