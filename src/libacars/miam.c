@@ -102,7 +102,13 @@ la_proto_node *la_miam_file_transfer_request_parse(char const * const label, cha
 	(void)label;
 	(void)msg_dir;
 	la_assert(txt != NULL);
-	la_miam_file_transfer_request_msg *msg = LA_XCALLOC(1, sizeof(la_miam_file_transfer_request_msg));
+
+	la_miam_file_transfer_request_msg *msg = NULL;
+	if(chomped_strlen(txt) != 21) {
+		goto hdr_error;
+	}
+
+	msg = LA_XCALLOC(1, sizeof(la_miam_file_transfer_request_msg));
 	int i;
 
 	if((i = la_strntouint16_t(txt, 3)) < 0) {
@@ -139,7 +145,12 @@ la_proto_node *la_miam_file_transfer_accept_parse(char const * const label, char
 	(void)label;
 	(void)msg_dir;
 	la_assert(txt != NULL);
-	la_miam_file_transfer_accept_msg *msg = LA_XCALLOC(1, sizeof(la_miam_file_transfer_accept_msg));
+
+	la_miam_file_transfer_accept_msg *msg = NULL;
+	if(chomped_strlen(txt) != 10) {
+		goto hdr_error;
+	}
+	msg = LA_XCALLOC(1, sizeof(la_miam_file_transfer_accept_msg));
 	int i;
 
 	if((i = la_strntouint16_t(txt, 3)) < 0) {
@@ -202,10 +213,19 @@ la_proto_node *la_miam_file_segment_parse(char const * const label, char const *
 
 	la_debug_print("file_id: %u segment_id: %u\n", msg->file_id, msg->segment_id);
 
+// MIAM File Segment headers have very simple structure and can easily be confused with
+// various non-MIAM messages, especially when sent with H1 label. la_miam_core_pdu_parse()
+// performs more thorough checks - if it fails to identify its input as a MIAM CORE PDU,
+// then we declare that this message is not MIAM.
+	void *next = la_miam_core_pdu_parse(label, txt, msg_dir);
+	if(next == NULL) {
+		goto hdr_error;
+	}
+
 	la_proto_node *node = la_proto_node_new();
 	node->td = &la_DEF_miam_file_segment_message;
 	node->data = msg;
-	node->next = la_miam_core_pdu_parse(label, txt, msg_dir);
+	node->next = next;
 	return node;
 hdr_error:
 	la_debug_print("%s\n", "Not a file_segment header");
@@ -217,9 +237,13 @@ la_proto_node *la_miam_file_transfer_abort_parse(char const * const label, char 
 // -Wunused-parameter
 	(void)label;
 	(void)msg_dir;
-
 	la_assert(txt != NULL);
-	la_miam_file_transfer_abort_msg *msg = LA_XCALLOC(1, sizeof(la_miam_file_transfer_abort_msg));
+
+	la_miam_file_transfer_abort_msg *msg = NULL;
+	if(chomped_strlen(txt) != 4) {
+		goto hdr_error;
+	}
+	msg = LA_XCALLOC(1, sizeof(la_miam_file_transfer_abort_msg));
 	int i;
 
 	if((i = la_strntouint16_t(txt, 3)) < 0) {
@@ -254,7 +278,11 @@ la_proto_node *la_miam_xoff_ind_parse(char const * const label, char const *txt,
 	(void)msg_dir;
 
 	la_assert(txt != NULL);
-	la_miam_xoff_ind_msg *msg = LA_XCALLOC(1, sizeof(la_miam_xoff_ind_msg));
+	la_miam_xoff_ind_msg *msg = NULL;
+	if(chomped_strlen(txt) != 3) {
+		goto hdr_error;
+	}
+	msg = LA_XCALLOC(1, sizeof(la_miam_xoff_ind_msg));
 	int i;
 
 	if((i = la_strntouint16_t(txt, 3)) < 0) {
@@ -285,7 +313,12 @@ la_proto_node *la_miam_xon_ind_parse(char const * const label, char const *txt, 
 	(void)msg_dir;
 
 	la_assert(txt != NULL);
-	la_miam_xon_ind_msg *msg = LA_XCALLOC(1, sizeof(la_miam_xon_ind_msg));
+
+	la_miam_xon_ind_msg *msg = NULL;
+	if(chomped_strlen(txt) != 9) {
+		goto hdr_error;
+	}
+	msg = LA_XCALLOC(1, sizeof(la_miam_xon_ind_msg));
 	int i;
 
 	if((i = la_strntouint16_t(txt, 3)) < 0) {

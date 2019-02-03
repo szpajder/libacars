@@ -144,3 +144,17 @@ int la_strntouint16_t(char const *txt, int const charcnt) {
 	}
 	return ret;
 }
+
+// returns the length of the string ignoring the terminating
+// newline characters
+size_t chomped_strlen(char const *s) {
+	char *p = strchr(s, '\0');
+	size_t ret = p - s;
+	while(--p >= s) {
+		if(*p != '\n' && *p != '\r') {
+			break;
+		}
+		ret--;
+	}
+	return ret;
+}
