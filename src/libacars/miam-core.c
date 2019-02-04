@@ -148,7 +148,7 @@ la_base85_decode_result la_base85_decode(char const *str, char const *end) {
 		out[outpos++] = v.b.b0;
 	}
 	if(ptr != end) {
-		la_debug_print("Input truncated, %ld bytes left\n", end - ptr);
+		la_debug_print("Input truncated, %td bytes left\n", end - ptr);
 	}
 	return (la_base85_decode_result){
 		.buf = out,
