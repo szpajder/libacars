@@ -8,7 +8,7 @@
 #define LA_MIAM_H 1
 
 #include <stdint.h>
-#include <time.h>			// time_t
+#include <time.h>			// struct tm
 #include <libacars/libacars.h>		// la_type_descriptor, la_proto_node
 #include <libacars/vstring.h>		// la_vstring
 

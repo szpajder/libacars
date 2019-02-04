@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stddef.h>		// size_t
 #include <stdlib.h>		// free()
+#include <time.h>		// struct tm
 
 typedef struct {
 	int id;
@@ -26,5 +27,6 @@ size_t la_slurp_hexstring(char *string, uint8_t **buf);
 char *la_hexdump(uint8_t *data, size_t len);
 int la_strntouint16_t(char const *txt, int const charcnt);
 size_t chomped_strlen(char const *s);
+char *la_simple_strptime(char const *s, struct tm *t);
 
 #endif // !LA_UTIL_H

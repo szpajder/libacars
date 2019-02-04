@@ -8,10 +8,10 @@
 #include <stdbool.h>
 #include <stdlib.h>		// calloc()
 #include <string.h>		// strchr(), strlen(), strncmp()
-#include <time.h>		// time_t, strptime(), strftime()
 #include <libacars/macros.h>	// la_assert()
 #include <libacars/libacars.h>	// la_proto_node, la_type_descriptor
-#include <libacars/util.h>	// la_dict, la_dict_search(), la_strntouint16_t()
+#include <libacars/util.h>	// la_dict, la_dict_search(),
+				// la_strntouint16_t(), la_simple_strptime()
 #include <libacars/miam-core.h> // la_miam_core_pdu_parse(), la_miam_core_format_text()
 #include <libacars/miam.h>
 
@@ -124,7 +124,7 @@ la_proto_node *la_miam_file_transfer_request_parse(char const * const label, cha
 	txt += 6;
 
 	la_debug_print("file_id: %u file_size: %zu\n", msg->file_id, msg->file_size);
-	char const *ptr = strptime(txt, "%y%m%d%H%M%S", &msg->validity_time);
+	char const *ptr = la_simple_strptime(txt, &msg->validity_time);
 	if(ptr == NULL) {
 		goto hdr_error;
 	}
@@ -428,10 +428,11 @@ void la_miam_file_transfer_request_format_text(la_vstring * const vstr, void con
 	LA_CAST_PTR(msg, la_miam_file_transfer_request_msg *, data);
 	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	LA_ISPRINTF(vstr, indent, "File size: %zu bytes\n", msg->file_size);
-	char *buf = LA_XCALLOC(32, sizeof(char));
-	la_assert(strftime(buf, 32, "%F %T", &msg->validity_time) != 0);
-	LA_ISPRINTF(vstr, indent, "Complete until: %s\n", buf);
-	LA_XFREE(buf);
+	struct tm *t = &msg->validity_time;
+	LA_ISPRINTF(vstr, indent, "Complete until: %d-%02d-%02d %02d:%02d:%02d\n",
+		t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+		t->tm_hour, t->tm_min, t->tm_sec
+	);
 }
 
 void la_miam_file_transfer_accept_format_text(la_vstring * const vstr, void const * const data, int indent) {

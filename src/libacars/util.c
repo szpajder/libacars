@@ -6,7 +6,8 @@
 #include <stdio.h>		// fprintf
 #include <stdint.h>
 #include <stdlib.h>		// calloc, realloc, free
-#include <string.h>		// strerror, strlen, strdup, strnlen
+#include <string.h>		// strerror, strlen, strdup, strnlen, strspn
+#include <time.h>		// struct tm
 #include <errno.h>		// errno
 #include <unistd.h>		// _exit
 #include <libacars/macros.h>	// la_debug_print()
@@ -157,4 +158,27 @@ size_t chomped_strlen(char const *s) {
 		ret--;
 	}
 	return ret;
+}
+
+// parse and perform basic sanitization of timestamp
+// in YYMMDDHHMMSS format.
+// Do not use strptime() - it's not available on WIN32
+// Do not use sscanf() - it's too liberal on the input
+// (we do not want whitespaces between fields, for example)
+#define ATOI2(x,y) (10 * ((x) - '0') + ((y) - '0'))
+char *la_simple_strptime(char const *s, struct tm *t) {
+	if(strspn(s, "0123456789") < 12) {
+		return NULL;
+	}
+	t->tm_year = ATOI2(s[0],  s[1]) + 100;
+	t->tm_mon  = ATOI2(s[2],  s[3]) - 1;
+	t->tm_mday = ATOI2(s[4],  s[5]);
+	t->tm_hour = ATOI2(s[6],  s[7]);
+	t->tm_min  = ATOI2(s[8],  s[9]);
+	t->tm_sec  = ATOI2(s[10], s[11]);
+	t->tm_isdst = -1;
+	if(t->tm_mon > 11 || t->tm_mday > 31 || t->tm_hour > 23 || t->tm_min > 59 || t->tm_sec > 59) {
+		return NULL;
+	}
+	return (char *)s + 12;
 }
