@@ -10,6 +10,8 @@ set (CMAKE_C_STANDARD 11)
 set (C_STANDARD_REQUIRED ON)
 set (CMAKE_C_EXTENSIONS OFF)
 
+include(GNUInstallDirs)
+
 if(NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE Release)
    message(STATUS "Build type not specified: defaulting to Release")

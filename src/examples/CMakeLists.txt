@@ -14,5 +14,5 @@ install (TARGETS
 	adsc_get_position
 	cpdlc_get_position
 	media_advisory
-	DESTINATION bin
+	DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
