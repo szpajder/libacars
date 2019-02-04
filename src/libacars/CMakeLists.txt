@@ -51,7 +51,7 @@ message(STATUS "- ZLIB:\trequested: ${ZLIB}\tenabled: ${WITH_ZLIB}")
 
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
-	"${CMAKE_CURRENT_SOURCE_DIR}/config.h"
+	"${CMAKE_CURRENT_BINARY_DIR}/config.h"
 	@ONLY
 )
 
@@ -76,7 +76,7 @@ add_library (acars_core OBJECT
 	${CMAKE_CURRENT_BINARY_DIR}/version.c
 )
 set_property(TARGET acars_core PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(acars_core PUBLIC ${acars_include_dirs})
+target_include_directories(acars_core PUBLIC ${acars_include_dirs} ${CMAKE_CURRENT_BINARY_DIR})
 
 set(acars_obj_files $<TARGET_OBJECTS:asn1> $<TARGET_OBJECTS:acars_core>)
 
