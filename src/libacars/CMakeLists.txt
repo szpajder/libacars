@@ -1,4 +1,5 @@
 include(CheckCSourceCompiles)
+include(TestBigEndian)
 
 # Check if LD supports linker scripts.
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/conftest.ldscript" "VERS_1 {
@@ -25,6 +26,8 @@ if (HAVE_LD_VERSION_SCRIPT)
 	set(acars_ldscript "${CMAKE_CURRENT_SOURCE_DIR}/symversions.ldscript")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script,${acars_ldscript}")
 endif()
+
+TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 
 find_library(LIBM m REQUIRED)
 

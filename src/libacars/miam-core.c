@@ -123,11 +123,14 @@ la_base85_decode_result la_base85_decode(char const *str, char const *end) {
 
 	char const *ptr = str;
 	int inpos = 0, outpos = 0;
-// FIXME: endianness
 	union {
 		uint32_t val;
 		struct {
+#ifdef IS_BIG_ENDIAN
+			uint8_t b3,b2,b1,b0;
+#else
 			uint8_t b0,b1,b2,b3;
+#endif
 		} b;
 	} v;
 

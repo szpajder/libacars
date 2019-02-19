@@ -7,5 +7,6 @@
 #define _CONFIG_H
 
 #cmakedefine WITH_ZLIB
+#cmakedefine IS_BIG_ENDIAN
 
 #endif // !_CONFIG_H
