@@ -11,7 +11,7 @@
 #ifdef WITH_ZLIB
 #include <zlib.h>			// z_stream, inflateInit2(), inflate(), inflateEnd()
 #endif
-#include <libacars/macros.h>		// la_assert()
+#include <libacars/macros.h>		// la_assert(), LA_UNLIKELY()
 #include <libacars/libacars.h>		// la_proto_node
 #include <libacars/util.h>		// la_dict, la_dict_search(), XCALLOC(), la_hexdump()
 #include <libacars/miam-core.h>
@@ -118,10 +118,16 @@ la_base85_decode_result la_base85_decode(char const *str, char const *end) {
 	la_assert(str != NULL);
 	la_assert(str < end);
 
-	uint8_t *out = LA_XCALLOC(65536, sizeof(uint8_t)); // FIXME: size
+// A rough approximation of the output buffer size needed.
+// Five base85 digits encode a single 32-bit word
+// Allow four extra words for potential 'z' occurrences
+// (all-zero word encoded with a single character)
+	size_t outsize = ((end - str) / 5 + 4) * 4;
+	la_debug_print("approx outsize: %zu\n", outsize);
+	uint8_t *out = LA_XCALLOC(outsize, sizeof(uint8_t));
 
 	char const *ptr = str;
-	int inpos = 0, outpos = 0;
+	size_t inpos = 0, outpos = 0;
 	union {
 		uint32_t val;
 		struct {
@@ -143,6 +149,13 @@ la_base85_decode_result la_base85_decode(char const *str, char const *end) {
 // shall we reject 'z' inside the 5-digit group?
 				v.val += (*ptr - 0x21) * base85[i];
 			}
+		}
+		if(LA_UNLIKELY(outpos + 5 >= outsize)) {
+// grow the buffer by 25 percent, but not less than 5 elements
+			outsize += 5;
+			outsize += outsize / 4;
+			la_debug_print("outbuf too small; resizing to %zu elements\n", outsize);
+			out = LA_XREALLOC(out, outsize * sizeof(uint8_t));
 		}
 		out[outpos++] = v.b.b3;
 		out[outpos++] = v.b.b2;
