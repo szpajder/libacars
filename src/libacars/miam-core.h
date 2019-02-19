@@ -37,58 +37,58 @@ typedef struct {
 	void *data;
 	uint32_t pdu_len;
 	uint32_t data_len;
+	uint32_t err;
 	char aircraft_id[8];
+	char app_id[7];
 	uint8_t msg_num;
 	uint8_t ack_option;
 	uint8_t compression;
 	uint8_t encoding;
 	uint8_t app_type;
-	char app_id[7];
 	uint8_t crc[4];
-	uint32_t err;
 } la_miam_core_v1_data_pdu;
 
 typedef struct {
 	void *data;
+	uint32_t err;
 	uint32_t pdu_len;
 	uint32_t data_len;
 	char aircraft_id[8];
 	uint8_t msg_ack_num;
 	uint8_t ack_xfer_result;
 	uint8_t crc[4];
-	uint32_t err;
 } la_miam_core_v1_ack_pdu;
 
 typedef struct {
 	void *data;
+	uint32_t err;
 	uint32_t data_len;
+	char app_id[9];
 	uint8_t msg_num;
 	uint8_t ack_option;
 	uint8_t compression;
 	uint8_t encoding;
 	uint8_t app_type;
-	char app_id[9];
 	uint8_t crc[2];
-	uint32_t err;
 } la_miam_core_v2_data_pdu;
 
 typedef struct {
 	void *data;
+	uint32_t err;
 	uint32_t data_len;
 	uint8_t msg_ack_num;
 	uint8_t ack_xfer_result;
 	uint8_t crc[2];
-	uint32_t err;
 } la_miam_core_v2_ack_pdu;
 
 typedef struct {
 	void *data;
+	uint32_t err;
 	uint32_t pdu_len;
 	uint32_t data_len;
 	char aircraft_id[8];
 	uint8_t compression;
 	uint8_t networks;
-	uint32_t err;
 } la_miam_core_v1v2_alo_alr_pdu;
 
 #define LA_MIAM_CORE_VER_MAX 2
