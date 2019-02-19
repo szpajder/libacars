@@ -87,7 +87,6 @@ la_inflate_result la_inflate(uint8_t const *buf, int const inlen) {
 	int ret = inflateInit2(&stream, -15);	// raw deflate with max window size
 	if(ret != Z_OK) {
 		la_debug_print("inflateInit failed: %d\n", ret);
-// FIXME: inflateEnd()?
 		goto end;
 	}
 	stream.avail_in = (uInt)inlen;
@@ -102,8 +101,8 @@ la_inflate_result la_inflate(uint8_t const *buf, int const inlen) {
 	result.buf = outbuf;
 	result.buflen = stream.total_out;
 	result.success = (ret == Z_STREAM_END ? true : false);
-	(void)inflateEnd(&stream);
 end:
+	(void)inflateEnd(&stream);
 	return result;
 }
 #endif
