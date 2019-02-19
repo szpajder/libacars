@@ -32,6 +32,11 @@ typedef enum {
 // MIAM ACARS CF frame
 typedef struct {
 	la_miam_frame_id frame_id;
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
 } la_miam_msg;
 
 // MIAM File Transfer Request
@@ -39,6 +44,11 @@ typedef struct {
 	size_t file_size;
 	uint16_t file_id;
 	struct tm validity_time;
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
 } la_miam_file_transfer_request_msg;
 
 // MIAM File Transfer Accept
@@ -47,30 +57,55 @@ typedef struct {
 	uint16_t segment_size;
 	uint16_t onground_segment_tempo;
 	uint16_t inflight_segment_tempo;
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
 } la_miam_file_transfer_accept_msg;
 
 // MIAM File Segment
 typedef struct {
 	uint16_t file_id;
 	uint16_t segment_id;
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
 } la_miam_file_segment_msg;
 
 // MIAM File Transfer Abort
 typedef struct {
 	uint16_t file_id;
 	uint16_t reason;
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
 } la_miam_file_transfer_abort_msg;
 
 // MIAM XOFF IND
 typedef struct {
 	uint16_t file_id;	// 0-127 or 0xFFF = pause all transfers
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
 } la_miam_xoff_ind_msg;
-//
+
 // MIAM XON IND
 typedef struct {
 	uint16_t file_id;	// 0-127 or 0xFFF = resume all transfers
 	uint16_t onground_segment_tempo;
 	uint16_t inflight_segment_tempo;
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
 } la_miam_xon_ind_msg;
 
 la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);

@@ -32,7 +32,6 @@ extern "C" {
 #define LA_MIAM_ERR_HDR				0x0000ffffu
 #define LA_MIAM_ERR_BODY			0xffff0000u
 
-// FIXME: reserve space for spare fields
 typedef struct {
 	void *data;
 	uint32_t pdu_len;
@@ -46,6 +45,17 @@ typedef struct {
 	uint8_t encoding;
 	uint8_t app_type;
 	uint8_t crc[4];
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
+	void (*reserved4)(void);
+	void (*reserved5)(void);
+	void (*reserved6)(void);
+	void (*reserved7)(void);
+	void (*reserved8)(void);
+	void (*reserved9)(void);
 } la_miam_core_v1_data_pdu;
 
 typedef struct {
@@ -57,6 +67,17 @@ typedef struct {
 	uint8_t msg_ack_num;
 	uint8_t ack_xfer_result;
 	uint8_t crc[4];
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
+	void (*reserved4)(void);
+	void (*reserved5)(void);
+	void (*reserved6)(void);
+	void (*reserved7)(void);
+	void (*reserved8)(void);
+	void (*reserved9)(void);
 } la_miam_core_v1_ack_pdu;
 
 typedef struct {
@@ -70,6 +91,17 @@ typedef struct {
 	uint8_t encoding;
 	uint8_t app_type;
 	uint8_t crc[2];
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
+	void (*reserved4)(void);
+	void (*reserved5)(void);
+	void (*reserved6)(void);
+	void (*reserved7)(void);
+	void (*reserved8)(void);
+	void (*reserved9)(void);
 } la_miam_core_v2_data_pdu;
 
 typedef struct {
@@ -79,6 +111,17 @@ typedef struct {
 	uint8_t msg_ack_num;
 	uint8_t ack_xfer_result;
 	uint8_t crc[2];
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
+	void (*reserved4)(void);
+	void (*reserved5)(void);
+	void (*reserved6)(void);
+	void (*reserved7)(void);
+	void (*reserved8)(void);
+	void (*reserved9)(void);
 } la_miam_core_v2_ack_pdu;
 
 typedef struct {
@@ -89,6 +132,17 @@ typedef struct {
 	char aircraft_id[8];
 	uint8_t compression;
 	uint8_t networks;
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
+	void (*reserved4)(void);
+	void (*reserved5)(void);
+	void (*reserved6)(void);
+	void (*reserved7)(void);
+	void (*reserved8)(void);
+	void (*reserved9)(void);
 } la_miam_core_v1v2_alo_alr_pdu;
 
 #define LA_MIAM_CORE_VER_MAX 2
@@ -106,6 +160,17 @@ typedef struct {
 	uint32_t err;			// PDU decoding error code
 	uint8_t version;		// MIAM CORE PDU version
 	la_miam_core_pdu_type pdu_type;	// MIAM CORE PDU type
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
+	void (*reserved4)(void);
+	void (*reserved5)(void);
+	void (*reserved6)(void);
+	void (*reserved7)(void);
+	void (*reserved8)(void);
+	void (*reserved9)(void);
 } la_miam_core_pdu;
 
 // miam-core.c
