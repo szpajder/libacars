@@ -75,9 +75,11 @@ typedef struct {
 	bool success;
 } la_inflate_result;
 
-la_inflate_result la_inflate(uint8_t const *buf, int const inlen) {
+#define MAX_INFLATED_LEN (1<<20)
+
+la_inflate_result la_inflate(uint8_t const *buf, int const in_len) {
 	la_assert(buf != NULL);
-	la_assert(inlen > 0);
+	la_assert(in_len > 0);
 
 	z_stream stream;
 	memset(&stream, 0, sizeof(stream));
@@ -89,15 +91,40 @@ la_inflate_result la_inflate(uint8_t const *buf, int const inlen) {
 		la_debug_print("inflateInit failed: %d\n", ret);
 		goto end;
 	}
-	stream.avail_in = (uInt)inlen;
+	stream.avail_in = (uInt)in_len;
 	stream.next_in = (uint8_t *)buf;
-	int outlen = 10 * inlen; // FIXME
-	uint8_t *outbuf = LA_XCALLOC(outlen, sizeof(uint8_t));
+	int chunk_len = 4 * in_len;
+	int out_len = chunk_len;			// rough initial approximation
+	uint8_t *outbuf = LA_XCALLOC(out_len, sizeof(uint8_t));
 	stream.next_out = outbuf;
-	stream.avail_out = outlen;
+	stream.avail_out = out_len;
 
-	ret = inflate(&stream, Z_FINISH);
-	la_debug_print("zlib ret=%d total_out=%lu\n", ret, stream.total_out);
+	while((ret = inflate(&stream, Z_FINISH)) == Z_BUF_ERROR) {
+		la_debug_print("Z_BUF_ERROR, avail_in=%u avail_out=%u\n", stream.avail_in, stream.avail_out);
+		if(stream.avail_out == 0) {
+// Not enough output space
+			int new_len = out_len + chunk_len;
+			la_debug_print("outbuf grow: %d -> %d\n", out_len, new_len);
+			if(new_len > MAX_INFLATED_LEN) {
+// Do not go overboard with memory usage
+				la_debug_print("new_len too large: %d > %d\n", new_len, MAX_INFLATED_LEN);
+				break;
+			}
+			outbuf = LA_XREALLOC(outbuf, new_len * sizeof(uint8_t));
+			stream.next_out = outbuf + out_len;
+			stream.avail_out = chunk_len;
+			out_len = new_len;
+		} else if(stream.avail_in == 0) {
+// Input stream is truncated - error out
+			break;
+		}
+	}
+	la_debug_print("zlib ret=%d avail_out=%u total_out=%lu\n", ret, stream.avail_out, stream.total_out);
+// Make sure the buffer is larger than the result.
+// We need space to append NULL terminator later for printing it.
+	if(stream.avail_out == 0) {
+		outbuf = LA_XREALLOC(outbuf, (out_len + 1) * sizeof(uint8_t));
+	}
 	result.buf = outbuf;
 	result.buflen = stream.total_out;
 	result.success = (ret == Z_STREAM_END ? true : false);
