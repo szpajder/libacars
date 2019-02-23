@@ -8,9 +8,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define LA_CRC_ARINC_INIT 0xFFFFu
-#define LA_CRC_ARINC_GOOD 0x1D0Fu
-
 /*****************************************************************/
 /*                                                               */
 /* CRC LOOKUP TABLE                                              */
@@ -30,7 +27,7 @@
 /* in the FTP archive "ftp.adelaide.edu.au/pub/rocksoft".        */
 /*                                                               */
 /*****************************************************************/
-bool la_check_crc16_arinc(uint8_t const *data, uint32_t len) {
+uint16_t la_crc16_arinc(uint8_t const *data, uint32_t len, uint16_t const crc_init) {
 static uint16_t const crctable[256] =
 {
  0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7,
@@ -66,11 +63,11 @@ static uint16_t const crctable[256] =
  0xEF1F, 0xFF3E, 0xCF5D, 0xDF7C, 0xAF9B, 0xBFBA, 0x8FD9, 0x9FF8,
  0x6E17, 0x7E36, 0x4E55, 0x5E74, 0x2E93, 0x3EB2, 0x0ED1, 0x1EF0
 };
-	uint16_t crc = LA_CRC_ARINC_INIT;
+	uint16_t crc = crc_init;
 	while (len-- > 0) {
 		crc = (crc << 8) ^ crctable[((crc >> 8) ^ *data++) & 0xff];
 	}
-	return crc == LA_CRC_ARINC_GOOD;
+	return crc;
 }
 
 uint16_t la_crc16_ccitt(uint8_t const *data, uint32_t len, uint16_t const crc_init) {

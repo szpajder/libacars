@@ -19,6 +19,7 @@
 #define LA_ARINC_IMI_LEN	3
 #define LA_ARINC_AIR_REG_LEN	7
 #define LA_ARINC_CRC_LEN	2
+#define LA_CRC_ARINC_GOOD	0x1D0Fu
 
 typedef enum {
 	ARINC_APP_TYPE_UNKNOWN = 0,
@@ -121,7 +122,7 @@ static bool la_is_crc_ok(char const * const text_part, uint8_t const * const bin
 	uint8_t *buf = LA_XCALLOC(buflen, sizeof(uint8_t));
 	memcpy(buf, text_part, LA_ARINC_IMI_LEN + LA_ARINC_AIR_REG_LEN);
 	memcpy(buf + LA_ARINC_IMI_LEN + LA_ARINC_AIR_REG_LEN, binary_part, binary_part_len);
-	bool result = la_check_crc16_arinc(buf, buflen);
+	bool result = (la_crc16_arinc(buf, buflen, 0xFFFFu) == LA_CRC_ARINC_GOOD);
 	LA_XFREE(buf);
 	la_debug_print("crc_ok? %d\n", result);
 	return result;
