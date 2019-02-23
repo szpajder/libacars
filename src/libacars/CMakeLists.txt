@@ -40,6 +40,15 @@ if(ZLIB)
 		set(WITH_ZLIB TRUE)
 		list(APPEND acars_extra_libs ${ZLIB_LIBRARIES})
 		list(APPEND acars_include_dirs ${ZLIB_INCLUDE_DIRS})
+		if(WIN32)
+# Locate the actual DLL for inclusion in the installation bundle
+			include(${CMAKE_CURRENT_SOURCE_DIR}/find_zlibdll.cmake)
+			find_zlibdll()
+			if(ZLIBDLL_LIBRARY_RELEASE STREQUAL
+					"ZLIBDLL_LIBRARY_RELEASE-NOTFOUND")
+				message(WARNING "Failed to locate zlib1.dll - it will not be included in the CPack bundle")
+			endif()
+		endif()
 	endif()
 endif()
 
@@ -131,3 +140,11 @@ install(DIRECTORY
 	"${PROJECT_SOURCE_DIR}/doc/"
 	DESTINATION ${CMAKE_INSTALL_DOCDIR}
 )
+# Copy zlib1.dll to the bundle on Windows
+if(WIN32 AND ZLIB_FOUND
+AND NOT ${ZLIBDLL_LIBRARY_RELEASE} STREQUAL "ZLIBDLL_LIBRARY_RELEASE-NOTFOUND")
+	install(FILES
+		${ZLIBDLL_LIBRARY_RELEASE}
+		DESTINATION ${CMAKE_INSTALL_BINDIR}
+	)
+endif()
