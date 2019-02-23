@@ -177,6 +177,7 @@ typedef struct {
 // miam-core.c
 la_proto_node *la_miam_core_pdu_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
 void la_miam_core_format_text(la_vstring * const vstr, void const * const data, int indent);
+la_proto_node *la_proto_tree_find_miam_core(la_proto_node *root);
 
 extern la_type_descriptor const la_DEF_miam_core_pdu;
 extern la_type_descriptor const la_DEF_miam_core_v1v2_alo_pdu;

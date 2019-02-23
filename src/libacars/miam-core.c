@@ -512,6 +512,10 @@ la_type_descriptor const la_DEF_miam_core_v1v2_alr_pdu = {
 	.destroy = NULL
 };
 
+la_proto_node *la_proto_tree_find_miam_core(la_proto_node *root) {
+	return la_proto_tree_find_protocol(root, &la_DEF_miam_core_pdu);
+}
+
 /**********************************************
  * MIAM CORE version 1 definitions and routines
  **********************************************/

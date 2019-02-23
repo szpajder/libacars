@@ -60,6 +60,7 @@ ACARS_1.1 {
     la_miam_core_format_text;
     la_proto_tree_find_media_adv;
     la_proto_tree_find_miam;
+    la_proto_tree_find_miam_core;
     LA_VERSION;
   local:
     *;
