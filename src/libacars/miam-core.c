@@ -14,7 +14,7 @@
 #include <libacars/macros.h>		// la_assert(), LA_UNLIKELY()
 #include <libacars/libacars.h>		// la_proto_node
 #include <libacars/util.h>		// la_dict, la_dict_search(), XCALLOC(), la_hexdump()
-#include <libacars/crc.h>		// la_crc16_arinc()
+#include <libacars/crc.h>		// la_crc16_arinc(), la_crc32_arinc665()
 #include <libacars/miam-core.h>
 
 /**********************
@@ -598,7 +598,7 @@ la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrlen, uin
 	la_debug_print("app_id: '%s'\n", pdu->app_id);
 	hdrbuf += app_id_len; hdrlen -= app_id_len;
 
-	memcpy(pdu->crc, hdrbuf, LA_MIAM_CORE_V1_CRC_LEN);
+	pdu->crc = (hdrbuf[0] << 24) | (hdrbuf[1] << 16) | (hdrbuf[2] << 8) | hdrbuf[3];
 	hdrbuf += LA_MIAM_CORE_V1_CRC_LEN; hdrlen -= LA_MIAM_CORE_V1_CRC_LEN;
 	if(hdrlen > 0) {
 		la_debug_print("Warning: %u bytes left after MIAM header\n", hdrlen);
@@ -626,6 +626,12 @@ la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrlen, uin
 			pdu->data_len = bodylen;
 		} else {
 			pdu->err |= LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED;
+		}
+		uint32_t crc_check = la_crc32_arinc665(pdu->data, pdu->data_len, 0xFFFFFFFFu);
+		crc_check = ~crc_check;
+		la_debug_print("crc: %08x crc_check: %08x\n", pdu->crc, crc_check);
+		if(crc_check != pdu->crc) {
+			pdu->err |= LA_MIAM_ERR_BODY_CRC_FAILED;
 		}
 	}
 end:

@@ -38,6 +38,7 @@ typedef struct {
 	uint32_t pdu_len;
 	uint32_t data_len;
 	uint32_t err;
+	uint32_t crc;
 	char aircraft_id[8];
 	char app_id[7];
 	uint8_t msg_num;
@@ -45,7 +46,6 @@ typedef struct {
 	uint8_t compression;
 	uint8_t encoding;
 	uint8_t app_type;
-	uint8_t crc[4];
 // reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
