@@ -27,6 +27,7 @@ extern "C" {
 #define LA_MIAM_ERR_BODY_TRUNCATED		(1 << 16)
 #define LA_MIAM_ERR_BODY_INFLATE_FAILED 	(1 << 17)
 #define LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED	(1 << 18)
+#define LA_MIAM_ERR_BODY_CRC_FAILED		(1 << 19)
 
 // header/body error masks
 #define LA_MIAM_ERR_HDR				0x0000ffffu
@@ -84,13 +85,13 @@ typedef struct {
 	void *data;
 	uint32_t err;
 	uint32_t data_len;
+	uint16_t crc;
 	char app_id[9];
 	uint8_t msg_num;
 	uint8_t ack_option;
 	uint8_t compression;
 	uint8_t encoding;
 	uint8_t app_type;
-	uint8_t crc[2];
 // reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);

@@ -14,6 +14,7 @@
 #include <libacars/macros.h>		// la_assert(), LA_UNLIKELY()
 #include <libacars/libacars.h>		// la_proto_node
 #include <libacars/util.h>		// la_dict, la_dict_search(), XCALLOC(), la_hexdump()
+#include <libacars/crc.h>		// la_crc16_arinc()
 #include <libacars/miam-core.h>
 
 /**********************
@@ -402,6 +403,7 @@ void la_miam_errors_format_text(la_vstring * const vstr, uint32_t err, int inden
 		{ .id = LA_MIAM_ERR_BODY_TRUNCATED,		.val = "Message truncated" },
 		{ .id = LA_MIAM_ERR_BODY_INFLATE_FAILED,	.val = "Decompression failed" },
 		{ .id = LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED,	.val = "Unsupported compression algorithm" },
+		{ .id = LA_MIAM_ERR_BODY_CRC_FAILED,		.val = "CRC check failed" },
 		{ .id = 0,					.val = NULL }
 	};
 	la_assert(vstr != NULL);
@@ -900,13 +902,11 @@ la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrlen, uin
 	la_debug_print("app_id: '%s'\n", pdu->app_id);
 	hdrbuf += app_id_len; hdrlen -= app_id_len;
 
-	memcpy(pdu->crc, hdrbuf, LA_MIAM_CORE_V2_CRC_LEN);
+	pdu->crc = (hdrbuf[0] << 8) | hdrbuf[1];
 	hdrbuf += LA_MIAM_CORE_V2_CRC_LEN; hdrlen -= LA_MIAM_CORE_V2_CRC_LEN;
 	if(hdrlen > 0) {
 		la_debug_print("Warning: %u bytes left after MIAM header\n", hdrlen);
 	}
-// TODO: check CRC
-// FIXME: move this to a separate routine and dedup with v1
 	if(bodybuf != NULL && bodylen > 0) {
 #ifdef WITH_ZLIB
 		if(pdu->compression == LA_MIAM_CORE_V2_COMP_DEFLATE) {
@@ -930,6 +930,11 @@ la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrlen, uin
 			pdu->data_len = bodylen;
 		} else {
 			pdu->err |= LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED;
+		}
+		uint16_t crc_check = la_crc16_arinc(pdu->data, pdu->data_len, 0xFFFFu);
+		la_debug_print("crc: %04x crc_check: %04x\n", pdu->crc, crc_check);
+		if(crc_check != pdu->crc) {
+			pdu->err |= LA_MIAM_ERR_BODY_CRC_FAILED;
 		}
 	}
 end:
