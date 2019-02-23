@@ -1,4 +1,4 @@
-# libacars
+# libacars [![Build Status](https://travis-ci.com/szpajder/libacars.svg?branch=master)](https://travis-ci.com/szpajder/libacars)
 
 libacars is a library for decoding various ACARS message payloads.
 
@@ -8,6 +8,7 @@ Current stable version: **1.1.0** (released Jan 18, 2019)
 
 - [X] FANS-1/A ADS-C (Automatic Dependent Surveillance - Contract)
 - [X] FANS-1/A CPDLC (Controller-Pilot Data Link Communications)
+- [X] MIAM (Media Independent Aircraft Messaging)
 - [X] Media Advisory (Status of data links: VDL2, HF, Satcom, VHF ACARS)
 
 ## Installation
@@ -26,6 +27,7 @@ Requirements:
 
 - c11-capable C compiler
 - cmake 3.1 or later
+- zlib 1.2 (optional, but highly recommended)
 
 The project should build and run correctly on the following platforms:
 
@@ -33,9 +35,18 @@ The project should build and run correctly on the following platforms:
 - MacOS (clang)
 - Windows (mingw)
 
-Build steps;
+Build steps:
 
-- To run a stable and tested version, download a release tarball from
+- libacars needs zlib for MIAM message decompression. If zlib is not present,
+  decompression code will be disabled and many MIAM messages will be left
+  undecoded. Therefore it is recommended to install zlib development package.
+  first. On Debian/Raspbian distros it is named `zlib1g-dev`:
+
+```
+apt-get install zlib1g-dev
+```
+
+- To run a stable and tested version of libacars, download a release tarball from
   [Releases](https://github.com/szpajder/libacars/releases) section and unpack it:
 
 ```
@@ -55,26 +66,54 @@ cd libacars
 branch is where the latest cutting-edge code goes first. Select your branch of
 choice with `git checkout <branch_name>`.
 
-- Compile and install:
+- Configure the build:
 
 ```
 mkdir build
 cd build
 cmake ../
+```
+
+- Inspect the configuration summary in the cmake output. It tells whether zlib
+  has been found and is going to be used or not:
+
+```
+-- libacars configuration summary:
+-- - ZLIB:      requested: ON   enabled: TRUE
+```
+
+- Compile and install:
+
+```
 make
 sudo make install
 sudo ldconfig
 ```
 
-On Unix the library will be installed to `/usr/local/lib` by default.
-Header files will land in `/usr/local/include/libacars`.
+On Unix the library will be installed to `/usr/local/lib` (or
+`/usr/local/lib64`). Header files will land in `/usr/local/include/libacars`.
 
-## Example programs
+### Advanced compilation options
 
-Example programs are provided in `src/examples` subdirectory:
+The following options may be used when invoking cmake:
 
-- `decode_arinc.c` - decodes ARINC-622 messages supplied at the
-  command line or from a file.
+- `-DCMAKE_BUILD_TYPE=Debug` - enables debugging support in the library.
+  Diagnostic messages will be printed to standard error.
+
+- `-DCMAKE_BUILD_TYPE=Release` - disables debugging support (the default).
+
+- `-DZLIB=FALSE` - forcefully disables zlib support. It will not be used even
+  if zlib is available.
+
+## Example applications
+
+Example apps are provided in `src/examples` subdirectory:
+
+- `decode_acars_apps` - reads messages from command line or from a file and
+  decodes all ACARS applications supported by the library.
+
+- `decode_arinc` - decodes ARINC-622 messages (obsolete; please use
+  `decode_acars_apps` instead)
 
 - `adsc_get_position` - illustrates how to extract position-related
   fields from decoded ADS-C message.
@@ -85,9 +124,8 @@ Example programs are provided in `src/examples` subdirectory:
 - `media_advisory` - decodes Media Advisory messages (ACARS label SA
   reports).
 
-These programs will be compiled together with the library.  `make install`
-installs them to `/usr/local/bin`.  Run each program with `-h` option for
-usage instructions.
+Apps will be compiled together with the library. `make install` installs them
+to `/usr/local/bin`.  Run each program with `-h` option for usage instructions.
 
 ## API documentation
 
