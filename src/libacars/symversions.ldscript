@@ -44,6 +44,13 @@ ACARS_1.1 {
     la_media_adv_format_text;
     la_media_adv_parse;
     la_proto_tree_find_media_adv;
+    LA_VERSION;
+  local:
+    *;
+} ACARS_1.0;
+
+ACARS_1.2 {
+  global:
     la_DEF_miam_core_pdu;
     la_DEF_miam_core_v1v2_alo_pdu;
     la_DEF_miam_core_v1v2_alr_pdu;
@@ -76,7 +83,6 @@ ACARS_1.1 {
     la_miam_file_transfer_accept_format_text;
     la_miam_file_segment_format_text;
     la_proto_tree_find_miam;
-    LA_VERSION;
   local:
     *;
-} ACARS_1.0;
+} ACARS_1.1;
