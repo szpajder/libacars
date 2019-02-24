@@ -1,6 +1,6 @@
 # libacars API Reference
 
-API version: 1.1
+API version: 1.2
 
 Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
 
@@ -628,6 +628,361 @@ Walks the protocol tree pointed to by `root` and returns a pointer to the first
 encountered node containing a Media Advisory message (ie. having a type
 descriptor of `la_DEF_media_adv_message`). If `root` is NULL or no matching
 protocol node has been found in the tree, the function returns NULL.
+
+## MIAM
+
+Media Independent Aircraft Messaging (MIAM) is a protocol that provides a
+standardized interface for the exchange of data between aircraft and ground
+systems. It supports the transfer of messages much larger than possible in the
+ACARS subnetworks through message segmentation and reassembly.  To reduce the
+impact of MIAM transfers on the ACARS networks, the protocol includes data
+compression, segment temporization, and flow regulation controls. The standard
+ACARS label for MIAM messages is MA, however some carriers use H1 for this
+purpose.
+
+The protocol uses two layers:
+
+- The outer layer is a network convergence function, which provides transport of
+  MIAM messages over a specific medium. libacars implements ACARS convergence
+  function. The API for it is defined in `<libacars/miam.h>`.
+
+- The inner layer is called MIAM CORE and it's the actual messaging service.
+  libacars API for it is defined in `<libacars/miam-core.h>`.
+
+Decoding a MIAM message from the top level will produce a `proto_tree` which is
+up to four levels deep. For example, a MIAM File Segment message containing a
+MIAM CORE version 1 Data PDU will produce a tree with the following node
+descriptors and data types:
+
+```
+la_DEF_miam_message (la_miam_msg)
+|
+\-> la_DEF_miam_file_segment_message (la_miam_file_segment_msg)
+    |
+    \-> la_DEF_miam_core_pdu (la_miam_core_pdu)
+        |
+        \-> la_DEF_miam_core_v1_data_pdu (la_miam_core_v1_data_pdu)
+```
+
+## MIAM ACARS Convergence Function API
+
+### la_miam_parse()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam.h>
+
+la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
+
+```
+Attempts to parse the NULL-terminated string pointed to by `txt` as a MIAM ACARS
+CF message.
+
+- `char const * const label` - ACARS label
+- `char const *txt` - ACARS message text
+- `la_msg_dir const msg_dir` - message direction
+
+The parser will act differently depending on the value of the ACARS label. Some
+airlines transmit MIAM messages with a non-standard label of H1, which implies
+that additional sublabel prefix is prepended to the message text. The syntax of
+the prefix also depends on message direction and it must be stripped before
+decoding the message. It is therefore imperative to specify the label and
+direction correctly when the label is H1. In other cases (including MA, which is
+the standard label for MIAM) it's not that critical.
+
+The parser returns a pointer to a newly allocated `la_proto_node` structure
+which is the root of the decoded protocol tree. The `data` pointer of the top
+`la_proto_node` will point at a `la_miam_msg` structure. `td` will point to
+`la_DEF_miam_message` type descriptor. If the message has not been identified as
+MIAM, the parser returns NULL. This informs the caller that the message possibly
+contains another ACARS application (not MIAM), hence the return value of NULL
+should not be treated as fatal.
+
+The MIAM ACARS CF API provides eight type descriptors:
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam.h>
+
+extern la_type_descriptor const la_DEF_miam_message;
+```
+
+`la_DEF_miam_message` is the top-level type descriptor for any MIAM message. The
+`data` pointer of `la_proto_node` of this type points to a `la_miam_msg`
+structure. The only purpose of this structure is to identify the MIAM ACARS CF
+frame type contained at the next level of the `proto_tree`.
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam.h>
+
+typedef enum {
+        LA_MIAM_FID_UNKNOWN = 0,
+        LA_MIAM_FID_SINGLE_TRANSFER,
+        LA_MIAM_FID_FILE_TRANSFER_REQ,
+        LA_MIAM_FID_FILE_TRANSFER_ACCEPT,
+        LA_MIAM_FID_FILE_SEGMENT,
+        LA_MIAM_FID_FILE_TRANSFER_ABORT,
+        LA_MIAM_FID_XOFF_IND,
+        LA_MIAM_FID_XON_IND
+} la_miam_frame_id;
+#define LA_MIAM_FRAME_ID_CNT 8
+
+// MIAM ACARS CF frame
+typedef struct {
+        la_miam_frame_id frame_id;
+};
+```
+
+- `frame_id` - identifies the MIAM ACARS CF frame type.
+
+The next node of the tree may be of any of the following types:
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam.h>
+
+extern la_type_descriptor const la_DEF_miam_single_transfer_message;
+extern la_type_descriptor const la_DEF_miam_file_transfer_request_message;
+extern la_type_descriptor const la_DEF_miam_file_transfer_accept_message;
+extern la_type_descriptor const la_DEF_miam_file_segment_message;
+extern la_type_descriptor const la_DEF_miam_file_transfer_abort_message;
+extern la_type_descriptor const la_DEF_miam_xoff_ind_message;
+extern la_type_descriptor const la_DEF_miam_xon_ind_message;
+```
+
+Each type descriptor describes a particular MIAM ACARS CF frame type - Single
+Transfer, File Transfer Request, File Transfer Accept, File Segment, File
+Transfer Abort, XOFF Indication and XON Indication, respectively. Relevant
+structures for each frame type are shown below. They contain values of various
+header fields of the ACARS CF frame.
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam.h>
+
+// MIAM File Transfer Request
+typedef struct {
+	size_t file_size;
+	uint16_t file_id;
+	struct tm validity_time;
+} la_miam_file_transfer_request_msg;
+
+// MIAM File Transfer Accept
+typedef struct {
+	uint16_t file_id;
+	uint16_t segment_size;
+	uint16_t onground_segment_tempo;
+	uint16_t inflight_segment_tempo;
+} la_miam_file_transfer_accept_msg;
+
+// MIAM File Segment
+typedef struct {
+	uint16_t file_id;
+	uint16_t segment_id;
+} la_miam_file_segment_msg;
+
+// MIAM File Transfer Abort
+typedef struct {
+	uint16_t file_id;
+	uint16_t reason;
+} la_miam_file_transfer_abort_msg;
+
+// MIAM XOFF IND
+typedef struct {
+	uint16_t file_id;	// 0-127 or 0xFFF = pause all transfers
+} la_miam_xoff_ind_msg;
+
+// MIAM XON IND
+typedef struct {
+	uint16_t file_id;	// 0-127 or 0xFFF = resume all transfers
+	uint16_t onground_segment_tempo;
+	uint16_t inflight_segment_tempo;
+} la_miam_xon_ind_msg;
+```
+
+**Note:** You might notice there is no `la_miam_single_transfer_msg` type
+present. This is because MIAM Single Transfer message contains only MIAM CORE
+PDU, hence the data type for Single Transfer message is set to
+`la_miam_core_pdu` (refer to the MIAM CORE API section).
+
+### la_miam_format_text()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam.h>
+
+void la_miam_format_text(la_vstring * const vstr, void const * const data, int indent);
+```
+
+Serializes a decoded MIAM ACARS CF frame pointed to by `data` into a
+human-readable text indented by `indent` spaces and appends the result to `vstr`
+(which must be non-NULL).
+
+### la_proto_tree_find_miam()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam.h>
+
+la_proto_node *la_proto_tree_find_miam(la_proto_node *root);
+```
+
+Walks the protocol tree pointed to by `root` and returns a pointer to the first
+encountered node containing MIAM ACARS CF frame  (ie. having a type descriptor
+of `la_DEF_miam_message`). If `root` is NULL or no matching protocol node has
+been found in the tree, the function returns NULL.
+
+No `la_proto_tree_find_*()` routines are provided for individual CF frame types.
+If you need to locate a node containing a particular frame type, use
+`la_proto_tree_find_protocol()` function with a pointer to the type descriptor
+of interest, for example:
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam.h>
+
+la_proto_node *file_seg_node = la_proto_tree_find_protocol(tree_ptr, &la_DEF_miam_file_segment_message);
+```
+
+## MIAM CORE API
+
+### la_miam_core_pdu_parse()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam-core.h>
+
+la_proto_node *la_miam_core_pdu_parse(char const *txt);
+```
+
+Attempts to parse the NULL-terminated string `txt` as a MIAM CORE protocol data
+unit. Returns a pointer to a newly allocated `la_proto_node` structure which is
+the root of the decoded protocol tree. The `data` pointer of the top
+`la_proto_node` will point at a `la_miam_core_pdu` structure. `td` will point to
+`la_DEF_miam_core_pdu` type descriptor. If the message has not been identified
+as MIAM CORE PDU, the parser returns NULL. If this routine has been called from
+`la_miam_parse()`, then the NULL return value will propagate upwards to the
+caller to indicate that the supplied message possibly contains a different ACARS
+application (not MIAM).
+
+The MIAM CORE API provides the following type descriptors:
+
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam-core.h>
+
+extern la_type_descriptor const la_DEF_miam_core_pdu;
+```
+
+`la_DEF_miam_core_pdu` is the top-level type descriptor for any MIAM CORE PDU.
+The `data` pointer of `la_proto_node` of this type points to a
+`la_miam_core_pdu` structure:
+
+```C
+typedef enum {
+	LA_MIAM_CORE_PDU_DATA = 0,
+	LA_MIAM_CORE_PDU_ACK = 1,
+	LA_MIAM_CORE_PDU_ALO = 2,
+	LA_MIAM_CORE_PDU_ALR = 3,
+	LA_MIAM_CORE_PDU_UNKNOWN = 4
+} la_miam_core_pdu_type;
+#define LA_MIAM_CORE_PDU_TYPE_MAX 4
+
+typedef struct {
+	uint32_t err;			// PDU decoding error code
+	uint8_t version;		// MIAM CORE PDU version
+	la_miam_core_pdu_type pdu_type;	// MIAM CORE PDU type
+} la_miam_core_pdu;
+```
+
+- `err` - a bit field with information about parsing errors (see "Error
+  handling" section below)
+- `version` - MIAM CORE protocol version (1 or 2)
+- `pdu_type` - MIAM CORE PDU type
+
+The next node of the tree may be of any of the following types:
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam-core.h>
+
+extern la_type_descriptor const la_DEF_miam_core_v1v2_alo_pdu;
+extern la_type_descriptor const la_DEF_miam_core_v1v2_alr_pdu;
+extern la_type_descriptor const la_DEF_miam_core_v1_data_pdu;
+extern la_type_descriptor const la_DEF_miam_core_v1_ack_pdu;
+extern la_type_descriptor const la_DEF_miam_core_v2_data_pdu;
+extern la_type_descriptor const la_DEF_miam_core_v2_ack_pdu;
+```
+
+Each type descriptor describes a particular MIAM CORE PDU type:
+
+- ALO - Aloha (common format for MIAM CORE v1 and v2)
+- ALR - Aloha Response (common format for MIAM CORE v1 and v2)
+- DATA - Data Transfer (v1 or v2)
+- ACK - Acknowledgement (v1 or v2)
+
+Relevant structures for each PDU type contain various header field values. Refer
+to `<libacars/miam-core.h>` for details.
+
+### la_miam_core_format_text()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam-core.h>
+
+void la_miam_core_format_text(la_vstring * const vstr, void const * const data, int indent);
+```
+
+Serializes a decoded MIAM CORE PDU pointed to by `data` into a human-readable
+text indented by `indent` spaces and appends the result to `vstr` (which must be
+non-NULL).
+
+### la_proto_tree_find_miam_core()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam-core.h>
+
+la_proto_node *la_proto_tree_find_miam_core(la_proto_node *root);
+```
+
+Walks the protocol tree pointed to by `root` and returns a pointer to the first
+encountered node containing MIAM CORE PDU (ie. having a type descriptor of
+`la_DEF_miam_core_pdu`). If `root` is NULL or no matching protocol node has been
+found in the tree, the function returns NULL.
+
+No `la_proto_tree_find_*()` routines are provided for individual PDU types.
+If you need to locate a node containing a particular PDU type, use
+`la_proto_tree_find_protocol()` function with a pointer to the type descriptor
+of interest, for example:
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam.h>
+
+la_proto_node *v2_data_pdu = la_proto_tree_find_protocol(tree_ptr, &la_DEF_miam_core_v2_data_pdu);
+```
+
+## Error handling
+
+Each MIAM CORE PDU structure contains an `err` field:
+
+```C
+uint32_t err;			// PDU decoding error code
+```
+
+The upper half of the value is a bit field describing header decoding errors,
+while the lower half describes message body decoding errors. Refer to
+`<libacars/miam-core.h>` for possible values, which are defined as
+`LA_MIAM_ERR_*` macros.
+
+Serialization routines inspect the error field and print diagnostic output for
+each encountered error. Header errors are fatal, ie. the actual PDU is not
+printed because its content is dubious. Body errors are not fatal - the header
+will still be printed and the body as well (at least partially). Diagnostic
+messages are printed after the message body.
 
 ## la_vstring API
 
