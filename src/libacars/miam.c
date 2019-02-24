@@ -94,7 +94,10 @@ static la_dict const la_miam_frame_id_descriptor_table[] = {
 };
 
 la_proto_node *la_miam_single_transfer_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
-	return la_miam_core_pdu_parse(label, txt, msg_dir);
+// -Wunused-parameter
+	(void)label;
+	(void)msg_dir;
+	return la_miam_core_pdu_parse(txt);
 }
 
 la_proto_node *la_miam_file_transfer_request_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
@@ -217,7 +220,7 @@ la_proto_node *la_miam_file_segment_parse(char const * const label, char const *
 // various non-MIAM messages, especially when sent with H1 label. la_miam_core_pdu_parse()
 // performs more thorough checks - if it fails to identify its input as a MIAM CORE PDU,
 // then we declare that this message is not MIAM.
-	void *next = la_miam_core_pdu_parse(label, txt, msg_dir);
+	void *next = la_miam_core_pdu_parse(txt);
 	if(next == NULL) {
 		goto hdr_error;
 	}

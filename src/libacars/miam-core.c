@@ -284,11 +284,7 @@ la_proto_node *la_miam_core_v1v2_alr_parse(uint8_t const *hdrbuf, int hdrlen, ui
 	return v1v2_alo_alr_parse(hdrbuf, hdrlen, bodybuf, bodylen, LA_MIAM_CORE_PDU_ALR);
 }
 
-la_proto_node *la_miam_core_pdu_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
-// -Wunused-parameter
-	(void)label;
-	(void)msg_dir;
-
+la_proto_node *la_miam_core_pdu_parse(char const *txt) {
 	la_assert(txt != NULL);
 
 // Determine if it's a MIAM CORE PDU - check body/header padding counts and look for header/body delimiter
