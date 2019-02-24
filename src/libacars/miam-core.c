@@ -393,7 +393,7 @@ end:
 
 // MIAM CORE v1/v2 common formatters
 
-void la_miam_errors_format_text(la_vstring * const vstr, uint32_t err, int indent) {
+static void la_miam_errors_format_text(la_vstring * const vstr, uint32_t err, int indent) {
 	static la_dict const la_miam_error_messages[] = {
 		{ .id = LA_MIAM_ERR_SUCCESS,			.val = "No error" },
 		{ .id = LA_MIAM_ERR_HDR_PDU_TYPE_UNKNOWN,	.val = "Unknown PDU type" },
