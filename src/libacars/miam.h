@@ -121,7 +121,10 @@ void la_miam_format_text(la_vstring * const vstr, void const * const data, int i
 void la_miam_single_transfer_format_text(la_vstring * const vstr, void const * const data, int indent);
 void la_miam_file_transfer_request_format_text(la_vstring * const vstr, void const * const data, int indent);
 void la_miam_file_transfer_accept_format_text(la_vstring * const vstr, void const * const data, int indent);
+void la_miam_file_transfer_abort_format_text(la_vstring * const vstr, void const * const data, int indent);
 void la_miam_file_segment_format_text(la_vstring * const vstr, void const * const data, int indent);
+void la_miam_xoff_ind_format_text(la_vstring * const vstr, void const * const data, int indent);
+void la_miam_xon_ind_format_text(la_vstring * const vstr, void const * const data, int indent);
 
 extern la_type_descriptor const la_DEF_miam_message;
 extern la_type_descriptor const la_DEF_miam_single_transfer_message;
