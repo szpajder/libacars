@@ -31,7 +31,7 @@ static la_miam_frame_id_map const frame_id_map[LA_MIAM_FRAME_ID_CNT] = {
 	{ .fid_char= '\0', .frame_id = LA_MIAM_FID_UNKNOWN },
 };
 
-typedef la_proto_node* (la_miam_frame_parse_f)(char const * const label, char const *txt, la_msg_dir const msg_dir);
+typedef la_proto_node* (la_miam_frame_parse_f)(char const *txt);
 typedef struct {
 	char *description;
 	la_miam_frame_parse_f *parse;
@@ -93,17 +93,11 @@ static la_dict const la_miam_frame_id_descriptor_table[] = {
 	}
 };
 
-la_proto_node *la_miam_single_transfer_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
-// -Wunused-parameter
-	(void)label;
-	(void)msg_dir;
+la_proto_node *la_miam_single_transfer_parse(char const *txt) {
 	return la_miam_core_pdu_parse(txt);
 }
 
-la_proto_node *la_miam_file_transfer_request_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
-// -Wunused-parameter
-	(void)label;
-	(void)msg_dir;
+la_proto_node *la_miam_file_transfer_request_parse(char const *txt) {
 	la_assert(txt != NULL);
 
 	la_miam_file_transfer_request_msg *msg = NULL;
@@ -143,10 +137,7 @@ hdr_error:
 	return NULL;
 }
 
-la_proto_node *la_miam_file_transfer_accept_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
-// -Wunused-parameter
-	(void)label;
-	(void)msg_dir;
+la_proto_node *la_miam_file_transfer_accept_parse(char const *txt) {
 	la_assert(txt != NULL);
 
 	la_miam_file_transfer_accept_msg *msg = NULL;
@@ -197,7 +188,7 @@ hdr_error:
 	return NULL;
 }
 
-la_proto_node *la_miam_file_segment_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
+la_proto_node *la_miam_file_segment_parse(char const *txt) {
 	la_assert(txt != NULL);
 	la_miam_file_segment_msg *msg = LA_XCALLOC(1, sizeof(la_miam_file_segment_msg));
 	int i;
@@ -236,10 +227,7 @@ hdr_error:
 	return NULL;
 }
 
-la_proto_node *la_miam_file_transfer_abort_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
-// -Wunused-parameter
-	(void)label;
-	(void)msg_dir;
+la_proto_node *la_miam_file_transfer_abort_parse(char const *txt) {
 	la_assert(txt != NULL);
 
 	la_miam_file_transfer_abort_msg *msg = NULL;
@@ -275,12 +263,9 @@ hdr_error:
 	return NULL;
 }
 
-la_proto_node *la_miam_xoff_ind_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
-// -Wunused-parameter
-	(void)label;
-	(void)msg_dir;
-
+la_proto_node *la_miam_xoff_ind_parse(char const *txt) {
 	la_assert(txt != NULL);
+
 	la_miam_xoff_ind_msg *msg = NULL;
 	if(chomped_strlen(txt) != 3) {
 		goto hdr_error;
@@ -310,11 +295,7 @@ hdr_error:
 	return NULL;
 }
 
-la_proto_node *la_miam_xon_ind_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
-// -Wunused-parameter
-	(void)label;
-	(void)msg_dir;
-
+la_proto_node *la_miam_xon_ind_parse(char const *txt) {
 	la_assert(txt != NULL);
 
 	la_miam_xon_ind_msg *msg = NULL;
@@ -406,7 +387,7 @@ la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_d
 		return NULL;
 	}
 	txt++; len--;
-	la_proto_node *next_node = fid_descriptor->parse(label, txt, msg_dir);
+	la_proto_node *next_node = fid_descriptor->parse(txt);
 	if(next_node == NULL) {
 		return NULL;
 	}

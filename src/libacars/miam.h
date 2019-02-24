@@ -109,13 +109,13 @@ typedef struct {
 } la_miam_xon_ind_msg;
 
 la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
-la_proto_node *la_miam_single_transfer_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
-la_proto_node *la_miam_file_transfer_request_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
-la_proto_node *la_miam_file_transfer_accept_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
-la_proto_node *la_miam_file_segment_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
-la_proto_node *la_miam_file_transfer_abort_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
-la_proto_node *la_miam_xoff_ind_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
-la_proto_node *la_miam_xon_ind_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
+la_proto_node *la_miam_single_transfer_parse(char const *txt);
+la_proto_node *la_miam_file_transfer_request_parse(char const *txt);
+la_proto_node *la_miam_file_transfer_accept_parse(char const *txt);
+la_proto_node *la_miam_file_segment_parse(char const *txt);
+la_proto_node *la_miam_file_transfer_abort_parse(char const *txt);
+la_proto_node *la_miam_xoff_ind_parse(char const *txt);
+la_proto_node *la_miam_xon_ind_parse(char const *txt);
 
 void la_miam_format_text(la_vstring * const vstr, void const * const data, int indent);
 void la_miam_single_transfer_format_text(la_vstring * const vstr, void const * const data, int indent);
