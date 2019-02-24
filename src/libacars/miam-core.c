@@ -21,12 +21,12 @@
  * Forward declarations
  **********************/
 
-la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
-la_proto_node *la_miam_core_v1_ack_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
-la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
-la_proto_node *la_miam_core_v2_ack_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
-la_proto_node *la_miam_core_v1v2_alo_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
-la_proto_node *la_miam_core_v1v2_alr_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
+static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
+static la_proto_node *la_miam_core_v1_ack_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
+static la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
+static la_proto_node *la_miam_core_v2_ack_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
+static la_proto_node *la_miam_core_v1v2_alo_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
+static la_proto_node *la_miam_core_v1v2_alr_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen);
 
 /*************************************************
  * MIAM CORE v1/v2 common definitions and routines
@@ -78,7 +78,7 @@ typedef struct {
 
 #define MAX_INFLATED_LEN (1<<20)
 
-la_inflate_result la_inflate(uint8_t const *buf, int const in_len) {
+static la_inflate_result la_inflate(uint8_t const *buf, int const in_len) {
 	la_assert(buf != NULL);
 	la_assert(in_len > 0);
 
@@ -135,7 +135,7 @@ end:
 }
 #endif
 
-la_base85_decode_result la_base85_decode(char const *str, char const *end) {
+static la_base85_decode_result la_base85_decode(char const *str, char const *end) {
 	static uint32_t const base85[] = {
 		85 * 85 * 85 * 85,
 		85 * 85 * 85,
@@ -199,7 +199,7 @@ la_base85_decode_result la_base85_decode(char const *str, char const *end) {
 	};
 }
 
-void la_isprintf_multiline_text(la_vstring * const vstr, int const indent, char const *txt) {
+static void la_isprintf_multiline_text(la_vstring * const vstr, int const indent, char const *txt) {
 	la_assert(vstr != NULL);
 	la_assert(indent >= 0);
 	if(txt == NULL) {
@@ -276,11 +276,11 @@ end:
 	return node;
 }
 
-la_proto_node *la_miam_core_v1v2_alo_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
+static la_proto_node *la_miam_core_v1v2_alo_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
 	return v1v2_alo_alr_parse(hdrbuf, hdrlen, bodybuf, bodylen, LA_MIAM_CORE_PDU_ALO);
 }
 
-la_proto_node *la_miam_core_v1v2_alr_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
+static la_proto_node *la_miam_core_v1v2_alr_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
 	return v1v2_alo_alr_parse(hdrbuf, hdrlen, bodybuf, bodylen, LA_MIAM_CORE_PDU_ALR);
 }
 
@@ -461,11 +461,11 @@ la_miam_core_pdu_type const pdu_type) {
 // Not checking for body errors here, as there is no body in ALO and ALR PDUs
 }
 
-void la_miam_core_v1v2_alo_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_core_v1v2_alo_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	v1v2_alo_alr_format_text(vstr, data, indent, LA_MIAM_CORE_PDU_ALO);
 }
 
-void la_miam_core_v1v2_alr_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_core_v1v2_alr_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	v1v2_alo_alr_format_text(vstr, data, indent, LA_MIAM_CORE_PDU_ALR);
 }
 
@@ -531,7 +531,7 @@ la_proto_node *la_proto_tree_find_miam_core(la_proto_node *root) {
 
 // MIAM Core v1-specific parsers
 
-la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
+static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
 	la_assert(hdrbuf != NULL);
 
 	la_miam_core_v1_data_pdu *pdu = LA_XCALLOC(1, sizeof(la_miam_core_v1_data_pdu));
@@ -638,7 +638,7 @@ end:
 	return node;
 }
 
-la_proto_node *la_miam_core_v1_ack_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
+static la_proto_node *la_miam_core_v1_ack_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
 	la_assert(hdrbuf != NULL);
 // -Wunused-parameter - no body present in ack PDU
 	(void)bodybuf;
@@ -682,7 +682,7 @@ end:
 
 // MIAM Core v1-specific formatters
 
-void la_miam_core_v1_data_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_core_v1_data_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 	la_assert(indent >= 0);
@@ -777,7 +777,7 @@ void la_miam_core_v1_data_format_text(la_vstring * const vstr, void const * cons
 	}
 }
 
-void la_miam_core_v1_ack_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_core_v1_ack_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 	la_assert(indent >= 0);
@@ -810,7 +810,7 @@ void la_miam_core_v1_ack_format_text(la_vstring * const vstr, void const * const
 
 // MIAM Core v1-specific destructors
 
-void la_miam_core_v1_data_destroy(void *data) {
+static void la_miam_core_v1_data_destroy(void *data) {
 	if(data == NULL) {
 		return;
 	}
@@ -851,7 +851,7 @@ la_type_descriptor const la_DEF_miam_core_v1_ack_pdu = {
 
 // MIAM CORE v2-specific parsers
 
-la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
+static la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
 	la_assert(hdrbuf != NULL);
 
 	la_miam_core_v2_data_pdu *pdu = LA_XCALLOC(1, sizeof(la_miam_core_v2_data_pdu));
@@ -947,8 +947,7 @@ end:
 	return node;
 }
 
-
-la_proto_node *la_miam_core_v2_ack_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
+static la_proto_node *la_miam_core_v2_ack_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
 	la_assert(hdrbuf != NULL);
 // -Wunused-parameter
 	(void)bodybuf;
@@ -986,7 +985,7 @@ end:
 
 // MIAM CORE v2-specific formatters
 
-void la_miam_core_v2_data_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_core_v2_data_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 	la_assert(indent >= 0);
@@ -1084,7 +1083,7 @@ void la_miam_core_v2_data_format_text(la_vstring * const vstr, void const * cons
 	}
 }
 
-void la_miam_core_v2_ack_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_core_v2_ack_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 	la_assert(indent >= 0);
@@ -1116,7 +1115,7 @@ void la_miam_core_v2_ack_format_text(la_vstring * const vstr, void const * const
 
 // MIAM CORE v2-specific destructors
 
-void la_miam_core_v2_data_destroy(void *data) {
+static void la_miam_core_v2_data_destroy(void *data) {
 	if(data == NULL) {
 		return;
 	}
