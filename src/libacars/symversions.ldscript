@@ -70,21 +70,7 @@ ACARS_1.2 {
     la_DEF_miam_xoff_ind_message;
     la_DEF_miam_xon_ind_message;
     la_miam_parse;
-    la_miam_single_transfer_parse;
-    la_miam_file_transfer_request_parse;
-    la_miam_file_transfer_accept_parse;
-    la_miam_file_segment_parse;
-    la_miam_file_transfer_abort_parse;
-    la_miam_xoff_ind_parse;
-    la_miam_xon_ind_parse;
     la_miam_format_text;
-    la_miam_single_transfer_format_text;
-    la_miam_file_transfer_request_format_text;
-    la_miam_file_transfer_accept_format_text;
-    la_miam_file_segment_format_text;
-    la_miam_file_transfer_abort_format_text;
-    la_miam_xoff_ind_format_text;
-    la_miam_xon_ind_format_text;
     la_proto_tree_find_miam;
   local:
     *;

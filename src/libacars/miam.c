@@ -37,6 +37,16 @@ typedef struct {
 	la_miam_frame_parse_f *parse;
 } la_miam_frame_id_descriptor;
 
+// Forward declarations
+
+static la_proto_node *la_miam_single_transfer_parse(char const *txt);
+static la_proto_node *la_miam_file_transfer_request_parse(char const *txt);
+static la_proto_node *la_miam_file_transfer_accept_parse(char const *txt);
+static la_proto_node *la_miam_file_segment_parse(char const *txt);
+static la_proto_node *la_miam_file_transfer_abort_parse(char const *txt);
+static la_proto_node *la_miam_xoff_ind_parse(char const *txt);
+static la_proto_node *la_miam_xon_ind_parse(char const *txt);
+
 static la_dict const la_miam_frame_id_descriptor_table[] = {
 	{
 		.id = LA_MIAM_FID_SINGLE_TRANSFER,
@@ -93,11 +103,11 @@ static la_dict const la_miam_frame_id_descriptor_table[] = {
 	}
 };
 
-la_proto_node *la_miam_single_transfer_parse(char const *txt) {
+static la_proto_node *la_miam_single_transfer_parse(char const *txt) {
 	return la_miam_core_pdu_parse(txt);
 }
 
-la_proto_node *la_miam_file_transfer_request_parse(char const *txt) {
+static la_proto_node *la_miam_file_transfer_request_parse(char const *txt) {
 	la_assert(txt != NULL);
 
 	la_miam_file_transfer_request_msg *msg = NULL;
@@ -137,7 +147,7 @@ hdr_error:
 	return NULL;
 }
 
-la_proto_node *la_miam_file_transfer_accept_parse(char const *txt) {
+static la_proto_node *la_miam_file_transfer_accept_parse(char const *txt) {
 	la_assert(txt != NULL);
 
 	la_miam_file_transfer_accept_msg *msg = NULL;
@@ -188,7 +198,7 @@ hdr_error:
 	return NULL;
 }
 
-la_proto_node *la_miam_file_segment_parse(char const *txt) {
+static la_proto_node *la_miam_file_segment_parse(char const *txt) {
 	la_assert(txt != NULL);
 	la_miam_file_segment_msg *msg = LA_XCALLOC(1, sizeof(la_miam_file_segment_msg));
 	int i;
@@ -227,7 +237,7 @@ hdr_error:
 	return NULL;
 }
 
-la_proto_node *la_miam_file_transfer_abort_parse(char const *txt) {
+static la_proto_node *la_miam_file_transfer_abort_parse(char const *txt) {
 	la_assert(txt != NULL);
 
 	la_miam_file_transfer_abort_msg *msg = NULL;
@@ -263,7 +273,7 @@ hdr_error:
 	return NULL;
 }
 
-la_proto_node *la_miam_xoff_ind_parse(char const *txt) {
+static la_proto_node *la_miam_xoff_ind_parse(char const *txt) {
 	la_assert(txt != NULL);
 
 	la_miam_xoff_ind_msg *msg = NULL;
@@ -295,7 +305,7 @@ hdr_error:
 	return NULL;
 }
 
-la_proto_node *la_miam_xon_ind_parse(char const *txt) {
+static la_proto_node *la_miam_xon_ind_parse(char const *txt) {
 	la_assert(txt != NULL);
 
 	la_miam_xon_ind_msg *msg = NULL;
@@ -400,11 +410,11 @@ la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_d
 	return node;
 }
 
-void la_miam_single_transfer_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_single_transfer_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_miam_core_format_text(vstr, data, indent);
 }
 
-void la_miam_file_transfer_request_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_file_transfer_request_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
 	la_assert(indent >= 0);
@@ -419,7 +429,7 @@ void la_miam_file_transfer_request_format_text(la_vstring * const vstr, void con
 	);
 }
 
-void la_miam_file_transfer_accept_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_file_transfer_accept_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
 	la_assert(indent >= 0);
@@ -431,7 +441,7 @@ void la_miam_file_transfer_accept_format_text(la_vstring * const vstr, void cons
 	LA_ISPRINTF(vstr, indent, "In-flight segment temporization: %u sec\n", msg->inflight_segment_tempo);
 }
 
-void la_miam_file_segment_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_file_segment_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
 	la_assert(indent >= 0);
@@ -441,7 +451,7 @@ void la_miam_file_segment_format_text(la_vstring * const vstr, void const * cons
 	LA_ISPRINTF(vstr, indent, "Segment ID: %u\n", msg->segment_id);
 }
 
-void la_miam_file_transfer_abort_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_file_transfer_abort_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	static la_dict const abort_reasons[] = {
 		{ .id = 0, .val = "File transfer request refused by receiver" },
 		{ .id = 1, .val = "File segment out of context" },
@@ -461,7 +471,7 @@ void la_miam_file_transfer_abort_format_text(la_vstring * const vstr, void const
 		(descr != NULL ? descr : "unknown"));
 }
 
-void la_miam_xoff_ind_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_xoff_ind_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
 	la_assert(indent >= 0);
@@ -474,7 +484,7 @@ void la_miam_xoff_ind_format_text(la_vstring * const vstr, void const * const da
 	}
 }
 
-void la_miam_xon_ind_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_xon_ind_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
 	la_assert(indent >= 0);
