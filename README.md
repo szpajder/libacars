@@ -1,4 +1,4 @@
-# libacars [![Build Status](https://travis-ci.com/szpajder/libacars.svg?branch=master)](https://travis-ci.com/szpajder/libacars)
+# libacars [![Build Status](https://travis-ci.com/szpajder/libacars.svg?branch=master)](https://travis-ci.com/szpajder/libacars) [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/szpajder/libacars.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/szpajder/libacars/context:cpp)
 
 libacars is a library for decoding various ACARS message payloads.
 
@@ -202,5 +202,9 @@ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
+
+
+Packaged releases for Windows include zlib library in binary DLL form.
+zlib data compression library, (C) 1995-2017 Jean-loup Gailly and Mark Adler.
 
 // vim: textwidth=80
