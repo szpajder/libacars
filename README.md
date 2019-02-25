@@ -39,7 +39,7 @@ Build steps:
 
 - libacars needs zlib for MIAM message decompression. If zlib is not present,
   decompression code will be disabled and many MIAM messages will be left
-  undecoded. Therefore it is recommended to install zlib development package.
+  undecoded. Therefore it is recommended to install zlib development package
   first. On Debian/Raspbian distros it is named `zlib1g-dev`:
 
 ```
@@ -101,6 +101,10 @@ The following options may be used when invoking cmake:
   Diagnostic messages will be printed to standard error.
 
 - `-DCMAKE_BUILD_TYPE=Release` - disables debugging support (the default).
+
+- `-DEMIT_ASN_DEBUG=ON` - enables debugging output of ASN.1 decoders (very
+  verbose). This option requires `-DCMAKE_BUILD_TYPE=Debug`, otherwise it will
+  do nothing.
 
 - `-DZLIB=FALSE` - forcefully disables zlib support. It will not be used even
   if zlib is available.
