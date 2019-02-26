@@ -48,7 +48,7 @@ endif()
 # build a CPack driven installer package
 include (InstallRequiredSystemLibraries)
 set (CPACK_RESOURCE_FILE_LICENSE
-	"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+	"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
 set (CPACK_RESOURCE_FILE_README
 	"${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set (CPACK_PACKAGE_VERSION_MAJOR "${LA_VERSION_MAJOR}")
