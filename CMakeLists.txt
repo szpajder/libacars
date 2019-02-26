@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.1)
 project (libacars C)
 
 set (LA_VERSION_MAJOR 1)
-set (LA_VERSION_MINOR 1)
+set (LA_VERSION_MINOR 2)
 set (LA_VERSION_PATCH 0)
 set (LA_VERSION "${LA_VERSION_MAJOR}.${LA_VERSION_MINOR}.${LA_VERSION_PATCH}"
 )
@@ -48,7 +48,7 @@ endif()
 # build a CPack driven installer package
 include (InstallRequiredSystemLibraries)
 set (CPACK_RESOURCE_FILE_LICENSE
-	"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+	"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
 set (CPACK_RESOURCE_FILE_README
 	"${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set (CPACK_PACKAGE_VERSION_MAJOR "${LA_VERSION_MAJOR}")
