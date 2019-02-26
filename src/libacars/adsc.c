@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 #include <string.h>			// memcpy()
-#include <math.h>
+#include <math.h>			// pow(), trunc()
 #include <libacars/macros.h>		// la_debug_print, LA_CAST_PTR
 #include <libacars/bitstream.h>		// la_bitstream_*
 #include <libacars/libacars.h>		// la_msg_dir, la_proto_node, la_proto_tree_find_protocol

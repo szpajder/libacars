@@ -10,6 +10,8 @@ set (CMAKE_C_STANDARD 11)
 set (C_STANDARD_REQUIRED ON)
 set (CMAKE_C_EXTENSIONS OFF)
 
+include(GNUInstallDirs)
+
 if(NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE Release)
    message(STATUS "Build type not specified: defaulting to Release")
@@ -20,6 +22,10 @@ CMAKE_BUILD_TYPE=Debug" OFF)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DDEBUG")
+
+if(MINGW)
+	add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
+endif()
 
 include_directories (
 	${PROJECT_SOURCE_DIR}/src

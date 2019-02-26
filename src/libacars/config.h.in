@@ -1,0 +1,12 @@
+/*
+ *  This file is a part of libacars
+ *
+ *  Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
+ */
+#ifndef _CONFIG_H
+#define _CONFIG_H
+
+#cmakedefine WITH_ZLIB
+#cmakedefine IS_BIG_ENDIAN
+
+#endif // !_CONFIG_H

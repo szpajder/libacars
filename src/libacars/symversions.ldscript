@@ -48,3 +48,30 @@ ACARS_1.1 {
   local:
     *;
 } ACARS_1.0;
+
+ACARS_1.2 {
+  global:
+    la_DEF_miam_core_pdu;
+    la_DEF_miam_core_v1v2_alo_pdu;
+    la_DEF_miam_core_v1v2_alr_pdu;
+    la_DEF_miam_core_v1_data_pdu;
+    la_DEF_miam_core_v1_ack_pdu;
+    la_DEF_miam_core_v2_data_pdu;
+    la_DEF_miam_core_v2_ack_pdu;
+    la_miam_core_pdu_parse;
+    la_miam_core_format_text;
+    la_proto_tree_find_miam_core;
+    la_DEF_miam_message;
+    la_DEF_miam_single_transfer_message;
+    la_DEF_miam_file_transfer_request_message;
+    la_DEF_miam_file_transfer_accept_message;
+    la_DEF_miam_file_segment_message;
+    la_DEF_miam_file_transfer_abort_message;
+    la_DEF_miam_xoff_ind_message;
+    la_DEF_miam_xon_ind_message;
+    la_miam_parse;
+    la_miam_format_text;
+    la_proto_tree_find_miam;
+  local:
+    *;
+} ACARS_1.1;
