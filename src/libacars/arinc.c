@@ -13,6 +13,7 @@
 #include <libacars/macros.h>		// la_debug_print()
 #include <libacars/vstring.h>		// la_vstring_append_sprintf()
 #include <libacars/util.h>		// la_slurp_hexstring()
+#include <libacars/json.h>		// la_json_append_*()
 #include <libacars/adsc.h>		// la_adsc_parse()
 #include <libacars/cpdlc.h>		// la_cpdlc_parse()
 
@@ -35,6 +36,7 @@ typedef struct {
 typedef struct {
 	la_arinc_app_type app_type;
 	char const * const description;
+	char const * const json_key;
 } la_arinc_imi_props;
 
 static la_arinc_imi_map const imi_map[LA_ARINC_IMI_CNT] = {
@@ -48,13 +50,41 @@ static la_arinc_imi_map const imi_map[LA_ARINC_IMI_CNT] = {
 };
 
 static la_arinc_imi_props const imi_props[LA_ARINC_IMI_CNT] = {
-	[ARINC_MSG_UNKNOWN]	= { .app_type = ARINC_APP_TYPE_UNKNOWN, .description = "Unknown message type"},
-	[ARINC_MSG_AT1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "FANS-1/A CPDLC Message" },
-	[ARINC_MSG_CR1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "FANS-1/A CPDLC Connect Request" },
-	[ARINC_MSG_CC1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "FANS-1/A CPDLC Connect Confirm" },
-	[ARINC_MSG_DR1]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "FANS-1/A CPDLC Disconnect Request" },
-	[ARINC_MSG_ADS]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "ADS-C message" },
-	[ARINC_MSG_DIS]		= { .app_type = ARINC_APP_TYPE_BINARY,  .description = "ADS-C disconnect request" }
+	[ARINC_MSG_UNKNOWN] = {
+		.app_type = ARINC_APP_TYPE_UNKNOWN,
+		.description = "Unknown message type",
+		.json_key = "unknown"
+	},
+	[ARINC_MSG_AT1]	= {
+		.app_type = ARINC_APP_TYPE_BINARY,
+		.description = "FANS-1/A CPDLC Message",
+		.json_key = "fans1a_cpdlc_msg",
+	},
+	[ARINC_MSG_CR1]	= {
+		.app_type = ARINC_APP_TYPE_BINARY,
+		.description = "FANS-1/A CPDLC Connect Request",
+		.json_key = "fans1a_cpdlc_connect_request",
+	},
+	[ARINC_MSG_CC1]	= {
+		.app_type = ARINC_APP_TYPE_BINARY,
+		.description = "FANS-1/A CPDLC Connect Confirm",
+		.json_key = "fans1a_cpdlc_connect_confirm",
+	},
+	[ARINC_MSG_DR1]	= {
+		.app_type = ARINC_APP_TYPE_BINARY,
+		.description = "FANS-1/A CPDLC Disconnect Request",
+		.json_key = "fans1a_cpdlc_disconnect_request",
+	},
+	[ARINC_MSG_ADS]	= {
+		.app_type = ARINC_APP_TYPE_BINARY,
+		.description = "ADS-C message",
+		.json_key = "adsc_msg",
+	},
+	[ARINC_MSG_DIS]	= {
+		.app_type = ARINC_APP_TYPE_BINARY,
+		.description = "ADS-C disconnect request",
+		.json_key = "adsc_disconnect_request",
+	}
 };
 
 static bool is_numeric_or_uppercase(char const *str, size_t len) {
@@ -195,8 +225,24 @@ void la_arinc_format_text(la_vstring * const vstr, void const * const data, int 
 	}
 }
 
+void la_arinc_format_json(la_vstring * const vstr, void const * const data) {
+	la_assert(vstr);
+	la_assert(data);
+
+	LA_CAST_PTR(msg, la_arinc_msg *, data);
+	la_json_append_string(vstr, "msg_type", imi_props[msg->imi].json_key);
+	if(msg->imi == ARINC_MSG_UNKNOWN) {
+		return;
+	}
+	la_json_append_bool(vstr, "crc_ok", msg->crc_ok);
+	la_json_append_string(vstr, "gs_addr", msg->gs_addr);
+	la_json_append_string(vstr, "air_addr", msg->air_reg);
+}
+
 la_type_descriptor const la_DEF_arinc_message = {
 	.format_text = la_arinc_format_text,
+	.format_json = la_arinc_format_json,
+	.json_key = "arinc622",
 	.destroy = NULL
 };
 
