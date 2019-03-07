@@ -79,6 +79,7 @@ ACARS_1.2 {
 ACARS_1.3 {
   global:
     la_proto_tree_format_json;
+    la_arinc_format_json;
   local:
     *;
 } ACARS_1.2;

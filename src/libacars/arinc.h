@@ -35,6 +35,7 @@ typedef struct {
 
 la_proto_node *la_arinc_parse(char const *txt, la_msg_dir const msg_dir);
 void la_arinc_format_text(la_vstring * const vstr, void const * const data, int indent);
+void la_arinc_format_json(la_vstring * const vstr, void const * const data);
 extern la_type_descriptor const la_DEF_arinc_message;
 la_proto_node *la_proto_tree_find_arinc(la_proto_node *root);
 
