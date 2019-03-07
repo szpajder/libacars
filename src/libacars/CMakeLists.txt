@@ -78,6 +78,7 @@ add_library (acars_core OBJECT
 	bitstream.c
 	cpdlc.c
 	crc.c
+	json.c
 	libacars.c
 	list.c
 	media-adv.c

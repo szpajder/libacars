@@ -75,3 +75,10 @@ ACARS_1.2 {
   local:
     *;
 } ACARS_1.1;
+
+ACARS_1.3 {
+  global:
+    la_proto_tree_format_json;
+  local:
+    *;
+} ACARS_1.2;
