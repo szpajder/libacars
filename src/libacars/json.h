@@ -17,7 +17,10 @@ extern "C" {
 // json.c
 void la_json_object_start(la_vstring * const vstr, char const * const key);
 void la_json_object_end(la_vstring * const vstr);
+void la_json_array_start(la_vstring * const vstr, char const * const key);
+void la_json_array_end(la_vstring * const vstr);
 void la_json_append_bool(la_vstring * const vstr, char const * const key, bool const val);
+void la_json_append_double(la_vstring * const vstr, char const * const key, double const val);
 void la_json_append_string(la_vstring * const vstr, char const * const key, char const * const val);
 
 #ifdef __cplusplus

@@ -13,6 +13,12 @@ void la_json_append_bool(la_vstring * const vstr, char const * const key, bool c
 	la_vstring_append_sprintf(vstr, "\"%s\":%s,", key, (val == true ? "true" : "false"));
 }
 
+void la_json_append_double(la_vstring * const vstr, char const * const key, double const val) {
+	la_assert(vstr != NULL);
+	la_assert(key != NULL);
+	la_vstring_append_sprintf(vstr, "\"%s\":%f,", key, val);
+}
+
 void la_json_append_string(la_vstring * const vstr, char const * const key, char const * const val) {
 	la_assert(vstr != NULL);
 	la_assert(key != NULL);
@@ -40,4 +46,21 @@ void la_json_object_end(la_vstring * const vstr) {
 		vstr->len--;
 	}
 	la_vstring_append_sprintf(vstr, "%s", "}");
+}
+
+void la_json_array_start(la_vstring * const vstr, char const * const key) {
+	la_assert(vstr != NULL);
+	la_assert(key != NULL);
+	la_vstring_append_sprintf(vstr, "\"%s\":[", key);
+}
+
+void la_json_array_end(la_vstring * const vstr) {
+	la_assert(vstr != NULL);
+// FIXME: la_vstring_rtrim
+	size_t len = vstr->len;
+	if(len > 0 && vstr->str[len-1] == ',') {
+		vstr->str[len-1] = '\0';
+		vstr->len--;
+	}
+	la_vstring_append_sprintf(vstr, "%s", "]");
 }
