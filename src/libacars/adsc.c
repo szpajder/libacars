@@ -16,7 +16,7 @@
 #include <libacars/vstring.h>		// la_vstring, la_vstring_append_sprintf()
 #include <libacars/adsc.h>
 
-static double la_adsc_parse_coordinate(uint32_t c) {
+static double la_adsc_coordinate_parse(uint32_t c) {
 // extend the 21-bit signed field to 32-bit signed int
 	struct { signed int coord:21; } s;
 	int r = s.coord = (int)c;
@@ -33,7 +33,7 @@ static double la_adsc_parse_coordinate(uint32_t c) {
 	return result;
 }
 
-static int la_adsc_parse_altitude(uint32_t a) {
+static int la_adsc_altitude_parse(uint32_t a) {
 	struct { signed int alt:16; } s;
 	int result = s.alt = (int)a;
 	result *= 4;
@@ -41,19 +41,19 @@ static int la_adsc_parse_altitude(uint32_t a) {
 	return result;
 }
 
-static double la_adsc_parse_timestamp(uint32_t t) {
+static double la_adsc_timestamp_parse(uint32_t t) {
 	double result = (double)t * 0.125;
 	la_debug_print("result: %f\n", result);
 	return result;
 }
 
-static double la_adsc_parse_speed(uint32_t s) {
+static double la_adsc_speed_parse(uint32_t s) {
 	double result = (double)s / 2.0;
 	la_debug_print("result: %f\n", result);
 	return result;
 }
 
-static int la_adsc_parse_vert_speed(uint32_t vs) {
+static int la_adsc_vert_speed_parse(uint32_t vs) {
 	struct { signed int vs:12; } s;
 	int result = s.vs = (int)vs;
 	result *= 16;
@@ -61,13 +61,13 @@ static int la_adsc_parse_vert_speed(uint32_t vs) {
 	return result;
 }
 
-static double la_adsc_parse_distance(uint32_t d) {
+static double la_adsc_distance_parse(uint32_t d) {
 	double result = (double)d / 8.0;
 	la_debug_print("result: %f\n", result);
 	return result;
 }
 
-static double la_adsc_parse_heading(uint32_t h) {
+static double la_adsc_heading_parse(uint32_t h) {
 // Heading/track format is the same as latitude/longitude
 // except that:
 // - the field is 12-bit long (including sign bit)
@@ -85,7 +85,7 @@ static double la_adsc_parse_heading(uint32_t h) {
 	return result;
 }
 
-static double la_adsc_parse_wind_dir(uint32_t w) {
+static double la_adsc_wind_dir_parse(uint32_t w) {
 // Wind direction format is the same as latitude/longitude
 // except that:
 // - the field is 9-bit long (including sign bit)
@@ -102,7 +102,7 @@ static double la_adsc_parse_wind_dir(uint32_t w) {
 	return result;
 }
 
-static double la_adsc_parse_temperature(uint32_t t) {
+static double la_adsc_temperature_parse(uint32_t t) {
 	struct { signed int temp:12; } s;
 	int r = s.temp = (int)t;
 	la_debug_print("r=%d\n", r);
@@ -120,54 +120,54 @@ static double la_adsc_parse_temperature(uint32_t t) {
 #define LA_ADSC_PARSER_PROTOTYPE(x) static int x(void *dest, uint8_t *buf, uint32_t len)
 #define LA_ADSC_FORMATTER_PROTOTYPE(x) static void x(la_adsc_formatter_ctx_t * const ctx, char const * const label, void const * const data)
 
-static int la_adsc_parse_tag(la_adsc_tag_t *t, la_dict const *tag_descriptor_table, uint8_t *buf, uint32_t len);
+static int la_adsc_tag_parse(la_adsc_tag_t *t, la_dict const *tag_descriptor_table, uint8_t *buf, uint32_t len);
 
 /***************************************************
  * Prototypes of functions used in descriptor tables
  ***************************************************/
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_uint8_t);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_contract_request);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_reporting_interval);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_lat_dev_change);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_vspd_change);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_alt_range);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_acft_intent_group);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_nack);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_noncomp_notify);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_basic_report);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_flight_id);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_predicted_route);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_earth_air_ref);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_intermediate_projection);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_fixed_projection);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_meteo);
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_airframe_id);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_uint8_t_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_contract_request_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_reporting_interval_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_lat_dev_change_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_vspd_change_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_alt_range_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_acft_intent_group_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_nack_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_noncomp_notify_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_basic_report_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_flight_id_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_predicted_route_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_earth_air_ref_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_intermediate_projection_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_fixed_projection_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_meteo_parse);
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_airframe_id_parse);
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_empty_tag);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_tag_with_contract_number);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_contract_request);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_reporting_interval);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_lat_dev_change);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_vspd_change);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_alt_range);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_acft_intent_group);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_modulus);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_nack);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_dis_reason_code);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_noncomp_notify);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_basic_report);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_flight_id);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_predicted_route);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_earth_ref);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_air_ref);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_intermediate_projection);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_fixed_projection);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_meteo);
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_airframe_id);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_empty_tag_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_tag_with_contract_number_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_contract_request_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_reporting_interval_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_lat_dev_change_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_vspd_change_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_alt_range_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_acft_intent_group_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_modulus_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_nack_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_dis_reason_code_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_notify_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_basic_report_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_flight_id_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_predicted_route_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_earth_ref_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_air_ref_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_intermediate_projection_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_fixed_projection_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_meteo_format_text);
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_airframe_id_format_text);
 
-static void la_adsc_destroy_contract_request(void *data);
-static void la_adsc_destroy_noncomp_notify(void *data);
+static void la_adsc_contract_request_destroy(void *data);
+static void la_adsc_noncomp_notify_destroy(void *data);
 
 /*****************
  * Downlink tags
@@ -178,8 +178,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 3,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Acknowledgement",
-			.parse = la_adsc_parse_uint8_t,
-			.format = la_adsc_format_tag_with_contract_number,
+			.parse = la_adsc_uint8_t_parse,
+			.format = la_adsc_tag_with_contract_number_format_text,
 			.destroy = NULL
 		}
 	},
@@ -187,8 +187,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 4,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Negative acknowledgement",
-			.parse = la_adsc_parse_nack,
-			.format = la_adsc_format_nack,
+			.parse = la_adsc_nack_parse,
+			.format = la_adsc_nack_format_text,
 			.destroy = NULL
 		}
 	},
@@ -196,9 +196,9 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 5,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Noncompliance notification",
-			.parse = la_adsc_parse_noncomp_notify,
-			.format = la_adsc_format_noncomp_notify,
-			.destroy = la_adsc_destroy_noncomp_notify
+			.parse = la_adsc_noncomp_notify_parse,
+			.format = la_adsc_noncomp_notify_format_text,
+			.destroy = la_adsc_noncomp_notify_destroy
 		}
 	},
 	{
@@ -206,7 +206,7 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Cancel emergency mode",
 			.parse = NULL,
-			.format = la_adsc_format_empty_tag,
+			.format = la_adsc_empty_tag_format_text,
 			.destroy = NULL
 		}
 	},
@@ -214,8 +214,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 7,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Basic report",
-			.parse = la_adsc_parse_basic_report,
-			.format = la_adsc_format_basic_report,
+			.parse = la_adsc_basic_report_parse,
+			.format = la_adsc_basic_report_format_text,
 			.destroy = NULL
 		}
 	},
@@ -223,8 +223,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 9,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Emergency basic report",
-			.parse = la_adsc_parse_basic_report,
-			.format = la_adsc_format_basic_report,
+			.parse = la_adsc_basic_report_parse,
+			.format = la_adsc_basic_report_format_text,
 			.destroy = NULL
 		}
 	},
@@ -232,8 +232,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 10,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Lateral deviation change event",
-			.parse = la_adsc_parse_basic_report,
-			.format = la_adsc_format_basic_report,
+			.parse = la_adsc_basic_report_parse,
+			.format = la_adsc_basic_report_format_text,
 			.destroy = NULL
 		}
 	},
@@ -241,8 +241,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 12,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Flight ID data",
-			.parse = la_adsc_parse_flight_id,
-			.format = la_adsc_format_flight_id,
+			.parse = la_adsc_flight_id_parse,
+			.format = la_adsc_flight_id_format_text,
 			.destroy = NULL
 		}
 	},
@@ -250,8 +250,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 13,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Predicted route",
-			.parse = la_adsc_parse_predicted_route,
-			.format = la_adsc_format_predicted_route,
+			.parse = la_adsc_predicted_route_parse,
+			.format = la_adsc_predicted_route_format_text,
 			.destroy = NULL
 		}
 	},
@@ -259,8 +259,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 14,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Earth reference data",
-			.parse = la_adsc_parse_earth_air_ref,
-			.format = la_adsc_format_earth_ref,
+			.parse = la_adsc_earth_air_ref_parse,
+			.format = la_adsc_earth_ref_format_text,
 			.destroy = NULL
 		}
 	},
@@ -268,8 +268,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 15,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Air reference data",
-			.parse = la_adsc_parse_earth_air_ref,
-			.format = la_adsc_format_air_ref,
+			.parse = la_adsc_earth_air_ref_parse,
+			.format = la_adsc_air_ref_format_text,
 			.destroy = NULL
 		}
 	},
@@ -277,8 +277,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 16,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Meteo data",
-			.parse = la_adsc_parse_meteo,
-			.format = la_adsc_format_meteo,
+			.parse = la_adsc_meteo_parse,
+			.format = la_adsc_meteo_format_text,
 			.destroy = NULL
 		}
 	},
@@ -286,8 +286,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 17,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Airframe ID",
-			.parse = la_adsc_parse_airframe_id,
-			.format = la_adsc_format_airframe_id,
+			.parse = la_adsc_airframe_id_parse,
+			.format = la_adsc_airframe_id_format_text,
 			.destroy = NULL
 		}
 	},
@@ -295,8 +295,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 18,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Vertical rate change event",
-			.parse = la_adsc_parse_basic_report,
-			.format = la_adsc_format_basic_report,
+			.parse = la_adsc_basic_report_parse,
+			.format = la_adsc_basic_report_format_text,
 			.destroy = NULL
 		}
 	},
@@ -304,8 +304,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 19,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Altitude range event",
-			.parse = la_adsc_parse_basic_report,
-			.format = la_adsc_format_basic_report,
+			.parse = la_adsc_basic_report_parse,
+			.format = la_adsc_basic_report_format_text,
 			.destroy = NULL
 		}
 	},
@@ -313,8 +313,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 20,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Waypoint change event",
-			.parse = la_adsc_parse_basic_report,
-			.format = la_adsc_format_basic_report,
+			.parse = la_adsc_basic_report_parse,
+			.format = la_adsc_basic_report_format_text,
 			.destroy = NULL
 		}
 	},
@@ -322,8 +322,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 22,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Intermediate projection",
-			.parse = la_adsc_parse_intermediate_projection,
-			.format = la_adsc_format_intermediate_projection,
+			.parse = la_adsc_intermediate_projection_parse,
+			.format = la_adsc_intermediate_projection_format_text,
 			.destroy = NULL
 		}
 	},
@@ -331,8 +331,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 23,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Fixed projection",
-			.parse = la_adsc_parse_fixed_projection,
-			.format = la_adsc_format_fixed_projection,
+			.parse = la_adsc_fixed_projection_parse,
+			.format = la_adsc_fixed_projection_format_text,
 			.destroy = NULL
 		}
 	},
@@ -340,8 +340,8 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		.id = 255,	// Fake tag for reason code in DIS message
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Reason",
-			.parse = la_adsc_parse_uint8_t,
-			.format = la_adsc_format_dis_reason_code,
+			.parse = la_adsc_uint8_t_parse,
+			.format = la_adsc_dis_reason_code_format_text,
 			.destroy = NULL
 		}
 	},
@@ -355,7 +355,7 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
  * Downlink tag destructors
  **************************/
 
-static void la_adsc_destroy_noncomp_notify(void *data) {
+static void la_adsc_noncomp_notify_destroy(void *data) {
 	if(data == NULL)
 		return;
 	LA_CAST_PTR(n, la_adsc_noncomp_notify_t *, data);
@@ -371,7 +371,7 @@ static void la_adsc_destroy_noncomp_notify(void *data) {
 #define LA_BS_READ_OR_RETURN(bs, dest, len, ret) \
 	if(la_bitstream_read_word_msbfirst(bs, dest, len) < 0) { return ret; }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_nack) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_nack_parse) {
 	uint32_t tag_len = 2;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -402,7 +402,7 @@ fail:
 	return -1;
 }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_noncomp_group) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_noncomp_group_parse) {
 	uint32_t tag_len = 2;
 	LA_CAST_PTR(g, la_adsc_noncomp_group_t *, dest);
 	if(len < tag_len) {
@@ -441,7 +441,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_noncomp_group) {
 	return tag_len;
 }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_noncomp_notify) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_noncomp_notify_parse) {
 	uint32_t tag_len = 2;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -459,7 +459,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_noncomp_notify) {
 	int consumed_bytes = 0;
 	for(uint8_t i = 0; i < n->group_cnt; i++) {
 		la_debug_print("Remaining length: %u\n", len);
-		if((consumed_bytes = la_adsc_parse_noncomp_group(n->groups + i, buf, len)) < 0) {
+		if((consumed_bytes = la_adsc_noncomp_group_parse(n->groups + i, buf, len)) < 0) {
 			return -1;
 		}
 		buf += consumed_bytes; len -= consumed_bytes;
@@ -476,7 +476,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_noncomp_notify) {
 	return tag_len;
 }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_basic_report) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_basic_report_parse) {
 	const uint32_t tag_len = 10;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -490,13 +490,13 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_basic_report) {
 
 	uint32_t tmp;
 	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	r->lat = la_adsc_parse_coordinate(tmp);
+	r->lat = la_adsc_coordinate_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	r->lon = la_adsc_parse_coordinate(tmp);
+	r->lon = la_adsc_coordinate_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 16, -1);
-	r->alt = la_adsc_parse_altitude(tmp);
+	r->alt = la_adsc_altitude_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 15, -1);
-	r->timestamp = la_adsc_parse_timestamp(tmp);
+	r->timestamp = la_adsc_timestamp_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 7, -1);
 	r->redundancy = (uint8_t)(tmp & 1);
 	r->accuracy = (uint8_t)((tmp >> 1) & 0x7);
@@ -508,7 +508,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_basic_report) {
 	return tag_len;
 }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_flight_id) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_flight_id_parse) {
 	const uint32_t tag_len = 6;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -536,7 +536,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_flight_id) {
 	return tag_len;
 }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_predicted_route) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_predicted_route_parse) {
 	const uint32_t tag_len = 17;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -550,26 +550,26 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_predicted_route) {
 
 	uint32_t tmp;
 	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	r->lat_next = la_adsc_parse_coordinate(tmp);
+	r->lat_next = la_adsc_coordinate_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	r->lon_next = la_adsc_parse_coordinate(tmp);
+	r->lon_next = la_adsc_coordinate_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 16, -1);
-	r->alt_next = la_adsc_parse_altitude(tmp);
+	r->alt_next = la_adsc_altitude_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 14, -1);
 	r->eta_next = tmp;
 	la_debug_print("eta: %d\n", r->eta_next);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	r->lat_next_next = la_adsc_parse_coordinate(tmp);
+	r->lat_next_next = la_adsc_coordinate_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	r->lon_next_next = la_adsc_parse_coordinate(tmp);
+	r->lon_next_next = la_adsc_coordinate_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 16, -1);
-	r->alt_next_next = la_adsc_parse_altitude(tmp);
+	r->alt_next_next = la_adsc_altitude_parse(tmp);
 
 	la_bitstream_destroy(bs);
 	return tag_len;
 }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_earth_air_ref) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_earth_air_ref_parse) {
 	const uint32_t tag_len = 5;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -585,17 +585,17 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_earth_air_ref) {
 	LA_BS_READ_OR_RETURN(bs, &tmp, 1, -1);
 	r->heading_invalid = tmp;
 	LA_BS_READ_OR_RETURN(bs, &tmp, 12, -1);
-	r->heading = la_adsc_parse_heading(tmp);
+	r->heading = la_adsc_heading_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 13, -1);
-	r->speed = la_adsc_parse_speed(tmp);
+	r->speed = la_adsc_speed_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 12, -1);
-	r->vert_speed = la_adsc_parse_vert_speed(tmp);
+	r->vert_speed = la_adsc_vert_speed_parse(tmp);
 
 	la_bitstream_destroy(bs);
 	return tag_len;
 }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_intermediate_projection) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_intermediate_projection_parse) {
 	const uint32_t tag_len = 8;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -609,13 +609,13 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_intermediate_projection) {
 
 	uint32_t tmp;
 	LA_BS_READ_OR_RETURN(bs, &tmp, 16, -1);
-	p->distance = la_adsc_parse_distance(tmp);
+	p->distance = la_adsc_distance_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 1, -1);
 	p->track_invalid = tmp;
 	LA_BS_READ_OR_RETURN(bs, &tmp, 12, -1);
-	p->track = la_adsc_parse_heading(tmp);
+	p->track = la_adsc_heading_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 16, -1);
-	p->alt = la_adsc_parse_altitude(tmp);
+	p->alt = la_adsc_altitude_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 14, -1);
 	p->eta = tmp;
 	la_debug_print("eta: %d\n", p->eta);
@@ -624,7 +624,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_intermediate_projection) {
 	return tag_len;
 }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_fixed_projection) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_fixed_projection_parse) {
 	const uint32_t tag_len = 9;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -638,11 +638,11 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_fixed_projection) {
 
 	uint32_t tmp;
 	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	p->lat = la_adsc_parse_coordinate(tmp);
+	p->lat = la_adsc_coordinate_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
-	p->lon = la_adsc_parse_coordinate(tmp);
+	p->lon = la_adsc_coordinate_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 16, -1);
-	p->alt = la_adsc_parse_altitude(tmp);
+	p->alt = la_adsc_altitude_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 14, -1);
 	p->eta = tmp;
 	la_debug_print("eta: %d\n", p->eta);
@@ -651,7 +651,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_fixed_projection) {
 	return tag_len;
 }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_meteo) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_meteo_parse) {
 	const uint32_t tag_len = 4;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -665,19 +665,19 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_meteo) {
 
 	uint32_t tmp;
 	LA_BS_READ_OR_RETURN(bs, &tmp, 9, -1);
-	m->wind_speed = la_adsc_parse_speed(tmp);
+	m->wind_speed = la_adsc_speed_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 1, -1);
 	m->wind_dir_invalid = tmp;
 	LA_BS_READ_OR_RETURN(bs, &tmp, 9, -1);
-	m->wind_dir = la_adsc_parse_wind_dir(tmp);
+	m->wind_dir = la_adsc_wind_dir_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 12, -1);
-	m->temp = la_adsc_parse_temperature(tmp);
+	m->temp = la_adsc_temperature_parse(tmp);
 
 	la_bitstream_destroy(bs);
 	return tag_len;
 }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_airframe_id) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_airframe_id_parse) {
 	const uint32_t tag_len = 3;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -692,7 +692,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_airframe_id) {
  * Downlink tag formatters
  *************************/
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_nack) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_nack_format_text) {
 	static const char *reason_code_table[LA_ADSC_NACK_MAX_REASON_CODE+1] = {
 		[0] = NULL,
 		[1] = "Duplicate group tag",
@@ -722,7 +722,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_nack) {
 	ctx->indent--;
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_dis_reason_code) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_dis_reason_code_format_text) {
 	static la_dict const dis_reason_code_table[] = {
 		{ 0, "reason not specified" },
 		{ 1, "congestion" },
@@ -740,7 +740,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_dis_reason_code) {
 	}
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_noncomp_group) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_group_format_text) {
 // -Wunused-parameter
 	(void)label;
 	LA_CAST_PTR(g, la_adsc_noncomp_group_t *, data);
@@ -760,20 +760,20 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_noncomp_group) {
 	ctx->indent--;
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_noncomp_notify) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_notify_format_text) {
 	LA_CAST_PTR(n, la_adsc_noncomp_notify_t *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Contract number: %u\n", n->contract_req_num);
 	if(n->group_cnt > 0) {
 		for(int i = 0; i < n->group_cnt; i++) {
-			la_adsc_format_noncomp_group(ctx, NULL, n->groups + i);
+			la_adsc_noncomp_group_format_text(ctx, NULL, n->groups + i);
 		}
 	}
 	ctx->indent--;
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_basic_report) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_basic_report_format_text) {
 	static const char *accuracy_table[] = {
 		[0] = "none (NAV capability lost)",
 		[1] = "<30 nm",
@@ -809,7 +809,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_basic_report) {
 	ctx->indent--;
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_flight_id) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_flight_id_format_text) {
 	LA_CAST_PTR(f, la_adsc_flight_id_t *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
@@ -817,7 +817,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_flight_id) {
 	ctx->indent--;
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_predicted_route) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_predicted_route_format_text) {
 	LA_CAST_PTR(r, la_adsc_predicted_route_t *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
@@ -837,7 +837,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_predicted_route) {
 	ctx->indent--;
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_earth_ref) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_earth_ref_format_text) {
 	LA_CAST_PTR(r, la_adsc_earth_air_ref_t *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
@@ -847,7 +847,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_earth_ref) {
 	ctx->indent--;
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_air_ref) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_air_ref_format_text) {
 	LA_CAST_PTR(r, la_adsc_earth_air_ref_t *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
@@ -857,7 +857,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_air_ref) {
 	ctx->indent--;
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_intermediate_projection) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_intermediate_projection_format_text) {
 	LA_CAST_PTR(p, la_adsc_intermediate_projection_t *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
@@ -868,7 +868,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_intermediate_projection) {
 	ctx->indent--;
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_fixed_projection) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_fixed_projection_format_text) {
 	LA_CAST_PTR(p, la_adsc_fixed_projection_t *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
@@ -879,7 +879,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_fixed_projection) {
 	ctx->indent--;
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_meteo) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_meteo_format_text) {
 	LA_CAST_PTR(m, la_adsc_meteo_t *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
@@ -889,7 +889,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_meteo) {
 	ctx->indent--;
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_airframe_id) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_airframe_id_format_text) {
 	LA_CAST_PTR(a, la_adsc_airframe_id_t *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
@@ -907,7 +907,7 @@ static la_dict const la_adsc_uplink_tag_descriptor_table[] = {
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Cancel all contracts and terminate connection",
 			.parse = NULL,
-			.format = la_adsc_format_empty_tag,
+			.format = la_adsc_empty_tag_format_text,
 			.destroy = NULL
 		}
 	},
@@ -915,8 +915,8 @@ static la_dict const la_adsc_uplink_tag_descriptor_table[] = {
 		.id = 2,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Cancel contract",
-			.parse = la_adsc_parse_uint8_t,
-			.format = la_adsc_format_tag_with_contract_number,
+			.parse = la_adsc_uint8_t_parse,
+			.format = la_adsc_tag_with_contract_number_format_text,
 			.destroy = NULL
 		}
 	},
@@ -924,8 +924,8 @@ static la_dict const la_adsc_uplink_tag_descriptor_table[] = {
 		.id = 6,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Cancel emergency mode",
-			.parse = la_adsc_parse_uint8_t,
-			.format = la_adsc_format_tag_with_contract_number,
+			.parse = la_adsc_uint8_t_parse,
+			.format = la_adsc_tag_with_contract_number_format_text,
 			.destroy = NULL
 		}
 	},
@@ -933,27 +933,27 @@ static la_dict const la_adsc_uplink_tag_descriptor_table[] = {
 		.id = 7,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Periodic contract request",
-			.parse = la_adsc_parse_contract_request,
-			.format = la_adsc_format_contract_request,
-			.destroy = la_adsc_destroy_contract_request
+			.parse = la_adsc_contract_request_parse,
+			.format = la_adsc_contract_request_format_text,
+			.destroy = la_adsc_contract_request_destroy
 		}
 	},
 	{
 		.id = 8,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Event contract request",
-			.parse = la_adsc_parse_contract_request,
-			.format = la_adsc_format_contract_request,
-			.destroy = la_adsc_destroy_contract_request
+			.parse = la_adsc_contract_request_parse,
+			.format = la_adsc_contract_request_format_text,
+			.destroy = la_adsc_contract_request_destroy
 		}
 	},
 	{
 		.id = 9,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Emergency periodic contract request",
-			.parse = la_adsc_parse_contract_request,
-			.format = la_adsc_format_contract_request,
-			.destroy = la_adsc_destroy_contract_request
+			.parse = la_adsc_contract_request_parse,
+			.format = la_adsc_contract_request_format_text,
+			.destroy = la_adsc_contract_request_destroy
 		}
 	},
 	{
@@ -967,8 +967,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 10,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Report when lateral deviation exceeds",
-			.parse = la_adsc_parse_lat_dev_change,
-			.format = la_adsc_format_lat_dev_change,
+			.parse = la_adsc_lat_dev_change_parse,
+			.format = la_adsc_lat_dev_change_format_text,
 			.destroy = NULL
 		}
 	},
@@ -976,8 +976,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 11,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Reporting interval",
-			.parse = la_adsc_parse_reporting_interval,
-			.format = la_adsc_format_reporting_interval,
+			.parse = la_adsc_reporting_interval_parse,
+			.format = la_adsc_reporting_interval_format_text,
 			.destroy = NULL
 		}
 	},
@@ -985,8 +985,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 12,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Flight ID",
-			.parse = la_adsc_parse_uint8_t,
-			.format = la_adsc_format_modulus,
+			.parse = la_adsc_uint8_t_parse,
+			.format = la_adsc_modulus_format_text,
 			.destroy = NULL
 		}
 	},
@@ -994,8 +994,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 13,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Predicted route",
-			.parse = la_adsc_parse_uint8_t,
-			.format = la_adsc_format_modulus,
+			.parse = la_adsc_uint8_t_parse,
+			.format = la_adsc_modulus_format_text,
 			.destroy = NULL
 		}
 	},
@@ -1003,8 +1003,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 14,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Earth reference data",
-			.parse = la_adsc_parse_uint8_t,
-			.format = la_adsc_format_modulus,
+			.parse = la_adsc_uint8_t_parse,
+			.format = la_adsc_modulus_format_text,
 			.destroy = NULL
 		}
 	},
@@ -1012,8 +1012,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 15,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Air reference data",
-			.parse = la_adsc_parse_uint8_t,
-			.format = la_adsc_format_modulus,
+			.parse = la_adsc_uint8_t_parse,
+			.format = la_adsc_modulus_format_text,
 			.destroy = NULL
 		}
 	},
@@ -1021,8 +1021,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 16,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Meteo data",
-			.parse = la_adsc_parse_uint8_t,
-			.format = la_adsc_format_modulus,
+			.parse = la_adsc_uint8_t_parse,
+			.format = la_adsc_modulus_format_text,
 			.destroy = NULL
 		}
 	},
@@ -1030,8 +1030,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 17,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Airframe ID",
-			.parse = la_adsc_parse_uint8_t,
-			.format = la_adsc_format_modulus,
+			.parse = la_adsc_uint8_t_parse,
+			.format = la_adsc_modulus_format_text,
 			.destroy = NULL
 		}
 	},
@@ -1039,8 +1039,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 18,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Report when vertical speed is",
-			.parse = la_adsc_parse_vspd_change,
-			.format = la_adsc_format_vspd_change,
+			.parse = la_adsc_vspd_change_parse,
+			.format = la_adsc_vspd_change_format_text,
 			.destroy = NULL
 		}
 	},
@@ -1048,8 +1048,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 19,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Report when altitude out of range",
-			.parse = la_adsc_parse_alt_range,
-			.format = la_adsc_format_alt_range,
+			.parse = la_adsc_alt_range_parse,
+			.format = la_adsc_alt_range_format_text,
 			.destroy = NULL
 		}
 	},
@@ -1058,7 +1058,7 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Report waypoint changes",
 			.parse = NULL,
-			.format = la_adsc_format_empty_tag,
+			.format = la_adsc_empty_tag_format_text,
 			.destroy = NULL
 		}
 	},
@@ -1066,8 +1066,8 @@ static la_dict const la_adsc_request_tag_descriptor_table[] = {
 		.id = 21,
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Aircraft intent data",
-			.parse = la_adsc_parse_acft_intent_group,
-			.format = la_adsc_format_acft_intent_group,
+			.parse = la_adsc_acft_intent_group_parse,
+			.format = la_adsc_acft_intent_group_format_text,
 			.destroy = NULL
 		}
 	},
@@ -1098,7 +1098,7 @@ static void la_adsc_tag_destroy(void *tag) {
 	LA_XFREE(tag);
 }
 
-static void la_adsc_destroy_contract_request(void *data) {
+static void la_adsc_contract_request_destroy(void *data) {
 	if(data == NULL) return;
 	LA_CAST_PTR(r, la_adsc_req_t *, data);
 	if(r->req_tag_list != NULL) {
@@ -1112,35 +1112,35 @@ static void la_adsc_destroy_contract_request(void *data) {
  * Tag formatters
  ****************/
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_empty_tag) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_empty_tag_format_text) {
 // -Wunused-parameter
 	(void)data;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s\n", label);
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_tag_with_contract_number) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_tag_with_contract_number_format_text) {
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Contract number: %u\n", *(uint8_t *)data);
 	ctx->indent--;
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_modulus) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_modulus_format_text) {
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: every %u reports\n", label, *(uint8_t *)data);
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_reporting_interval) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_reporting_interval_format_text) {
 	LA_CAST_PTR(t, la_adsc_report_interval_req_t const * const, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: %d seconds\n", label, (int)(t->scaling_factor) * (int)(t->rate));
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_acft_intent_group) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_acft_intent_group_format_text) {
 	LA_CAST_PTR(t, la_adsc_acft_intent_group_req_t const * const, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: every %u reports, projection time: %u minutes\n",
 		label, t->modulus, t->acft_intent_projection_time);
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_lat_dev_change) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_lat_dev_change_format_text) {
 	LA_CAST_PTR(e, la_adsc_lat_dev_chg_event_t const * const, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent,
 		"%s: %.3f nm\n",
@@ -1149,7 +1149,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_lat_dev_change) {
 	);
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_vspd_change) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_vspd_change_format_text) {
 	LA_CAST_PTR(e, la_adsc_vspd_chg_event_t const * const, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent,
 		"%s: %c%d ft/min\n",
@@ -1159,7 +1159,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_vspd_change) {
 	);
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_alt_range) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_alt_range_format_text) {
 	LA_CAST_PTR(e, la_adsc_alt_range_event_t const * const, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent,
 		"%s: %d-%d ft\n",
@@ -1169,7 +1169,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_alt_range) {
 	);
 }
 
-LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_contract_request) {
+LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_contract_request_format_text) {
 	LA_CAST_PTR(r, la_adsc_req_t const * const, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
@@ -1195,7 +1195,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_format_contract_request) {
  * Tag parsers
  **************/
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_uint8_t) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_uint8_t_parse) {
 	uint32_t tag_len = 1;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -1206,7 +1206,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_uint8_t) {
 	return tag_len;
 }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_reporting_interval) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_reporting_interval_parse) {
 	uint32_t tag_len = 1;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -1224,7 +1224,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_reporting_interval) {
 	return tag_len;
 }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_lat_dev_change) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_lat_dev_change_parse) {
 	uint32_t tag_len = 1;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -1235,7 +1235,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_lat_dev_change) {
 	return tag_len;
 }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_vspd_change) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_vspd_change_parse) {
 	uint32_t tag_len = 1;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -1246,7 +1246,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_vspd_change) {
 	return tag_len;
 }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_alt_range) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_alt_range_parse) {
 	uint32_t tag_len = 4;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -1255,13 +1255,13 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_alt_range) {
 
 	uint32_t tmp = 0;
 	tmp = (buf[0] << 8) | buf[1];
-	e->ceiling_alt = la_adsc_parse_altitude(tmp);
+	e->ceiling_alt = la_adsc_altitude_parse(tmp);
 	tmp = (buf[2] << 8) | buf[3];
-	e->floor_alt = la_adsc_parse_altitude(tmp);
+	e->floor_alt = la_adsc_altitude_parse(tmp);
 	return tag_len;
 }
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_acft_intent_group) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_acft_intent_group_parse) {
 	uint32_t tag_len = 2;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -1274,7 +1274,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_acft_intent_group) {
 }
 
 
-LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_contract_request) {
+LA_ADSC_PARSER_PROTOTYPE(la_adsc_contract_request_parse) {
 	uint32_t tag_len = 1;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
@@ -1288,7 +1288,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_contract_request) {
 	while(len > 0) {
 		la_debug_print("Remaining length: %u\n", len);
 // First lookup the tag value - if it's unknown, then it's probably a next request
-// in a multi-request ADS message. We don't want la_adsc_parse_tag() to parse it,
+// in a multi-request ADS message. We don't want la_adsc_tag_parse() to parse it,
 // because we would get a nasty "-- Unparseable tag" error message in the output.
 		if(la_dict_search(la_adsc_request_tag_descriptor_table, (int)buf[0]) == NULL) {
 			la_debug_print("Tag %d unknown - assuming end-of-request\n", (int)buf[0]);
@@ -1296,7 +1296,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_contract_request) {
 		}
 		la_adsc_tag_t *req_tag = LA_XCALLOC(1, sizeof(la_adsc_tag_t));
 		r->req_tag_list = la_list_append(r->req_tag_list, req_tag);
-		if((consumed_bytes = la_adsc_parse_tag(req_tag, la_adsc_request_tag_descriptor_table, buf, len)) < 0) {
+		if((consumed_bytes = la_adsc_tag_parse(req_tag, la_adsc_request_tag_descriptor_table, buf, len)) < 0) {
 			return -1;
 		}
 		buf += consumed_bytes; len -= consumed_bytes;
@@ -1305,7 +1305,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_parse_contract_request) {
 	return tag_len;
 }
 
-static int la_adsc_parse_tag(la_adsc_tag_t *t, la_dict const *tag_descriptor_table, uint8_t *buf, uint32_t len) {
+static int la_adsc_tag_parse(la_adsc_tag_t *t, la_dict const *tag_descriptor_table, uint8_t *buf, uint32_t len) {
 	uint32_t tag_len = 1;
 	if(len < tag_len) {
 		la_debug_print("%s", "Buffer len is 0\n");
@@ -1360,7 +1360,7 @@ la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc
 			la_debug_print("Remaining length: %u\n", len);
 			tag = LA_XCALLOC(1, sizeof(la_adsc_tag_t));
 			msg->tag_list = la_list_append(msg->tag_list, tag);
-			if((consumed_bytes = la_adsc_parse_tag(tag, tag_table, buf, len)) < 0) {
+			if((consumed_bytes = la_adsc_tag_parse(tag, tag_table, buf, len)) < 0) {
 				msg->err = true;
 				break;
 			}
@@ -1381,7 +1381,7 @@ la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc
 		uint8_t *tmpbuf = LA_XCALLOC(len, sizeof(uint8_t));
 		tmpbuf[0] = 255;
 		tmpbuf[1] = buf[0];
-		if(la_adsc_parse_tag(tag, tag_table, tmpbuf, len) < 0) {
+		if(la_adsc_tag_parse(tag, tag_table, tmpbuf, len) < 0) {
 			msg->err = true;
 		}
 		LA_XFREE(tmpbuf);
