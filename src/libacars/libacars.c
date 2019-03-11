@@ -64,9 +64,9 @@ la_vstring *la_proto_tree_format_json(la_vstring *vstr, la_proto_node const * co
 	if(vstr == NULL) {
 		vstr = la_vstring_new();
 	}
-	la_json_object_start(vstr, NULL);
+	la_json_start(vstr);
 	la_proto_node_format_json(vstr, root);
-	la_json_object_end(vstr);
+	la_json_end(vstr);
 	return vstr;
 }
 
