@@ -28,6 +28,12 @@ void la_json_append_double(la_vstring * const vstr, char const * const key, doub
 	la_vstring_append_sprintf(vstr, "\"%s\":%f,", key, val);
 }
 
+void la_json_append_long(la_vstring * const vstr, char const * const key, long const val) {
+	la_assert(vstr != NULL);
+	la_assert(key != NULL);
+	la_vstring_append_sprintf(vstr, "\"%s\":%ld,", key, val);
+}
+
 void la_json_append_string(la_vstring * const vstr, char const * const key, char const * const val) {
 	la_assert(vstr != NULL);
 	la_assert(key != NULL);
@@ -49,7 +55,7 @@ void la_json_object_start(la_vstring * const vstr, char const * const key) {
 void la_json_object_end(la_vstring * const vstr) {
 	la_assert(vstr != NULL);
 	la_json_trim_comma(vstr);
-	la_vstring_append_sprintf(vstr, "%s", "}");
+	la_vstring_append_sprintf(vstr, "%s", "},");
 }
 
 void la_json_array_start(la_vstring * const vstr, char const * const key) {
@@ -62,4 +68,15 @@ void la_json_array_end(la_vstring * const vstr) {
 	la_assert(vstr != NULL);
 	la_json_trim_comma(vstr);
 	la_vstring_append_sprintf(vstr, "%s", "],");
+}
+
+void la_json_start(la_vstring * const vstr) {
+	la_assert(vstr != NULL);
+	la_json_object_start(vstr, NULL);
+}
+
+void la_json_end(la_vstring * const vstr) {
+	la_assert(vstr != NULL);
+	la_json_object_end(vstr);
+	la_json_trim_comma(vstr);
 }
