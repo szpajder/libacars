@@ -7,6 +7,15 @@
 #include <libacars/macros.h>		// la_assert()
 #include <libacars/vstring.h>		// la_vstring
 
+static void la_json_trim_comma(la_vstring * const vstr) {
+	la_assert(vstr != NULL);
+	size_t len = vstr->len;
+	if(len > 0 && vstr->str[len-1] == ',') {
+		vstr->str[len-1] = '\0';
+		vstr->len--;
+	}
+}
+
 void la_json_append_bool(la_vstring * const vstr, char const * const key, bool const val) {
 	la_assert(vstr != NULL);
 	la_assert(key != NULL);
@@ -39,12 +48,7 @@ void la_json_object_start(la_vstring * const vstr, char const * const key) {
 
 void la_json_object_end(la_vstring * const vstr) {
 	la_assert(vstr != NULL);
-// FIXME: la_vstring_rtrim
-	size_t len = vstr->len;
-	if(len > 0 && vstr->str[len-1] == ',') {
-		vstr->str[len-1] = '\0';
-		vstr->len--;
-	}
+	la_json_trim_comma(vstr);
 	la_vstring_append_sprintf(vstr, "%s", "}");
 }
 
@@ -56,11 +60,6 @@ void la_json_array_start(la_vstring * const vstr, char const * const key) {
 
 void la_json_array_end(la_vstring * const vstr) {
 	la_assert(vstr != NULL);
-// FIXME: la_vstring_rtrim
-	size_t len = vstr->len;
-	if(len > 0 && vstr->str[len-1] == ',') {
-		vstr->str[len-1] = '\0';
-		vstr->len--;
-	}
-	la_vstring_append_sprintf(vstr, "%s", "]");
+	la_json_trim_comma(vstr);
+	la_vstring_append_sprintf(vstr, "%s", "],");
 }
