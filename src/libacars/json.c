@@ -41,6 +41,12 @@ void la_json_append_long(la_vstring * const vstr, char const * const key, long c
 	la_vstring_append_sprintf(vstr, "%ld,", val);
 }
 
+void la_json_append_char(la_vstring * const vstr, char const * const key, char const  val) {
+	la_assert(vstr != NULL);
+	la_json_print_key(vstr, key);
+	la_vstring_append_sprintf(vstr, "\"%c\",", val);
+}
+
 void la_json_append_string(la_vstring * const vstr, char const * const key, char const * const val) {
 	la_assert(vstr != NULL);
 	if(val == NULL) {
