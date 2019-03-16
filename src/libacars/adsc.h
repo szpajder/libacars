@@ -29,8 +29,10 @@ typedef void(la_adsc_destroy_type_f)(void *data);
 
 typedef struct {
 	char const * const label;
+	char const * const json_key;
 	la_adsc_parse_type_f *parse;
-	la_adsc_format_type_f *format;
+	la_adsc_format_type_f *format_text;
+	la_adsc_format_type_f *format_json;
 	la_adsc_destroy_type_f *destroy;
 } la_adsc_type_descriptor_t;
 
@@ -172,6 +174,7 @@ typedef struct {
 extern la_type_descriptor const la_DEF_adsc_message;
 la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc_imi imi);
 void la_adsc_format_text(la_vstring * const vstr, void const * const data, int indent);
+void la_adsc_format_json(la_vstring * const vstr, void const * const data);
 void la_adsc_destroy(void *data);
 la_proto_node *la_proto_tree_find_adsc(la_proto_node *root);
 
