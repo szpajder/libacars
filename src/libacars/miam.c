@@ -10,9 +10,11 @@
 #include <string.h>		// strchr(), strlen(), strncmp()
 #include <libacars/macros.h>	// la_assert()
 #include <libacars/libacars.h>	// la_proto_node, la_type_descriptor
+#include <libacars/vstring.h>	// la_vstring
+#include <libacars/json.h>	// la_json_append_*()
 #include <libacars/util.h>	// la_dict, la_dict_search(),
 				// la_strntouint16_t(), la_simple_strptime()
-#include <libacars/miam-core.h> // la_miam_core_pdu_parse(), la_miam_core_format_text()
+#include <libacars/miam-core.h> // la_miam_core_pdu_parse(), la_miam_core_format_*()
 #include <libacars/miam.h>
 
 typedef struct {
@@ -414,6 +416,10 @@ static void la_miam_single_transfer_format_text(la_vstring * const vstr, void co
 	la_miam_core_format_text(vstr, data, indent);
 }
 
+static void la_miam_single_transfer_format_json(la_vstring * const vstr, void const * const data) {
+//	la_miam_core_format_json(vstr, data);
+}
+
 static void la_miam_file_transfer_request_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
@@ -429,6 +435,28 @@ static void la_miam_file_transfer_request_format_text(la_vstring * const vstr, v
 	);
 }
 
+static void la_miam_file_transfer_request_format_json(la_vstring * const vstr, void const * const data) {
+	la_assert(vstr);
+	la_assert(data);
+
+	LA_CAST_PTR(msg, la_miam_file_transfer_request_msg *, data);
+	la_json_append_long(vstr, "file_id", msg->file_id);
+	la_json_append_long(vstr, "file_size", msg->file_size);
+	struct tm *t = &msg->validity_time;
+	la_json_object_start(vstr, "complete_until_datetime");
+	la_json_object_start(vstr, "date");
+	la_json_append_long(vstr, "year", t->tm_year + 1900);
+	la_json_append_long(vstr, "month", t->tm_mon + 1);
+	la_json_append_long(vstr, "day", t->tm_mday);
+	la_json_object_end(vstr);
+	la_json_object_start(vstr, "time");
+	la_json_append_long(vstr, "hour", t->tm_hour);
+	la_json_append_long(vstr, "minute", t->tm_min);
+	la_json_append_long(vstr, "second", t->tm_sec);
+	la_json_object_end(vstr);
+	la_json_object_end(vstr);
+}
+
 static void la_miam_file_transfer_accept_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
@@ -441,6 +469,17 @@ static void la_miam_file_transfer_accept_format_text(la_vstring * const vstr, vo
 	LA_ISPRINTF(vstr, indent, "In-flight segment temporization: %u sec\n", msg->inflight_segment_tempo);
 }
 
+static void la_miam_file_transfer_accept_format_json(la_vstring * const vstr, void const * const data) {
+	la_assert(vstr);
+	la_assert(data);
+
+	LA_CAST_PTR(msg, la_miam_file_transfer_accept_msg *, data);
+	la_json_append_long(vstr, "file_id", msg->file_id);
+	la_json_append_long(vstr, "segment_size", msg->segment_size);
+	la_json_append_long(vstr, "on_ground_seg_temp_secs", msg->onground_segment_tempo);
+	la_json_append_long(vstr, "in_flight_seg_temp_secs", msg->inflight_segment_tempo);
+}
+
 static void la_miam_file_segment_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
@@ -449,6 +488,15 @@ static void la_miam_file_segment_format_text(la_vstring * const vstr, void const
 	LA_CAST_PTR(msg, la_miam_file_segment_msg *, data);
 	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	LA_ISPRINTF(vstr, indent, "Segment ID: %u\n", msg->segment_id);
+}
+
+static void la_miam_file_segment_format_json(la_vstring * const vstr, void const * const data) {
+	la_assert(vstr);
+	la_assert(data);
+
+	LA_CAST_PTR(msg, la_miam_file_segment_msg *, data);
+	la_json_append_long(vstr, "file_id", msg->file_id);
+	la_json_append_long(vstr, "segment_id", msg->segment_id);
 }
 
 static void la_miam_file_transfer_abort_format_text(la_vstring * const vstr, void const * const data, int indent) {
@@ -471,6 +519,15 @@ static void la_miam_file_transfer_abort_format_text(la_vstring * const vstr, voi
 		(descr != NULL ? descr : "unknown"));
 }
 
+static void la_miam_file_transfer_abort_format_json(la_vstring * const vstr, void const * const data) {
+	la_assert(vstr);
+	la_assert(data);
+
+	LA_CAST_PTR(msg, la_miam_file_transfer_abort_msg *, data);
+	la_json_append_long(vstr, "file_id", msg->file_id);
+	la_json_append_long(vstr, "reason", msg->reason);
+}
+
 static void la_miam_xoff_ind_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
@@ -481,6 +538,17 @@ static void la_miam_xoff_ind_format_text(la_vstring * const vstr, void const * c
 		LA_ISPRINTF(vstr, indent, "%s\n", "File ID: 0xFFF (all)");
 	} else {
 		LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
+	}
+}
+
+static void la_miam_xoff_ind_format_json(la_vstring * const vstr, void const * const data) {
+	la_assert(vstr);
+	la_assert(data);
+
+	LA_CAST_PTR(msg, la_miam_xoff_ind_msg *, data);
+	la_json_append_bool(vstr, "all_files", msg->file_id == 0xFFF);
+	if(msg->file_id != 0xFFF) {
+		la_json_append_long(vstr, "file_id", msg->file_id);
 	}
 }
 
@@ -499,6 +567,19 @@ static void la_miam_xon_ind_format_text(la_vstring * const vstr, void const * co
 	LA_ISPRINTF(vstr, indent, "In-flight segment temporization: %u sec\n", msg->inflight_segment_tempo);
 }
 
+static void la_miam_xon_ind_format_json(la_vstring * const vstr, void const * const data) {
+	la_assert(vstr);
+	la_assert(data);
+
+	LA_CAST_PTR(msg, la_miam_xon_ind_msg *, data);
+	la_json_append_bool(vstr, "all_files", msg->file_id == 0xFFF);
+	if(msg->file_id != 0xFFF) {
+		la_json_append_long(vstr, "file_id", msg->file_id);
+	}
+	la_json_append_long(vstr, "on_ground_seg_temp_secs", msg->onground_segment_tempo);
+	la_json_append_long(vstr, "in_flight_seg_temp_secs", msg->inflight_segment_tempo);
+}
+
 void la_miam_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
@@ -510,43 +591,66 @@ void la_miam_format_text(la_vstring * const vstr, void const * const data, int i
 	LA_ISPRINTF(vstr, indent, "%s:\n", fid_descriptor->description);
 }
 
+void la_miam_format_json(la_vstring * const vstr, void const * const data) {
+// -Wunused-parameter
+	(void)vstr;
+	(void)data;
+	// NOOP
+}
+
 la_type_descriptor const la_DEF_miam_message = {
 	.format_text = la_miam_format_text,
+	.format_json = la_miam_format_json,
+	.json_key = "miam",
 	.destroy = NULL
 };
 
 la_type_descriptor const la_DEF_miam_single_transfer_message = {
 	.format_text = la_miam_single_transfer_format_text,
+	.format_json = la_miam_single_transfer_format_json,
+	.json_key = "single_transfer",
 	.destroy = NULL
 };
 
 la_type_descriptor const la_DEF_miam_file_transfer_request_message = {
 	.format_text = la_miam_file_transfer_request_format_text,
+	.format_json = la_miam_file_transfer_request_format_json,
+	.json_key = "file_transfer_request",
 	.destroy = NULL
 };
 
 la_type_descriptor const la_DEF_miam_file_transfer_accept_message = {
 	.format_text = la_miam_file_transfer_accept_format_text,
+	.format_json = la_miam_file_transfer_accept_format_json,
+	.json_key = "file_transfer_accept",
 	.destroy = NULL
 };
 
 la_type_descriptor const la_DEF_miam_file_segment_message = {
 	.format_text = la_miam_file_segment_format_text,
+	.format_json = la_miam_file_segment_format_json,
+	.json_key = "file_segment",
 	.destroy = NULL
 };
 
 la_type_descriptor const la_DEF_miam_file_transfer_abort_message = {
 	.format_text = la_miam_file_transfer_abort_format_text,
+	.format_json = la_miam_file_transfer_abort_format_json,
+	.json_key = "file_transfer_abort",
 	.destroy = NULL
 };
 
 la_type_descriptor const la_DEF_miam_xoff_ind_message = {
 	.format_text = la_miam_xoff_ind_format_text,
+	.format_json = la_miam_xoff_ind_format_json,
+	.json_key = "file_xoff_ind",
 	.destroy = NULL
 };
 
 la_type_descriptor const la_DEF_miam_xon_ind_message = {
 	.format_text = la_miam_xon_ind_format_text,
+	.format_json = la_miam_xon_ind_format_json,
+	.json_key = "file_xon_ind",
 	.destroy = NULL
 };
 

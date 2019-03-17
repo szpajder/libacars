@@ -110,6 +110,7 @@ typedef struct {
 
 la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
 void la_miam_format_text(la_vstring * const vstr, void const * const data, int indent);
+void la_miam_format_json(la_vstring * const vstr, void const * const data);
 
 extern la_type_descriptor const la_DEF_miam_message;
 extern la_type_descriptor const la_DEF_miam_single_transfer_message;
