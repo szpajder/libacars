@@ -34,6 +34,7 @@ la_proto_node *la_acars_decode_apps(char const * const label,
 	char const * const txt, la_msg_dir const msg_dir);
 la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir);
 void la_acars_format_text(la_vstring *vstr, void const * const data, int indent);
+void la_acars_format_json(la_vstring *vstr, void const * const data);
 la_proto_node *la_proto_tree_find_acars(la_proto_node *root);
 #ifdef __cplusplus
 }
