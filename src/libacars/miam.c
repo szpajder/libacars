@@ -417,7 +417,7 @@ static void la_miam_single_transfer_format_text(la_vstring * const vstr, void co
 }
 
 static void la_miam_single_transfer_format_json(la_vstring * const vstr, void const * const data) {
-//	la_miam_core_format_json(vstr, data);
+	la_miam_core_format_json(vstr, data);
 }
 
 static void la_miam_file_transfer_request_format_text(la_vstring * const vstr, void const * const data, int indent) {
