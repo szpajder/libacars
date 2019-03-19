@@ -4,6 +4,8 @@
  *  Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
  */
 
+#include <stdbool.h>
+#include <stdint.h>
 #include <string.h>			// strlen()
 #include <libacars/macros.h>		// la_assert()
 #include <libacars/vstring.h>		// la_vstring
@@ -138,6 +140,18 @@ void la_json_array_end(la_vstring * const vstr) {
 	la_assert(vstr != NULL);
 	la_json_trim_comma(vstr);
 	la_vstring_append_sprintf(vstr, "%s", "],");
+}
+
+void la_json_append_octet_string(la_vstring * const vstr, char const * const key,
+uint8_t const * const buf, size_t len) {
+	la_assert(vstr != NULL);
+	la_json_array_start(vstr, key);
+	if(buf != NULL && len > 0) {
+		for(size_t i = 0; i < len; i++) {
+			la_json_append_long(vstr, NULL, buf[i]);
+		}
+	}
+	la_json_array_end(vstr);
 }
 
 void la_json_start(la_vstring * const vstr) {
