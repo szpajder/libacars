@@ -26,18 +26,20 @@ static void la_proto_node_format_text(la_vstring * const vstr, la_proto_node con
 }
 
 static void la_proto_node_format_json(la_vstring * const vstr, la_proto_node const * const node) {
-	if(node->data != NULL) {
-		la_assert(node->td);
-// missing JSON handler for a node is not fatal
-		if(node->td->json_key != NULL && node->td->format_json != NULL) {
+	if(node->td != NULL) {
+		if(node->td->json_key != NULL) {
 			la_json_object_start(vstr, node->td->json_key);
-			node->td->format_json(vstr, node->data);
+// Missing JSON handler for a node is not fatal.
+// In this case an empty JSON object is produced.
+			if(node->data != NULL && node->td->format_json != NULL) {
+				node->td->format_json(vstr, node->data);
+			}
 		}
 	}
 	if(node->next != NULL) {
 		la_proto_node_format_json(vstr, node->next);
 	}
-	if(node->data != NULL && node->td->json_key != NULL && node->td->format_json != NULL) {
+	if(node->td != NULL && node->td->json_key != NULL) {
 // We've started a JSON object above, so it needs to be closed
 		la_json_object_end(vstr);
 	}
