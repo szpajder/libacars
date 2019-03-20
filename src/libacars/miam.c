@@ -106,7 +106,11 @@ static la_dict const la_miam_frame_id_descriptor_table[] = {
 };
 
 static la_proto_node *la_miam_single_transfer_parse(char const *txt) {
-	return la_miam_core_pdu_parse(txt);
+	la_proto_node *node = la_proto_node_new();
+	node->td = &la_DEF_miam_single_transfer_message;
+	node->data = NULL;
+	node->next = la_miam_core_pdu_parse(txt);
+	return node;
 }
 
 static la_proto_node *la_miam_file_transfer_request_parse(char const *txt) {
