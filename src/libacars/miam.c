@@ -53,49 +53,49 @@ static la_dict const la_miam_frame_id_descriptor_table[] = {
 	{
 		.id = LA_MIAM_FID_SINGLE_TRANSFER,
 		.val = &(la_miam_frame_id_descriptor){
-			.description = "MIAM Single Transfer",
+			.description = "Single Transfer",
 			.parse = &la_miam_single_transfer_parse
 		}
 	},
 	{
 		.id = LA_MIAM_FID_FILE_TRANSFER_REQ,
 		.val = &(la_miam_frame_id_descriptor){
-			.description = "MIAM File Transfer Request",
+			.description = "File Transfer Request",
 			.parse = &la_miam_file_transfer_request_parse
 		}
 	},
 	{
 		.id = LA_MIAM_FID_FILE_TRANSFER_ACCEPT,
 		.val = &(la_miam_frame_id_descriptor){
-			.description = "MIAM File Transfer Accept",
+			.description = "File Transfer Accept",
 			.parse = &la_miam_file_transfer_accept_parse
 		}
 	},
 	{
 		.id = LA_MIAM_FID_FILE_SEGMENT,
 		.val = &(la_miam_frame_id_descriptor){
-			.description = "MIAM File Segment",
+			.description = "File Segment",
 			.parse = &la_miam_file_segment_parse
 		}
 	},
 	{
 		.id = LA_MIAM_FID_FILE_TRANSFER_ABORT,
 		.val = &(la_miam_frame_id_descriptor){
-			.description = "MIAM File Transfer Abort",
+			.description = "File Transfer Abort",
 			.parse = &la_miam_file_transfer_abort_parse
 		}
 	},
 	{
 		.id = LA_MIAM_FID_XOFF_IND,
 		.val = &(la_miam_frame_id_descriptor){
-			.description = "MIAM File Transfer Pause",
+			.description = "File Transfer Pause",
 			.parse = &la_miam_xoff_ind_parse
 		}
 	},
 	{
 		.id = LA_MIAM_FID_XON_IND,
 		.val = &(la_miam_frame_id_descriptor){
-			.description = "MIAM File Transfer Resume",
+			.description = "File Transfer Resume",
 			.parse = &la_miam_xon_ind_parse
 		}
 	},
@@ -430,6 +430,7 @@ static void la_miam_file_transfer_request_format_text(la_vstring * const vstr, v
 	la_assert(indent >= 0);
 
 	LA_CAST_PTR(msg, la_miam_file_transfer_request_msg *, data);
+	indent++;
 	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	LA_ISPRINTF(vstr, indent, "File size: %zu bytes\n", msg->file_size);
 	struct tm *t = &msg->validity_time;
@@ -467,6 +468,7 @@ static void la_miam_file_transfer_accept_format_text(la_vstring * const vstr, vo
 	la_assert(indent >= 0);
 
 	LA_CAST_PTR(msg, la_miam_file_transfer_accept_msg *, data);
+	indent++;
 	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	LA_ISPRINTF(vstr, indent, "Segment size: %u\n", msg->segment_size);
 	LA_ISPRINTF(vstr, indent, "On-ground segment temporization: %u sec\n", msg->onground_segment_tempo);
@@ -490,6 +492,7 @@ static void la_miam_file_segment_format_text(la_vstring * const vstr, void const
 	la_assert(indent >= 0);
 
 	LA_CAST_PTR(msg, la_miam_file_segment_msg *, data);
+	indent++;
 	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	LA_ISPRINTF(vstr, indent, "Segment ID: %u\n", msg->segment_id);
 }
@@ -517,6 +520,7 @@ static void la_miam_file_transfer_abort_format_text(la_vstring * const vstr, voi
 	la_assert(indent >= 0);
 
 	LA_CAST_PTR(msg, la_miam_file_transfer_abort_msg *, data);
+	indent++;
 	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	char *descr = la_dict_search(abort_reasons, msg->reason);
 	LA_ISPRINTF(vstr, indent, "Reason: %u (%s)\n", msg->reason,
@@ -538,6 +542,7 @@ static void la_miam_xoff_ind_format_text(la_vstring * const vstr, void const * c
 	la_assert(indent >= 0);
 
 	LA_CAST_PTR(msg, la_miam_xoff_ind_msg *, data);
+	indent++;
 	if(msg->file_id == 0xFFF) {
 		LA_ISPRINTF(vstr, indent, "%s\n", "File ID: 0xFFF (all)");
 	} else {
@@ -562,6 +567,7 @@ static void la_miam_xon_ind_format_text(la_vstring * const vstr, void const * co
 	la_assert(indent >= 0);
 
 	LA_CAST_PTR(msg, la_miam_xon_ind_msg *, data);
+	indent++;
 	if(msg->file_id == 0xFFF) {
 		LA_ISPRINTF(vstr, indent, "%s\n", "File ID: 0xFFF (all)");
 	} else {
@@ -592,7 +598,8 @@ void la_miam_format_text(la_vstring * const vstr, void const * const data, int i
 	LA_CAST_PTR(msg, la_miam_msg *, data);
 	la_miam_frame_id_descriptor *fid_descriptor = la_dict_search(la_miam_frame_id_descriptor_table, msg->frame_id);
 	la_assert(fid_descriptor != NULL);
-	LA_ISPRINTF(vstr, indent, "%s:\n", fid_descriptor->description);
+	LA_ISPRINTF(vstr, indent, "%s\n", "MIAM:");
+	LA_ISPRINTF(vstr, indent+1, "%s:\n", fid_descriptor->description);
 }
 
 void la_miam_format_json(la_vstring * const vstr, void const * const data) {
