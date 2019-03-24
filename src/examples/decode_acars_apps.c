@@ -43,15 +43,24 @@ void usage() {
 	"because the library won't know, which decoder to execute.\n\nACARS label cheat sheet:\n"
 	"- ARINC 622 ATS applications (ADS-C, CPDLC): A6, AA, B6, BA, H1\n"
 	"- Media Advisory: SA\n"
-	"- MIAM: MA (or H1 - if prefixed with a sublabel)\n"
+	"- MIAM: MA (or H1 - if prefixed with a sublabel)\n\n"
+	"decode_acars_apps produces human-readable text output by default.\n"
+	"To switch to JSON output, set LA_JSON environment variable to any value.\n"
 );
 }
+
+bool json = false;
 
 void parse(char *label, char *txt, la_msg_dir msg_dir) {
 	la_proto_node *node = la_acars_decode_apps(label, txt, msg_dir);
 	printf("%s\n", txt);
 	if(node != NULL) {
-		la_vstring *vstr = la_proto_tree_format_text(NULL, node);
+		la_vstring *vstr = NULL;
+		if(json) {
+			vstr = la_proto_tree_format_json(NULL, node);
+		} else {
+			vstr = la_proto_tree_format_text(NULL, node);
+		}
 		printf("%s\n", vstr->str);
 		la_vstring_destroy(vstr, true);
 	}
@@ -63,6 +72,9 @@ int main(int argc, char **argv) {
 	char *dump_asn1 = getenv("ENABLE_ASN1_DUMPS");
 	if(dump_asn1 != NULL && !strcmp(dump_asn1, "1")) {
 		la_config.dump_asn1 = true;
+	}
+	if(getenv("LA_JSON") != NULL) {
+		json = true;
 	}
 	if(argc > 1 && !strcmp(argv[1], "-h")) {
 		usage();
