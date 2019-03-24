@@ -120,6 +120,7 @@ install(FILES
 	adsc.h
 	arinc.h
 	cpdlc.h
+	json.h
 	libacars.h
 	list.h
 	media-adv.h
