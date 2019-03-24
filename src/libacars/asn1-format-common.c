@@ -5,7 +5,6 @@
  */
 
 #include <libacars/asn1/asn_application.h>	// asn_TYPE_descriptor_t, asn_sprintf
-#include <libacars/asn1/IA5String.h>		// IA5String_t
 #include <libacars/asn1/OCTET_STRING.h>		// OCTET_STRING_t
 #include <libacars/asn1/INTEGER.h>		// asn_INTEGER_enum_map_t, asn_INTEGER2long()
 #include <libacars/asn1/BOOLEAN.h>		// BOOLEAN_t
@@ -207,11 +206,11 @@ LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_any) {
 	asn_sprintf(vstr, td, sptr, 1);
 }
 
-LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_IA5String) {
-	LA_CAST_PTR(ia5str, IA5String_t *, sptr);
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_OCTET_STRING) {
+	LA_CAST_PTR(octstr, OCTET_STRING_t *, sptr);
 // replace nulls with periods for printf() to work correctly
-	char *buf = (char *)ia5str->buf;
-	for(int i = 0; i < ia5str->size; i++) {
+	char *buf = (char *)octstr->buf;
+	for(int i = 0; i < octstr->size; i++) {
 		if(buf[i] == '\0') buf[i] = '.';
 	}
 	if(label != NULL) {

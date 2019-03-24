@@ -22,7 +22,7 @@ void la_format_SEQUENCE_OF_as_text(la_vstring *vstr, char const * const label, a
 	asn_TYPE_descriptor_t *td, void const *sptr, int indent);
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_any);
-LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_IA5String);
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_OCTET_STRING);
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_NULL);
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_ENUM);
 
