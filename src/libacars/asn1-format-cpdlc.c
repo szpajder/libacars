@@ -8,14 +8,12 @@
 #include <libacars/asn1/FANSATCUplinkMessage.h>		// FANSATCUplinkMessage_t and dependencies
 #include <libacars/asn1-util.h>				// la_asn_formatter, la_asn1_output()
 #include <libacars/asn1-format-common.h>		// common formatters and helper functions
+#include <libacars/asn1-format-cpdlc.h>			// la_asn1_output_cpdlc_as_text()
 #include <libacars/macros.h>				// LA_ISPRINTF
 #include <libacars/util.h>				// LA_XCALLOC, la_dict_search()
 #include <libacars/vstring.h>				// la_vstring
 
-// forward declaration
-void la_asn1_output_cpdlc_as_text(la_vstring *vstr, asn_TYPE_descriptor_t *td, const void *sptr, int indent);
-
-static la_dict const FANSATCUplinkMsgElementId_labels[] = {
+la_dict const FANSATCUplinkMsgElementId_labels[] = {
 	{ FANSATCUplinkMsgElementId_PR_uM0NULL, "UNABLE" },
 	{ FANSATCUplinkMsgElementId_PR_uM1NULL, "STANDBY" },
 	{ FANSATCUplinkMsgElementId_PR_uM2NULL, "REQUEST DEFERRED" },
@@ -202,7 +200,7 @@ static la_dict const FANSATCUplinkMsgElementId_labels[] = {
 	{ 0, NULL }
 };
 
-static la_dict const FANSATCDownlinkMsgElementId_labels[] = {
+la_dict const FANSATCDownlinkMsgElementId_labels[] = {
 	{ FANSATCDownlinkMsgElementId_PR_dM0NULL, "WILCO" },
 	{ FANSATCDownlinkMsgElementId_PR_dM1NULL, "UNABLE" },
 	{ FANSATCDownlinkMsgElementId_PR_dM2NULL, "STANDBY" },
