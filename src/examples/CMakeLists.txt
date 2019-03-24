@@ -1,6 +1,5 @@
 set (EXAMPLE_BINARIES
 	decode_acars_apps
-	decode_arinc
 	adsc_get_position
 	cpdlc_get_position
 	media_advisory
