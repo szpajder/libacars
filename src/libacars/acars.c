@@ -12,6 +12,7 @@
 #include <libacars/miam.h>			// la_miam_parse()
 #include <libacars/crc.h>			// la_crc16_ccitt()
 #include <libacars/vstring.h>			// la_vstring, LA_ISPRINTF()
+#include <libacars/json.h>			// la_json_append_*()
 #include <libacars/util.h>			// la_debug_print(), LA_CAST_PTR()
 #include <libacars/acars.h>
 
@@ -220,6 +221,28 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 	LA_XFREE(line);
 }
 
+void la_acars_format_json(la_vstring *vstr, void const * const data) {
+	la_assert(vstr);
+	la_assert(data);
+
+	LA_CAST_PTR(msg, la_acars_msg *, data);
+	la_json_append_bool(vstr, "err", msg->err);
+	if(msg->err) {
+		return;
+	}
+	la_json_append_bool(vstr, "crc_ok", msg->crc_ok);
+	if(msg->mode < 0x5d) {		// air-to-ground
+		la_json_append_string(vstr, "reg", msg->reg);
+		la_json_append_string(vstr, "flight", msg->flight_id);
+	}
+	la_json_append_char(vstr, "mode", msg->mode);
+	la_json_append_string(vstr, "label", msg->label);
+	la_json_append_char(vstr, "blk_id", msg->block_id);
+	la_json_append_char(vstr, "ack", msg->ack);
+	la_json_append_string(vstr, "msg_no", msg->no);
+	la_json_append_string(vstr, "msg_text", msg->txt);
+}
+
 void la_acars_destroy(void *data) {
 	if(data == NULL) {
 		return;
@@ -231,6 +254,8 @@ void la_acars_destroy(void *data) {
 
 la_type_descriptor const la_DEF_acars_message = {
 	.format_text = la_acars_format_text,
+	.format_json = la_acars_format_json,
+	.json_key = "acars",
 	.destroy = la_acars_destroy
 };
 

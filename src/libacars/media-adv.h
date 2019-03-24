@@ -31,6 +31,7 @@ typedef struct {
 
 la_proto_node *la_media_adv_parse(char const *txt);
 void la_media_adv_format_text(la_vstring * const vstr, void const * const data, int indent);
+void la_media_adv_format_json(la_vstring * const vstr, void const * const data);
 extern la_type_descriptor const la_DEF_media_adv_message;
 la_proto_node *la_proto_tree_find_media_adv(la_proto_node *root);
 

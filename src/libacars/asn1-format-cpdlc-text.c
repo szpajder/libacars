@@ -8,14 +8,12 @@
 #include <libacars/asn1/FANSATCUplinkMessage.h>		// FANSATCUplinkMessage_t and dependencies
 #include <libacars/asn1-util.h>				// la_asn_formatter, la_asn1_output()
 #include <libacars/asn1-format-common.h>		// common formatters and helper functions
+#include <libacars/asn1-format-cpdlc.h>			// la_asn1_output_cpdlc_as_text()
 #include <libacars/macros.h>				// LA_ISPRINTF
 #include <libacars/util.h>				// LA_XCALLOC, la_dict_search()
 #include <libacars/vstring.h>				// la_vstring
 
-// forward declaration
-void la_asn1_output_cpdlc_as_text(la_vstring *vstr, asn_TYPE_descriptor_t *td, const void *sptr, int indent);
-
-static la_dict const FANSATCUplinkMsgElementId_labels[] = {
+la_dict const FANSATCUplinkMsgElementId_labels[] = {
 	{ FANSATCUplinkMsgElementId_PR_uM0NULL, "UNABLE" },
 	{ FANSATCUplinkMsgElementId_PR_uM1NULL, "STANDBY" },
 	{ FANSATCUplinkMsgElementId_PR_uM2NULL, "REQUEST DEFERRED" },
@@ -202,7 +200,7 @@ static la_dict const FANSATCUplinkMsgElementId_labels[] = {
 	{ 0, NULL }
 };
 
-static la_dict const FANSATCDownlinkMsgElementId_labels[] = {
+la_dict const FANSATCDownlinkMsgElementId_labels[] = {
 	{ FANSATCDownlinkMsgElementId_PR_dM0NULL, "WILCO" },
 	{ FANSATCDownlinkMsgElementId_PR_dM1NULL, "UNABLE" },
 	{ FANSATCDownlinkMsgElementId_PR_dM2NULL, "STANDBY" },
@@ -340,107 +338,107 @@ static la_dict const FANSATCDownlinkMsgElementId_labels[] = {
  ************************/
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_CHOICE_cpdlc) {
-	la_format_CHOICE(vstr, label, NULL, &la_asn1_output_cpdlc_as_text, td, sptr, indent);
+	la_format_CHOICE_as_text(vstr, label, NULL, &la_asn1_output_cpdlc_as_text, td, sptr, indent);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_SEQUENCE_cpdlc) {
-	la_format_SEQUENCE(vstr, label, &la_asn1_output_cpdlc_as_text, td, sptr, indent);
+	la_format_SEQUENCE_as_text(vstr, label, &la_asn1_output_cpdlc_as_text, td, sptr, indent);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_SEQUENCE_OF_cpdlc) {
-	la_format_SEQUENCE_OF(vstr, label, &la_asn1_output_cpdlc_as_text, td, sptr, indent);
+	la_format_SEQUENCE_OF_as_text(vstr, label, &la_asn1_output_cpdlc_as_text, td, sptr, indent);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSAltimeterEnglish) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " inHg", 0.01, 2);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " inHg", 0.01, 2);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSAltimeterMetric) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " hPa", 0.1, 1);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " hPa", 0.1, 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSAltitudeGNSSFeet) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " ft", 1, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " ft", 1, 0);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSAltitudeFlightLevelMetric) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " m", 10, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " m", 10, 0);
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_Degrees) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " deg", 1, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " deg", 1, 0);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSDistanceOffsetNm) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " nm", 1, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " nm", 1, 0);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSDistanceMetric) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " km", 1, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " km", 1, 0);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSFeetX10) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " ft", 10, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " ft", 10, 0);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSFrequencyhf) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " kHz", 1, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " kHz", 1, 0);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSFrequencykHzToMHz) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " MHz", 0.001, 3);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " MHz", 0.001, 3);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSDistanceEnglish) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " nm", 0.1, 1);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " nm", 0.1, 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLegTime) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " min", 0.1, 1);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " min", 0.1, 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSMeters) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " m", 1, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " m", 1, 0);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSTemperatureC) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " C", 1, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " C", 1, 0);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSTemperatureF) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " F", 1, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " F", 1, 0);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSWindSpeedEnglish) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " kts", 1, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " kts", 1, 0);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSWindSpeedMetric) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " km/h", 1, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " km/h", 1, 0);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSRTATolerance) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " min", 0.1, 1);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " min", 0.1, 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSSpeedEnglishX10) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " kts", 10, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " kts", 10, 0);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSSpeedMetricX10) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " km/h", 10, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " km/h", 10, 0);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSSpeedMach) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, "", 0.01, 2);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, "", 0.01, 2);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSVerticalRateEnglish) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " ft/min", 100, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " ft/min", 100, 0);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSVerticalRateMetric) {
-	la_format_INTEGER_with_unit(vstr, label, td, sptr, indent, " m/min", 10, 0);
+	la_format_INTEGER_with_unit_as_text(vstr, label, td, sptr, indent, " m/min", 10, 0);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSBeaconCode) {
@@ -556,22 +554,22 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCDownlinkMessage) {
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCDownlinkMsgElementId) {
-	la_format_CHOICE(vstr, label, FANSATCDownlinkMsgElementId_labels, &la_asn1_output_cpdlc_as_text, td, sptr, indent);
+	la_format_CHOICE_as_text(vstr, label, FANSATCDownlinkMsgElementId_labels, &la_asn1_output_cpdlc_as_text, td, sptr, indent);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCUplinkMsgElementId) {
-	la_format_CHOICE(vstr, label, FANSATCUplinkMsgElementId_labels, &la_asn1_output_cpdlc_as_text, td, sptr, indent);
+	la_format_CHOICE_as_text(vstr, label, FANSATCUplinkMsgElementId_labels, &la_asn1_output_cpdlc_as_text, td, sptr, indent);
 }
 
-static la_asn_formatter const la_asn1_cpdlc_formatter_table[] = {
+static la_asn_formatter const la_asn1_cpdlc_text_formatter_table[] = {
 	{ .type = &asn_DEF_FANSAircraftEquipmentCode, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
-	{ .type = &asn_DEF_FANSAircraftFlightIdentification, .format = la_asn1_format_text_IA5String, .label = "Flight ID" },
-	{ .type = &asn_DEF_FANSAircraftType, .format = la_asn1_format_text_IA5String, .label = "Aircraft type" },
-	{ .type = &asn_DEF_FANSAirport, .format = la_asn1_format_text_IA5String, .label = "Airport" },
-	{ .type = &asn_DEF_FANSAirportDeparture, .format = la_asn1_format_text_IA5String, .label = "Departure airport" },
-	{ .type = &asn_DEF_FANSAirportDestination, .format = la_asn1_format_text_IA5String, .label = "Destination airport" },
-	{ .type = &asn_DEF_FANSAirwayIdentifier, .format = la_asn1_format_text_IA5String, .label = "Airway ID" },
-	{ .type = &asn_DEF_FANSAirwayIntercept, .format = la_asn1_format_text_IA5String, .label = "Airway intercept" },
+	{ .type = &asn_DEF_FANSAircraftFlightIdentification, .format = la_asn1_format_text_OCTET_STRING, .label = "Flight ID" },
+	{ .type = &asn_DEF_FANSAircraftType, .format = la_asn1_format_text_OCTET_STRING, .label = "Aircraft type" },
+	{ .type = &asn_DEF_FANSAirport, .format = la_asn1_format_text_OCTET_STRING, .label = "Airport" },
+	{ .type = &asn_DEF_FANSAirportDeparture, .format = la_asn1_format_text_OCTET_STRING, .label = "Departure airport" },
+	{ .type = &asn_DEF_FANSAirportDestination, .format = la_asn1_format_text_OCTET_STRING, .label = "Destination airport" },
+	{ .type = &asn_DEF_FANSAirwayIdentifier, .format = la_asn1_format_text_OCTET_STRING, .label = "Airway ID" },
+	{ .type = &asn_DEF_FANSAirwayIntercept, .format = la_asn1_format_text_OCTET_STRING, .label = "Airway intercept" },
 	{ .type = &asn_DEF_FANSAltimeter, .format = la_asn1_format_text_CHOICE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSAltimeterEnglish, .format = la_asn1_format_text_FANSAltimeterEnglish, .label = "Altimeter" },
 	{ .type = &asn_DEF_FANSAltimeterMetric, .format = la_asn1_format_text_FANSAltimeterMetric, .label = "Altimeter" },
@@ -597,7 +595,7 @@ static la_asn_formatter const la_asn1_cpdlc_formatter_table[] = {
 	{ .type = &asn_DEF_FANSATCUplinkMessage, .format = la_asn1_format_text_FANSATCUplinkMessage, .label = "CPDLC Uplink Message" },
 	{ .type = &asn_DEF_FANSATCUplinkMsgElementId, .format = la_asn1_format_text_FANSATCUplinkMsgElementId, .label = NULL },
 	{ .type = &asn_DEF_FANSATCUplinkMsgElementIdSequence, .format = la_asn1_format_text_SEQUENCE_OF_cpdlc, .label = NULL },
-	{ .type = &asn_DEF_FANSATISCode, .format = la_asn1_format_text_IA5String, .label = "ATIS code" },
+	{ .type = &asn_DEF_FANSATISCode, .format = la_asn1_format_text_OCTET_STRING, .label = "ATIS code" },
 	{ .type = &asn_DEF_FANSATWAlongTrackWaypoint, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSATWAlongTrackWaypointSequence, .format = la_asn1_format_text_SEQUENCE_OF_cpdlc, .label = "Along-track waypoints" },
 	{ .type = &asn_DEF_FANSATWAltitude, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
@@ -624,10 +622,10 @@ static la_asn_formatter const la_asn1_cpdlc_formatter_table[] = {
 	{ .type = &asn_DEF_FANSDistanceOffsetNm, .format = la_asn1_format_text_FANSDistanceOffsetNm, .label = "Offset" },
 	{ .type = &asn_DEF_FANSEFCtime, .format = la_asn1_format_text_FANSTime, .label = "Expect further clearance at" },
 	{ .type = &asn_DEF_FANSErrorInformation, .format = la_asn1_format_text_ENUM, .label = "Error information" },
-	{ .type = &asn_DEF_FANSFixName, .format = la_asn1_format_text_IA5String, .label = "Fix" },
+	{ .type = &asn_DEF_FANSFixName, .format = la_asn1_format_text_OCTET_STRING, .label = "Fix" },
 	{ .type = &asn_DEF_FANSFixNext, .format = la_asn1_format_text_CHOICE_cpdlc, .label = "Next fix" },
 	{ .type = &asn_DEF_FANSFixNextPlusOne, .format = la_asn1_format_text_CHOICE_cpdlc, .label = "Next+1 fix" },
-	{ .type = &asn_DEF_FANSFreeText, .format = la_asn1_format_text_IA5String, .label = NULL },
+	{ .type = &asn_DEF_FANSFreeText, .format = la_asn1_format_text_OCTET_STRING, .label = NULL },
 	{ .type = &asn_DEF_FANSFrequency, .format = la_asn1_format_text_CHOICE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSFrequencyDeparture, .format = la_asn1_format_text_FANSFrequencykHzToMHz, .label = "Departure frequency" },
 	{ .type = &asn_DEF_FANSFrequencyhf, .format = la_asn1_format_text_FANSFrequencyhf, .label = "HF" },
@@ -639,11 +637,11 @@ static la_asn_formatter const la_asn1_cpdlc_formatter_table[] = {
 	{ .type = &asn_DEF_FANSHoldatwaypointSpeedHigh, .format = la_asn1_format_text_CHOICE_cpdlc, .label = "Holding speed (max)" },
 	{ .type = &asn_DEF_FANSHoldatwaypointSpeedLow, .format = la_asn1_format_text_CHOICE_cpdlc, .label = "Holding speed (min)" },
 	{ .type = &asn_DEF_FANSHoldClearance, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
-	{ .type = &asn_DEF_FANSICAOfacilityDesignation, .format = la_asn1_format_text_IA5String, .label = "Facility designation" },
+	{ .type = &asn_DEF_FANSICAOfacilityDesignation, .format = la_asn1_format_text_OCTET_STRING, .label = "Facility designation" },
 	{ .type = &asn_DEF_FANSICAOFacilityDesignationTp4Table, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSICAOFacilityFunction, .format = la_asn1_format_text_ENUM, .label = "Facility function" },
 	{ .type = &asn_DEF_FANSICAOFacilityIdentification, .format = la_asn1_format_text_CHOICE_cpdlc, .label = NULL },
-	{ .type = &asn_DEF_FANSICAOFacilityName, .format = la_asn1_format_text_IA5String, .label = "Facility Name" },
+	{ .type = &asn_DEF_FANSICAOFacilityName, .format = la_asn1_format_text_OCTET_STRING, .label = "Facility Name" },
 	{ .type = &asn_DEF_FANSICAOUnitName, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSICAOUnitNameFrequency, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSIcing, .format = la_asn1_format_text_ENUM, .label = "Icing" },
@@ -668,7 +666,7 @@ static la_asn_formatter const la_asn1_cpdlc_formatter_table[] = {
 	{ .type = &asn_DEF_FANSLongitudeReportingPoints, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSMsgIdentificationNumber, .format = la_asn1_format_text_any, .label = "Msg ID" },
 	{ .type = &asn_DEF_FANSMsgReferenceNumber, .format = la_asn1_format_text_any, .label = "Msg Ref" },
-	{ .type = &asn_DEF_FANSNavaid, .format = la_asn1_format_text_IA5String, .label = "Navaid" },
+	{ .type = &asn_DEF_FANSNavaid, .format = la_asn1_format_text_OCTET_STRING, .label = "Navaid" },
 	{ .type = &asn_DEF_FANSPDCrevision, .format = la_asn1_format_text_any, .label = "Revision number" },
 	{ .type = &asn_DEF_FANSPlaceBearing, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSPlaceBearingDistance, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
@@ -691,12 +689,12 @@ static la_asn_formatter const la_asn1_cpdlc_formatter_table[] = {
 	{ .type = &asn_DEF_FANSPositionTimeAltitude, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSPositionTimeTime, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSPredepartureClearance, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
-	{ .type = &asn_DEF_FANSProcedure, .format = la_asn1_format_text_IA5String, .label = "Procedure name" },
+	{ .type = &asn_DEF_FANSProcedure, .format = la_asn1_format_text_OCTET_STRING, .label = "Procedure name" },
 	{ .type = &asn_DEF_FANSProcedureApproach, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = "Approach procedure" },
 	{ .type = &asn_DEF_FANSProcedureArrival, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = "Arrival procedure" },
 	{ .type = &asn_DEF_FANSProcedureDeparture, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = "Departure procedure" },
 	{ .type = &asn_DEF_FANSProcedureName, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
-	{ .type = &asn_DEF_FANSProcedureTransition, .format = la_asn1_format_text_IA5String, .label = "Procedure transition" },
+	{ .type = &asn_DEF_FANSProcedureTransition, .format = la_asn1_format_text_OCTET_STRING, .label = "Procedure transition" },
 	{ .type = &asn_DEF_FANSProcedureType, .format = la_asn1_format_text_ENUM, .label = "Procedure type" },
 	{ .type = &asn_DEF_FANSPublishedIdentifier, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = "Published identifier" },
 	{ .type = &asn_DEF_FANSRemainingFuel, .format = la_asn1_format_text_FANSTime, .label = "Remaining fuel" },
@@ -730,7 +728,7 @@ static la_asn_formatter const la_asn1_cpdlc_formatter_table[] = {
 	{ .type = &asn_DEF_FANSSpeedTrue, .format = la_asn1_format_text_FANSSpeedEnglishX10, .label = "True airspeed" },
 	{ .type = &asn_DEF_FANSSpeedTrueMetric, .format = la_asn1_format_text_FANSSpeedMetricX10, .label = "True airspeed" },
 	{ .type = &asn_DEF_FANSSSREquipmentAvailable, .format = la_asn1_format_text_ENUM, .label = "SSR equipment available" },
-	{ .type = &asn_DEF_FANSSupplementaryInformation, .format = la_asn1_format_text_IA5String, .label = "Supplementary information" },
+	{ .type = &asn_DEF_FANSSupplementaryInformation, .format = la_asn1_format_text_OCTET_STRING, .label = "Supplementary information" },
 	{ .type = &asn_DEF_FANSTemperature, .format = la_asn1_format_text_CHOICE_cpdlc, .label = NULL },
 	{ .type = &asn_DEF_FANSTemperatureC, .format = la_asn1_format_text_FANSTemperatureC, .label = "Temperature" },
 	{ .type = &asn_DEF_FANSTemperatureF, .format = la_asn1_format_text_FANSTemperatureF, .label = "Temperature" },
@@ -756,7 +754,7 @@ static la_asn_formatter const la_asn1_cpdlc_formatter_table[] = {
 	{ .type = &asn_DEF_FANSTp4table, .format = la_asn1_format_text_ENUM, .label = "TP4 table" },
 	{ .type = &asn_DEF_FANSTrackAngle, .format = la_asn1_format_text_CHOICE_cpdlc, .label = "Track angle" },
 	{ .type = &asn_DEF_FANSTrackDetail, .format = la_asn1_format_text_SEQUENCE_cpdlc, .label = NULL },
-	{ .type = &asn_DEF_FANSTrackName, .format = la_asn1_format_text_IA5String, .label = "Track name" },
+	{ .type = &asn_DEF_FANSTrackName, .format = la_asn1_format_text_OCTET_STRING, .label = "Track name" },
 	{ .type = &asn_DEF_FANSTrueheading, .format = la_asn1_format_text_CHOICE_cpdlc, .label = "True heading" },
 	{ .type = &asn_DEF_FANSTurbulence, .format = la_asn1_format_text_ENUM, .label = "Turbulence" },
 	{ .type = &asn_DEF_FANSVersionNumber, .format = la_asn1_format_text_any, .label = "Version number" },
@@ -775,8 +773,9 @@ static la_asn_formatter const la_asn1_cpdlc_formatter_table[] = {
 	{ .type = &asn_DEF_NULL, .format = la_asn1_format_text_NULL, .label = NULL }
 };
 
-static size_t la_asn1_cpdlc_formatter_table_len = sizeof(la_asn1_cpdlc_formatter_table) / sizeof(la_asn_formatter);
+static size_t la_asn1_cpdlc_text_formatter_table_len = sizeof(la_asn1_cpdlc_text_formatter_table) / sizeof(la_asn_formatter);
 
 void la_asn1_output_cpdlc_as_text(la_vstring *vstr, asn_TYPE_descriptor_t *td, const void *sptr, int indent) {
-	la_asn1_output(vstr, la_asn1_cpdlc_formatter_table, la_asn1_cpdlc_formatter_table_len, td, sptr, indent);
+	la_asn1_output(vstr, la_asn1_cpdlc_text_formatter_table, la_asn1_cpdlc_text_formatter_table_len,
+		td, sptr, indent, true);
 }

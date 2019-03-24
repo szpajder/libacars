@@ -5,14 +5,16 @@
  */
 
 #include <libacars/asn1/asn_application.h>	// asn_TYPE_descriptor_t, asn_sprintf
-#include <libacars/asn1/IA5String.h>		// IA5String_t
-#include <libacars/asn1/INTEGER.h>		// asn_INTEGER_enum_map_t
+#include <libacars/asn1/OCTET_STRING.h>		// OCTET_STRING_t
+#include <libacars/asn1/INTEGER.h>		// asn_INTEGER_enum_map_t, asn_INTEGER2long()
+#include <libacars/asn1/BOOLEAN.h>		// BOOLEAN_t
 #include <libacars/asn1/constr_CHOICE.h>	// _fetch_present_idx()
 #include <libacars/asn1/asn_SET_OF.h>		// _A_CSET_FROM_VOID()
 #include <libacars/asn1-util.h>			// LA_ASN1_FORMATTER_PROTOTYPE
 #include <libacars/macros.h>			// LA_CAST_PTR
 #include <libacars/util.h>			// la_dict_search
 #include <libacars/vstring.h>			// la_vstring, la_vstring_append_sprintf(), LA_ISPRINTF
+#include <libacars/json.h>			// la_json_*()
 
 char const *la_value2enum(asn_TYPE_descriptor_t *td, long const value) {
 	if(td == NULL) return NULL;
@@ -21,7 +23,7 @@ char const *la_value2enum(asn_TYPE_descriptor_t *td, long const value) {
 	return enum_map->enum_name;
 }
 
-void la_format_INTEGER_with_unit(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td,
+void la_format_INTEGER_with_unit_as_text(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td,
 	void const *sptr, int indent, char const * const unit, double multiplier, int decimal_places) {
 // -Wunused-parameter
 	(void)td;
@@ -29,7 +31,24 @@ void la_format_INTEGER_with_unit(la_vstring *vstr, char const * const label, asn
 	LA_ISPRINTF(vstr, indent, "%s: %.*f%s\n", label, decimal_places, (double)(*val) * multiplier, unit);
 }
 
-void la_format_CHOICE(la_vstring *vstr, char const * const label, la_dict const * const choice_labels,
+void la_format_INTEGER_with_unit_as_json(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td,
+	void const *sptr, int indent, char const * const unit, double multiplier, int decimal_places) {
+// -Wunused-parameter
+	(void)td;
+	(void)indent;
+	LA_CAST_PTR(valptr, long *, sptr);
+	double val = (double)(*valptr) * multiplier;
+	la_json_object_start(vstr, label);
+	if(decimal_places > 0) {
+		la_json_append_double(vstr, "val", val);
+	} else {
+		la_json_append_long(vstr, "val", (long)val);
+	}
+	la_json_append_string(vstr, "unit", unit);
+	la_json_object_end(vstr);
+}
+
+void la_format_CHOICE_as_text(la_vstring *vstr, char const * const label, la_dict const * const choice_labels,
 	asn1_output_fun_t cb, asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
 
 	asn_CHOICE_specifics_t *specs = (asn_CHOICE_specifics_t *)td->specifics;
@@ -67,7 +86,38 @@ void la_format_CHOICE(la_vstring *vstr, char const * const label, la_dict const 
 	}
 }
 
-void la_format_SEQUENCE(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
+void la_format_CHOICE_as_json(la_vstring *vstr, char const * const label, la_dict const * const choice_labels,
+	asn1_output_fun_t cb, asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
+
+	asn_CHOICE_specifics_t *specs = (asn_CHOICE_specifics_t *)td->specifics;
+	int present = _fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
+	la_json_object_start(vstr, label);
+	if(choice_labels != NULL) {
+		char *descr = la_dict_search(choice_labels, present);
+		la_json_append_string(vstr, "choice_label", descr != NULL ? descr : "");
+	}
+	if(present > 0 && present <= td->elements_count) {
+		asn_TYPE_member_t *elm = &td->elements[present-1];
+		void const *memb_ptr;
+
+		if(elm->flags & ATF_POINTER) {
+			memb_ptr = *(const void * const *)((const char *)sptr + elm->memb_offset);
+			if(!memb_ptr) {
+				goto end;
+			}
+		} else {
+			memb_ptr = (const void *)((const char *)sptr + elm->memb_offset);
+		}
+		la_json_append_string(vstr, "choice", elm->name);
+		la_json_object_start(vstr, "data");
+		cb(vstr, elm->type, memb_ptr, indent);
+		la_json_object_end(vstr);
+	}
+end:
+	la_json_object_end(vstr);
+}
+
+void la_format_SEQUENCE_as_text(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
 	asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
 	if(label != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s:\n", label);
@@ -89,7 +139,31 @@ void la_format_SEQUENCE(la_vstring *vstr, char const * const label, asn1_output_
 	}
 }
 
-void la_format_SEQUENCE_OF(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
+void la_format_SEQUENCE_as_json(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
+	asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
+
+	la_json_array_start(vstr, label);
+	for(int edx = 0; edx < td->elements_count; edx++) {
+		asn_TYPE_member_t *elm = &td->elements[edx];
+		const void *memb_ptr;
+
+		if(elm->flags & ATF_POINTER) {
+			memb_ptr = *(const void * const *)((const char *)sptr + elm->memb_offset);
+			if(!memb_ptr) {
+				continue;
+			}
+		} else {
+			memb_ptr = (const void *)((const char *)sptr + elm->memb_offset);
+		}
+		la_json_object_start(vstr, NULL);
+		cb(vstr, elm->type, memb_ptr, indent);
+		la_json_object_end(vstr);
+	}
+	la_json_array_end(vstr);
+}
+
+
+void la_format_SEQUENCE_OF_as_text(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
 	asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
 	if(label != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s:\n", label);
@@ -106,6 +180,23 @@ void la_format_SEQUENCE_OF(la_vstring *vstr, char const * const label, asn1_outp
 	}
 }
 
+void la_format_SEQUENCE_OF_as_json(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
+	asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
+	la_json_array_start(vstr, label);
+	asn_TYPE_member_t *elm = td->elements;
+	const asn_anonymous_set_ *list = _A_CSET_FROM_VOID(sptr);
+	for(int i = 0; i < list->count; i++) {
+		const void *memb_ptr = list->array[i];
+		if(memb_ptr == NULL) {
+			continue;
+		}
+		la_json_object_start(vstr, NULL);
+		cb(vstr, elm->type, memb_ptr, indent);
+		la_json_object_end(vstr);
+	}
+	la_json_array_end(vstr);
+}
+
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_any) {
 	if(label != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s: ", label);
@@ -115,11 +206,11 @@ LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_any) {
 	asn_sprintf(vstr, td, sptr, 1);
 }
 
-LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_IA5String) {
-	LA_CAST_PTR(ia5str, IA5String_t *, sptr);
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_OCTET_STRING) {
+	LA_CAST_PTR(octstr, OCTET_STRING_t *, sptr);
 // replace nulls with periods for printf() to work correctly
-	char *buf = (char *)ia5str->buf;
-	for(int i = 0; i < ia5str->size; i++) {
+	char *buf = (char *)octstr->buf;
+	for(int i = 0; i < octstr->size; i++) {
 		if(buf[i] == '\0') buf[i] = '.';
 	}
 	if(label != NULL) {
@@ -128,6 +219,20 @@ LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_IA5String) {
 		LA_ISPRINTF(vstr, indent, "%s", "");
 	}
 	asn_sprintf(vstr, td, sptr, 1);
+}
+
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_OCTET_STRING) {
+// -Wunused-parameter
+	(void)td;
+	(void)indent;
+	LA_CAST_PTR(octstr, OCTET_STRING_t *, sptr);
+	char *buf = (char *)octstr->buf;
+	int size = octstr->size;
+	char *string_buf = LA_XCALLOC(size + 1, sizeof(char));
+	memcpy(string_buf, buf, size);
+	string_buf[size] = '\0';
+	la_json_append_string(vstr, label, string_buf);
+	LA_XFREE(string_buf);
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_NULL) {
@@ -148,4 +253,34 @@ LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_ENUM) {
 	} else {
 		LA_ISPRINTF(vstr, indent, "%s: %ld\n", label, value);
 	}
+}
+
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_ENUM) {
+// -Wunused-parameter
+	(void)indent;
+	long const value = *(long const *)sptr;
+	char const *s = la_value2enum(td, value);
+	if(s != NULL) {
+		la_json_append_string(vstr, label, s);
+	} else {
+		la_json_append_long(vstr, label, value);
+	}
+}
+
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_long) {
+// -Wunused-parameter
+	(void)td;
+	(void)indent;
+
+	LA_CAST_PTR(valptr, long *, sptr);
+	la_json_append_long(vstr, label, *valptr);
+}
+
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_bool) {
+// -Wunused-parameter
+	(void)td;
+	(void)indent;
+
+	LA_CAST_PTR(valptr, BOOLEAN_t *, sptr);
+	la_json_append_bool(vstr, label, (*valptr) ? true : false);
 }

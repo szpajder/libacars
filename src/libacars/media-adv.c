@@ -12,6 +12,7 @@
 #include <libacars/macros.h>		// la_debug_print()
 #include <libacars/vstring.h>		// la_vstring, la_vstring_append_sprintf(),
 					// LA_ISPRINTF()
+#include <libacars/json.h>		// la_json_*()
 #include <libacars/util.h>		// LA_XCALLOC()
 
 typedef struct {
@@ -178,8 +179,46 @@ void la_media_adv_format_text(la_vstring * const vstr, void const * const data, 
 	}
 }
 
+void la_media_adv_format_json(la_vstring * const vstr, void const * const data) {
+	la_assert(vstr);
+	la_assert(data);
+
+	LA_CAST_PTR(msg, la_media_adv_msg *, data);
+
+	la_json_append_bool(vstr, "err", msg->err);
+	if(msg->err == true) {
+		return;
+	}
+	la_json_append_string(vstr, "version", msg->version);
+	la_json_object_start(vstr, "current_link");
+	la_json_append_char(vstr, "code", msg->current_link[0]);
+	la_json_append_string(vstr, "descr", get_link_description(msg->current_link[0]));
+	la_json_append_bool(vstr, "established", (msg->state[0] == 'E') ? true : false);
+	la_json_object_start(vstr, "time");
+	la_json_append_string(vstr, "hour", msg->hour);
+	la_json_append_string(vstr, "minute", msg->minute);
+	la_json_append_string(vstr, "second", msg->second);
+	la_json_object_end(vstr);
+	la_json_object_end(vstr);
+
+	la_json_array_start(vstr, "links_avail");
+	int count = (int)strlen(msg->available_links);
+	for(int i = 0; i < count; i++) {
+		la_json_object_start(vstr, NULL);
+		la_json_append_char(vstr, "code", msg->available_links[i]);
+		la_json_append_string(vstr, "descr", get_link_description(msg->available_links[i]));
+		la_json_object_end(vstr);
+	}
+	la_json_array_end(vstr);
+	if(strlen(msg->text)) {
+		la_json_append_string(vstr, "text", msg->text);
+	}
+}
+
 la_type_descriptor const la_DEF_media_adv_message = {
 	.format_text = la_media_adv_format_text,
+	.format_json = la_media_adv_format_json,
+	.json_key = "media-adv",
 	.destroy = NULL
 };
 

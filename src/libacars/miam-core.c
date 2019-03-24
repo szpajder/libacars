@@ -13,6 +13,8 @@
 #endif
 #include <libacars/macros.h>		// la_assert(), LA_UNLIKELY()
 #include <libacars/libacars.h>		// la_proto_node
+#include <libacars/vstring.h>		// la_vstring
+#include <libacars/json.h>		// la_json_append_*()
 #include <libacars/util.h>		// la_dict, la_dict_search(), XCALLOC(), la_hexdump()
 #include <libacars/crc.h>		// la_crc16_arinc(), la_crc32_arinc665()
 #include <libacars/miam-core.h>
@@ -416,6 +418,11 @@ static void la_miam_errors_format_text(la_vstring * const vstr, uint32_t err, in
 	}
 }
 
+static void la_miam_errors_format_json(la_vstring * const vstr, uint32_t err) {
+	la_assert(vstr != NULL);
+	la_json_append_long(vstr, "err", err);
+}
+
 static void la_miam_bitmask_format_text(la_vstring * const vstr, uint8_t const bitmask,
 la_dict const * const dict, int indent) {
 	la_assert(vstr != NULL);
@@ -429,6 +436,23 @@ la_dict const * const dict, int indent) {
 				LA_ISPRINTF(vstr, indent, "%s\n", name);
 			} else {
 				LA_ISPRINTF(vstr, indent, "unknown (%u)\n", 1 << i);
+			}
+		}
+	}
+}
+
+static void la_miam_bitmask_format_json(la_vstring * const vstr, uint8_t const bitmask,
+la_dict const * const dict) {
+	la_assert(vstr != NULL);
+	la_assert(dict != NULL);
+
+	for(int i = 0; i < 8; i++) {
+		if((bitmask & (1 << i)) != 0) {
+			char *name = la_dict_search(dict, i);
+			if(name != NULL) {
+				la_json_append_string(vstr, NULL, name);
+			} else {
+				la_json_append_long(vstr, NULL, 1 << i);
 			}
 		}
 	}
@@ -461,12 +485,47 @@ la_miam_core_pdu_type const pdu_type) {
 // Not checking for body errors here, as there is no body in ALO and ALR PDUs
 }
 
+static void v1v2_alo_alr_format_json(la_vstring * const vstr, void const * const data,
+la_miam_core_pdu_type const pdu_type) {
+	la_assert(vstr != NULL);
+	la_assert(data != NULL);
+
+	if(pdu_type != LA_MIAM_CORE_PDU_ALO && pdu_type != LA_MIAM_CORE_PDU_ALR) {
+		return;
+	}
+
+	LA_CAST_PTR(pdu, la_miam_core_v1v2_alo_alr_pdu *, data);
+	if(pdu->err & LA_MIAM_ERR_HDR) {
+		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
+		return;
+	}
+	la_json_append_long(vstr, "pdu_len", pdu->pdu_len);
+	la_json_append_string(vstr, "aircraft_id", pdu->aircraft_id);
+	la_json_array_start(vstr,
+		pdu_type == LA_MIAM_CORE_PDU_ALO ? "comp_supported" : "comp_selected");
+	la_miam_bitmask_format_json(vstr, pdu->compression,
+		la_miam_core_v1v2_alo_alr_compression_names);
+	la_json_array_end(vstr);
+	la_json_array_start(vstr, "networks_supported");
+	la_miam_bitmask_format_json(vstr, pdu->networks,
+		la_miam_core_v1v2_alo_alr_network_names);
+	la_json_array_end(vstr);
+}
+
 static void la_miam_core_v1v2_alo_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	v1v2_alo_alr_format_text(vstr, data, indent, LA_MIAM_CORE_PDU_ALO);
 }
 
+static void la_miam_core_v1v2_alo_format_json(la_vstring * const vstr, void const * const data) {
+	v1v2_alo_alr_format_json(vstr, data, LA_MIAM_CORE_PDU_ALO);
+}
+
 static void la_miam_core_v1v2_alr_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	v1v2_alo_alr_format_text(vstr, data, indent, LA_MIAM_CORE_PDU_ALR);
+}
+
+static void la_miam_core_v1v2_alr_format_json(la_vstring * const vstr, void const * const data) {
+	v1v2_alo_alr_format_json(vstr, data, LA_MIAM_CORE_PDU_ALR);
 }
 
 void la_miam_core_format_text(la_vstring * const vstr, void const * const data, int indent) {
@@ -493,18 +552,37 @@ void la_miam_core_format_text(la_vstring * const vstr, void const * const data, 
 	indent++;
 }
 
+void la_miam_core_format_json(la_vstring * const vstr, void const * const data) {
+	la_assert(vstr);
+	la_assert(data);
+
+	LA_CAST_PTR(pdu, la_miam_core_pdu *, data);
+	if(pdu->err & LA_MIAM_ERR_HDR) {
+		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
+		return;
+	}
+	la_json_append_long(vstr, "version", pdu->version);
+	la_json_append_long(vstr, "pdu_type", pdu->pdu_type);
+}
+
 // MIAM CORE v1/v2 common type descriptors
 
 la_type_descriptor const la_DEF_miam_core_pdu = {
 	.format_text = la_miam_core_format_text,
+	.format_json = la_miam_core_format_json,
+	.json_key = "miam_core",
 	.destroy = NULL
 };
 la_type_descriptor const la_DEF_miam_core_v1v2_alo_pdu = {
 	.format_text = la_miam_core_v1v2_alo_format_text,
+	.format_json = la_miam_core_v1v2_alo_format_json,
+	.json_key = "aloha",
 	.destroy = NULL
 };
 la_type_descriptor const la_DEF_miam_core_v1v2_alr_pdu = {
 	.format_text = la_miam_core_v1v2_alr_format_text,
+	.format_json = la_miam_core_v1v2_alr_format_json,
+	.json_key = "aloha_reply",
 	.destroy = NULL
 };
 
@@ -777,6 +855,65 @@ static void la_miam_core_v1_data_format_text(la_vstring * const vstr, void const
 	}
 }
 
+static void la_miam_core_v1_data_format_json(la_vstring * const vstr, void const * const data) {
+	la_assert(vstr != NULL);
+	la_assert(data != NULL);
+
+	LA_CAST_PTR(pdu, la_miam_core_v1_data_pdu *, data);
+	if(pdu->err & LA_MIAM_ERR_HDR) {
+		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
+		return;
+	}
+	la_json_append_long(vstr, "pdu_len", pdu->pdu_len);
+	la_json_append_string(vstr, "aircraft_id", pdu->aircraft_id);
+	la_json_append_long(vstr, "msg_num", pdu->msg_num);
+	la_json_append_bool(vstr, "ack_required", pdu->ack_option == 1 ? true : false);
+	la_json_append_long(vstr, "compression", pdu->compression);
+	la_json_append_long(vstr, "encoding", pdu->encoding);
+	la_json_append_long(vstr, "app_type", pdu->app_type);
+
+	switch(pdu->app_type) {
+	case LA_MIAM_CORE_V1_APP_ACARS_2CHAR:
+	case LA_MIAM_CORE_V1_APP_ACARS_4CHAR:
+	case LA_MIAM_CORE_V1_APP_ACARS_6CHAR:
+		la_json_object_start(vstr, "acars");
+		la_json_append_string(vstr, "label",
+			(char const * const)(&((char[]){pdu->app_id[0], pdu->app_id[1], '\0'})));
+		if(pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_4CHAR ||
+			pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_6CHAR) {
+			la_json_append_string(vstr, "sublabel",
+				(char const * const)(&((char[]){pdu->app_id[2], pdu->app_id[3], '\0'})));
+
+		}
+		if(pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_6CHAR) {
+			la_json_append_string(vstr, "mfi",
+				(char const * const)(&((char[]){pdu->app_id[4], pdu->app_id[5], '\0'})));
+		}
+		break;
+	case LA_MIAM_CORE_V1_APP_NONACARS_6CHAR:
+		la_json_object_start(vstr, "non_acars");
+		la_json_append_string(vstr, "app_id", pdu->app_id);
+		break;
+	default:
+		la_json_object_start(vstr, "unknown_payload_type");
+		break;
+	}
+	la_json_object_start(vstr, "message");
+	if(pdu->data != NULL) {
+		if(is_printable(pdu->data, pdu->data_len)) {
+			la_json_append_string(vstr, "text", (char *)pdu->data);
+		} else {
+			la_json_append_octet_string(vstr, "octet_string",
+				(uint8_t *)pdu->data, pdu->data_len);
+		}
+	}
+	if(pdu->err & LA_MIAM_ERR_BODY) {
+		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_BODY);
+	}
+	la_json_object_end(vstr);	// message
+	la_json_object_end(vstr);	// acars / non_acars / unknown_payload_type
+}
+
 static void la_miam_core_v1_ack_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
@@ -808,6 +945,21 @@ static void la_miam_core_v1_ack_format_text(la_vstring * const vstr, void const 
 // Not checking for body errors here, as there is no body in an ack PDU
 }
 
+static void la_miam_core_v1_ack_format_json(la_vstring * const vstr, void const * const data) {
+	la_assert(vstr != NULL);
+	la_assert(data != NULL);
+
+	LA_CAST_PTR(pdu, la_miam_core_v1_ack_pdu *, data);
+	if(pdu->err & LA_MIAM_ERR_HDR) {
+		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
+		return;
+	}
+	la_json_append_long(vstr, "pdu_len", pdu->pdu_len);
+	la_json_append_string(vstr, "aircraft_id", pdu->aircraft_id);
+	la_json_append_long(vstr, "msg_ack_num", pdu->msg_ack_num);
+	la_json_append_long(vstr, "ack_xfer_result", pdu->ack_xfer_result);
+}
+
 // MIAM Core v1-specific destructors
 
 static void la_miam_core_v1_data_destroy(void *data) {
@@ -823,10 +975,14 @@ static void la_miam_core_v1_data_destroy(void *data) {
 
 la_type_descriptor const la_DEF_miam_core_v1_data_pdu = {
 	.format_text = la_miam_core_v1_data_format_text,
+	.format_json = la_miam_core_v1_data_format_json,
+	.json_key = "data",
 	.destroy = la_miam_core_v1_data_destroy
 };
 la_type_descriptor const la_DEF_miam_core_v1_ack_pdu = {
 	.format_text = la_miam_core_v1_ack_format_text,
+	.format_json = la_miam_core_v1_ack_format_json,
+	.json_key = "ack",
 	.destroy = NULL
 };
 
@@ -1083,6 +1239,68 @@ static void la_miam_core_v2_data_format_text(la_vstring * const vstr, void const
 	}
 }
 
+static void la_miam_core_v2_data_format_json(la_vstring * const vstr, void const * const data) {
+	la_assert(vstr != NULL);
+	la_assert(data != NULL);
+
+	LA_CAST_PTR(pdu, la_miam_core_v2_data_pdu *, data);
+	if(pdu->err & LA_MIAM_ERR_HDR) {
+		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
+		return;
+	}
+	la_json_append_long(vstr, "msg_num", pdu->msg_num);
+	la_json_append_bool(vstr, "ack_required", pdu->ack_option == 1 ? true : false);
+	la_json_append_long(vstr, "compression", pdu->compression);
+	la_json_append_long(vstr, "encoding", pdu->encoding);
+	la_json_append_long(vstr, "app_type", pdu->app_type);
+
+	switch(pdu->app_type) {
+	case LA_MIAM_CORE_V2_APP_ACARS_2CHAR:
+	case LA_MIAM_CORE_V2_APP_ACARS_4CHAR:
+	case LA_MIAM_CORE_V2_APP_ACARS_6CHAR:
+		la_json_object_start(vstr, "acars");
+		la_json_append_string(vstr, "label",
+			(char const * const)(&((char[]){pdu->app_id[0], pdu->app_id[1], '\0'})));
+		if(pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_4CHAR ||
+			pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_6CHAR) {
+			la_json_append_string(vstr, "sublabel",
+				(char const * const)(&((char[]){pdu->app_id[2], pdu->app_id[3], '\0'})));
+
+		}
+		if(pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_6CHAR) {
+			la_json_append_string(vstr, "mfi",
+				(char const * const)(&((char[]){pdu->app_id[4], pdu->app_id[5], '\0'})));
+		}
+		break;
+	case 0x4:
+	case 0x5:
+	case 0x6:
+	case 0x7:
+	case 0xd:
+// reserved for future use
+		break;
+	case LA_MIAM_CORE_V2_APP_NONACARS_6CHAR:
+	default:	// including 0x8-0x15
+		la_json_object_start(vstr, "non_acars");
+		la_json_append_string(vstr, "app_id", pdu->app_id);
+		break;
+	}
+	la_json_object_start(vstr, "message");
+	if(pdu->data != NULL) {
+		if(is_printable(pdu->data, pdu->data_len)) {
+			la_json_append_string(vstr, "text", (char *)pdu->data);
+		} else {
+			la_json_append_octet_string(vstr, "octet_string",
+				(uint8_t *)pdu->data, pdu->data_len);
+		}
+	}
+	if(pdu->err & LA_MIAM_ERR_BODY) {
+		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_BODY);
+	}
+	la_json_object_end(vstr);	// message
+	la_json_object_end(vstr);	// acars / non_acars
+}
+
 static void la_miam_core_v2_ack_format_text(la_vstring * const vstr, void const * const data, int indent) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
@@ -1113,6 +1331,19 @@ static void la_miam_core_v2_ack_format_text(la_vstring * const vstr, void const 
 // Not checking for body errors here, as there is no body in an ack PDU
 }
 
+static void la_miam_core_v2_ack_format_json(la_vstring * const vstr, void const * const data) {
+	la_assert(vstr != NULL);
+	la_assert(data != NULL);
+
+	LA_CAST_PTR(pdu, la_miam_core_v2_ack_pdu *, data);
+	if(pdu->err & LA_MIAM_ERR_HDR) {
+		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
+		return;
+	}
+	la_json_append_long(vstr, "msg_ack_num", pdu->msg_ack_num);
+	la_json_append_long(vstr, "ack_xfer_result", pdu->ack_xfer_result);
+}
+
 // MIAM CORE v2-specific destructors
 
 static void la_miam_core_v2_data_destroy(void *data) {
@@ -1128,9 +1359,13 @@ static void la_miam_core_v2_data_destroy(void *data) {
 
 la_type_descriptor const la_DEF_miam_core_v2_data_pdu = {
 	.format_text = la_miam_core_v2_data_format_text,
+	.format_json = la_miam_core_v2_data_format_json,
+	.json_key = "data",
 	.destroy = &la_miam_core_v2_data_destroy
 };
 la_type_descriptor const la_DEF_miam_core_v2_ack_pdu = {
 	.format_text = la_miam_core_v2_ack_format_text,
+	.format_json = la_miam_core_v2_ack_format_json,
+	.json_key = "ack",
 	.destroy = NULL
 };

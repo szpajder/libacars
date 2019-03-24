@@ -21,6 +21,8 @@ typedef enum {
 } la_msg_dir;
 
 typedef void (la_print_type_f)(la_vstring * const vstr, void const * const data, int indent);
+// FIXME
+typedef void (la_json_type_f)(la_vstring * const vstr, void const * const data);
 typedef void (la_destroy_type_f)(void *data);
 
 typedef struct {
@@ -41,9 +43,9 @@ typedef struct {
 typedef struct {
 	la_print_type_f *format_text;
 	la_destroy_type_f *destroy;
+	la_json_type_f *format_json;
+	char *json_key;
 // padding for ABI compatibility
-	void (*reserved0)(void);
-	void (*reserved1)(void);
 	void (*reserved2)(void);
 	void (*reserved3)(void);
 	void (*reserved4)(void);
@@ -71,6 +73,7 @@ struct la_proto_node {
 extern la_config_struct la_config;
 la_proto_node *la_proto_node_new();
 la_vstring *la_proto_tree_format_text(la_vstring *vstr, la_proto_node const * const root);
+la_vstring *la_proto_tree_format_json(la_vstring *vstr, la_proto_node const * const root);
 void la_proto_tree_destroy(la_proto_node *root);
 la_proto_node *la_proto_tree_find_protocol(la_proto_node *root, la_type_descriptor const * const td);
 

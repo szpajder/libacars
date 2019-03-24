@@ -116,9 +116,6 @@ Example apps are provided in `src/examples` subdirectory:
 - `decode_acars_apps` - reads messages from command line or from a file and
   decodes all ACARS applications supported by the library.
 
-- `decode_arinc` - decodes ARINC-622 messages (obsolete; please use
-  `decode_acars_apps` instead)
-
 - `adsc_get_position` - illustrates how to extract position-related
   fields from decoded ADS-C message.
 

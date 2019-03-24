@@ -243,8 +243,6 @@ found in the tree, the function returns NULL.
 ARINC-622 describes a generic format for carrying Air Traffic Services (ATS)
 applications in ACARS message text. The API is defined in `<libacars/arinc.h>`.
 It might be used in a program which already performs basic ACARS decoding.
-Refer to the [Programmer's Guide](PROG_GUIDE.md) and to `src/examples/decode_arinc.c`
-for a working example which uses this API.
 
 ### la_arinc_msg
 
