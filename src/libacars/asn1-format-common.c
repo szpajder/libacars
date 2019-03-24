@@ -24,7 +24,7 @@ char const *la_value2enum(asn_TYPE_descriptor_t *td, long const value) {
 	return enum_map->enum_name;
 }
 
-void la_format_INTEGER_with_unit(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td,
+void la_format_INTEGER_with_unit_as_text(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td,
 	void const *sptr, int indent, char const * const unit, double multiplier, int decimal_places) {
 // -Wunused-parameter
 	(void)td;
@@ -49,7 +49,7 @@ void la_format_INTEGER_with_unit_as_json(la_vstring *vstr, char const * const la
 	la_json_object_end(vstr);
 }
 
-void la_format_CHOICE(la_vstring *vstr, char const * const label, la_dict const * const choice_labels,
+void la_format_CHOICE_as_text(la_vstring *vstr, char const * const label, la_dict const * const choice_labels,
 	asn1_output_fun_t cb, asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
 
 	asn_CHOICE_specifics_t *specs = (asn_CHOICE_specifics_t *)td->specifics;
@@ -118,7 +118,7 @@ end:
 	la_json_object_end(vstr);
 }
 
-void la_format_SEQUENCE(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
+void la_format_SEQUENCE_as_text(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
 	asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
 	if(label != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s:\n", label);
@@ -164,7 +164,7 @@ void la_format_SEQUENCE_as_json(la_vstring *vstr, char const * const label, asn1
 }
 
 
-void la_format_SEQUENCE_OF(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
+void la_format_SEQUENCE_OF_as_text(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
 	asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
 	if(label != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s:\n", label);

@@ -10,7 +10,7 @@
 #include <libacars/vstring.h>			// la_vstring
 #include <libacars/util.h>			// la_dict
 
-// asn1-format-cpdlc.c
+// asn1-format-cpdlc-text.c
 void la_asn1_output_cpdlc_as_text(la_vstring *vstr, asn_TYPE_descriptor_t *td, const void *sptr, int indent);
 extern la_dict const FANSATCUplinkMsgElementId_labels[];
 extern la_dict const FANSATCDownlinkMsgElementId_labels[];
