@@ -778,5 +778,5 @@ static la_asn_formatter const la_asn1_cpdlc_formatter_table[] = {
 static size_t la_asn1_cpdlc_formatter_table_len = sizeof(la_asn1_cpdlc_formatter_table) / sizeof(la_asn_formatter);
 
 void la_asn1_output_cpdlc_as_text(la_vstring *vstr, asn_TYPE_descriptor_t *td, const void *sptr, int indent) {
-	la_asn1_output(vstr, la_asn1_cpdlc_formatter_table, la_asn1_cpdlc_formatter_table_len, td, sptr, indent);
+	la_asn1_output(vstr, la_asn1_cpdlc_formatter_table, la_asn1_cpdlc_formatter_table_len, td, sptr, indent, true);
 }

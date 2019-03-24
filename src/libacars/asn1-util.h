@@ -25,6 +25,7 @@ typedef void (*asn1_output_fun_t)(la_vstring *, asn_TYPE_descriptor_t *, const v
 // asn1-util.c
 int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t *buf, int size);
 void la_asn1_output(la_vstring *vstr, la_asn_formatter const * const asn1_formatter_table,
-	size_t asn1_formatter_table_len, asn_TYPE_descriptor_t *td, const void *sptr, int indent);
+	size_t asn1_formatter_table_len, asn_TYPE_descriptor_t *td, const void *sptr, int indent,
+	bool const dump_unknown_types);
 
 #endif // !LA_ASN1_UTIL_H
