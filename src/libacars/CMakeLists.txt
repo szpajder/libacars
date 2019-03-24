@@ -74,6 +74,7 @@ add_library (acars_core OBJECT
 	arinc.c
 	asn1-format-common.c
 	asn1-format-cpdlc.c
+	asn1-format-cpdlc-json.c
 	asn1-util.c
 	bitstream.c
 	cpdlc.c

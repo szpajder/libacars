@@ -12,4 +12,7 @@
 // asn1-format-cpdlc.c
 void la_asn1_output_cpdlc_as_text(la_vstring *vstr, asn_TYPE_descriptor_t *td, const void *sptr, int indent);
 
+// asn1-format-cpdlc-json.c
+void la_asn1_output_cpdlc_as_json(la_vstring *vstr, asn_TYPE_descriptor_t *td, const void *sptr, int indent);
+
 #endif // !LA_ASN1_FORMAT_CPDLC_H
