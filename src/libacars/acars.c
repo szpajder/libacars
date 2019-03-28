@@ -21,6 +21,7 @@
 #define ETX 0x03
 #define ACK 0x06
 #define NAK 0x15
+#define IS_DOWNLINK_BLK(bid) ((bid) >= '0' && (bid) <= '9')
 
 la_proto_node *la_acars_decode_apps(char const * const label,
 char const * const txt, la_msg_dir const msg_dir) {
@@ -153,7 +154,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 		goto end;
 	}
 
-	if (msg->mode <= 'Z' && msg->block_id <= '9') {
+	if (IS_DOWNLINK_BLK(msg->block_id)) {
 		/* message no */
 		for (i = 0; i < 4 && k < len; i++, k++) {
 			msg->no[i] = buf2[k];
@@ -179,7 +180,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 		}
 // If the message direction is unknown, guess it using the block ID character.
 		if(msg_dir == LA_MSG_DIR_UNKNOWN) {
-			if(msg->block_id >= '0' && msg->block_id <= '9') {
+			if(IS_DOWNLINK_BLK(msg->block_id)) {
 		                msg_dir = LA_MSG_DIR_AIR2GND;
 			} else {
 				msg_dir = LA_MSG_DIR_GND2AIR;
@@ -209,11 +210,21 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 	LA_ISPRINTF(vstr, indent, "ACARS%s:\n", msg->crc_ok ? "" : " (warning: CRC error)");
 	indent++;
 
-	if(msg->mode < 0x5d) {		// air-to-ground
-		LA_ISPRINTF(vstr, indent, "Reg: %s Flight: %s\n", msg->reg, msg->flight_id);
+	LA_ISPRINTF(vstr, indent, "Reg: %s", msg->reg);
+	if(IS_DOWNLINK_BLK(msg->block_id)) {
+		la_vstring_append_sprintf(vstr, " Flight: %s\n", msg->flight_id);
+	} else {
+		la_vstring_append_sprintf(vstr, "%s", "\n");
 	}
-	LA_ISPRINTF(vstr, indent, "Mode: %1c Label: %s Blk id: %c Ack: %c Msg no.: %s\n",
-		msg->mode, msg->label, msg->block_id, msg->ack, msg->no);
+
+	LA_ISPRINTF(vstr, indent, "Mode: %1c Label: %s Blk id: %c Ack: %c",
+		msg->mode, msg->label, msg->block_id, msg->ack);
+	if(IS_DOWNLINK_BLK(msg->block_id)) {
+		la_vstring_append_sprintf(vstr, " Msg no.: %s\n", msg->no);
+	} else {
+		la_vstring_append_sprintf(vstr, "%s", "\n");
+	}
+
 	LA_ISPRINTF(vstr, indent, "%s\n", "Message:");
 // Indent multi-line messages properly
 	char *line = strdup(msg->txt);	// have to work on a copy, because strtok modifies its first argument
@@ -236,15 +247,15 @@ void la_acars_format_json(la_vstring *vstr, void const * const data) {
 		return;
 	}
 	la_json_append_bool(vstr, "crc_ok", msg->crc_ok);
-	if(msg->mode < 0x5d) {		// air-to-ground
-		la_json_append_string(vstr, "reg", msg->reg);
-		la_json_append_string(vstr, "flight", msg->flight_id);
-	}
+	la_json_append_string(vstr, "reg", msg->reg);
 	la_json_append_char(vstr, "mode", msg->mode);
 	la_json_append_string(vstr, "label", msg->label);
 	la_json_append_char(vstr, "blk_id", msg->block_id);
 	la_json_append_char(vstr, "ack", msg->ack);
-	la_json_append_string(vstr, "msg_no", msg->no);
+	if(IS_DOWNLINK_BLK(msg->block_id)) {
+		la_json_append_string(vstr, "flight", msg->flight_id);
+		la_json_append_string(vstr, "msg_no", msg->no);
+	}
 	la_json_append_string(vstr, "msg_text", msg->txt);
 }
 
