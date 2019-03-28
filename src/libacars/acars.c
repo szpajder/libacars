@@ -19,6 +19,8 @@
 #define LA_ACARS_MIN_LEN	16		// including CRC and DEL
 #define DEL 0x7f
 #define ETX 0x03
+#define ACK 0x06
+#define NAK 0x15
 
 la_proto_node *la_acars_decode_apps(char const * const label,
 char const * const txt, la_msg_dir const msg_dir) {
@@ -123,10 +125,13 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 	}
 	msg->reg[7] = '\0';
 
-	/* ACK/NAK */
 	msg->ack = buf2[k++];
-	if (msg->ack == 0x15)
+// change special values to something printable
+	if (msg->ack == NAK) {
 		msg->ack = '!';
+	} else if(msg->ack == ACK) {
+		msg->ack = '^';
+	}
 
 	msg->label[0] = buf2[k++];
 	msg->label[1] = buf2[k++];
