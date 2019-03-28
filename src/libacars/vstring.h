@@ -37,6 +37,7 @@ la_vstring *la_vstring_new();
 void la_vstring_destroy(la_vstring *vstr, bool destroy_buffer);
 void la_vstring_append_sprintf(la_vstring * const vstr, char const *fmt, ...) LA_GCC_PRINTF_ATTR(2, 3);
 void la_vstring_append_buffer(la_vstring * const vstr, void const * buffer, size_t size);
+void la_isprintf_multiline_text(la_vstring * const vstr, int const indent, char const *txt);
 
 #ifdef __cplusplus
 }

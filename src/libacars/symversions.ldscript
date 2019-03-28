@@ -98,6 +98,7 @@ ACARS_1.3 {
     la_miam_format_json;
     la_miam_core_format_json;
     la_proto_tree_format_json;
+    la_isprintf_multiline_text;
   local:
     *;
 } ACARS_1.2;

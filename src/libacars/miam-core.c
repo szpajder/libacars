@@ -13,7 +13,7 @@
 #endif
 #include <libacars/macros.h>		// la_assert(), LA_UNLIKELY()
 #include <libacars/libacars.h>		// la_proto_node
-#include <libacars/vstring.h>		// la_vstring
+#include <libacars/vstring.h>		// la_vstring, LA_ISPRINTF, la_isprintf_multiline_text()
 #include <libacars/json.h>		// la_json_append_*()
 #include <libacars/util.h>		// la_dict, la_dict_search(), XCALLOC(), la_hexdump()
 #include <libacars/crc.h>		// la_crc16_arinc(), la_crc32_arinc665()
@@ -199,23 +199,6 @@ static la_base85_decode_result la_base85_decode(char const *str, char const *end
 		.buf = out,
 		.len = outpos
 	};
-}
-
-static void la_isprintf_multiline_text(la_vstring * const vstr, int const indent, char const *txt) {
-	la_assert(vstr != NULL);
-	la_assert(indent >= 0);
-	if(txt == NULL) {
-		return;
-	}
-// have to work on a copy, because strtok modifies its first argument
-	char *line = strdup(txt);
-	char *ptr = line;
-	char *next_line = NULL;
-	while((ptr = strtok_r(ptr, "\n", &next_line)) != NULL) {
-		LA_ISPRINTF(vstr, indent, "%s\n", ptr);
-		ptr = next_line;
-	}
-	LA_XFREE(line);
 }
 
 static bool is_printable(uint8_t const *buf, uint32_t data_len) {

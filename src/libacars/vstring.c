@@ -53,6 +53,23 @@ void la_vstring_destroy(la_vstring *vstr, bool destroy_buffer) {
 	LA_XFREE(vstr);
 }
 
+void la_isprintf_multiline_text(la_vstring * const vstr, int const indent, char const *txt) {
+	la_assert(vstr != NULL);
+	la_assert(indent >= 0);
+	if(txt == NULL) {
+		return;
+	}
+// have to work on a copy, because strtok modifies its first argument
+	char *line = strdup(txt);
+	char *ptr = line;
+	char *next_line = NULL;
+	while((ptr = strtok_r(ptr, "\n", &next_line)) != NULL) {
+		LA_ISPRINTF(vstr, indent, "%s\n", ptr);
+		ptr = next_line;
+	}
+	LA_XFREE(line);
+}
+
 void la_vstring_append_sprintf(la_vstring * const vstr, char const *fmt, ...) {
 	la_assert(vstr);
 	la_assert(fmt);
