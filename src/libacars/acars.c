@@ -4,7 +4,7 @@
  *  Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
  */
 
-#include <string.h>				// memcpy()
+#include <string.h>				// memcpy(), strdup()
 #include <libacars/libacars.h>			// la_proto_node, la_proto_tree_find_protocol
 #include <libacars/macros.h>			// la_assert()
 #include <libacars/arinc.h>			// la_arinc_parse()
@@ -226,15 +226,7 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 	}
 
 	LA_ISPRINTF(vstr, indent, "%s\n", "Message:");
-// Indent multi-line messages properly
-	char *line = strdup(msg->txt);	// have to work on a copy, because strtok modifies its first argument
-	char *ptr = line;
-	char *next_line = NULL;
-	while((ptr = strtok_r(ptr, "\n", &next_line)) != NULL) {
-		LA_ISPRINTF(vstr, indent+1, "%s\n", ptr);
-		ptr = next_line;
-	}
-	LA_XFREE(line);
+	la_isprintf_multiline_text(vstr, indent+1, msg->txt);
 }
 
 void la_acars_format_json(la_vstring *vstr, void const * const data) {
