@@ -194,9 +194,13 @@ void la_media_adv_format_json(la_vstring * const vstr, void const * const data) 
 	la_json_append_string(vstr, "descr", get_link_description(msg->current_link[0]));
 	la_json_append_bool(vstr, "established", (msg->state[0] == 'E') ? true : false);
 	la_json_object_start(vstr, "time");
-	la_json_append_string(vstr, "hour", msg->hour);
-	la_json_append_string(vstr, "minute", msg->minute);
-	la_json_append_string(vstr, "second", msg->second);
+// FIXME: timestamp fields should be stored as numbers, not strings. However
+// changing la_media_adv_msg structure would break ABI. We therefore
+// postpone the change to version 2 of the API and perform conversion here.
+// At least the JSON structure won't need a change later on.
+	la_json_append_long(vstr, "hour", atol(msg->hour));
+	la_json_append_long(vstr, "min", atol(msg->minute));
+	la_json_append_long(vstr, "sec", atol(msg->second));
 	la_json_object_end(vstr);
 	la_json_object_end(vstr);
 
