@@ -52,8 +52,7 @@ static bool is_numeric(char const *str, size_t len) {
 
 static bool check_format(char const *txt) {
 	bool valid = false;
-	int payload_len = strlen(txt);
-	if(payload_len >= 10) {
+	if(strlen(txt) >= 10) {
 		valid = txt[0] == '0';
 		valid &= txt[1] == 'E' || txt[1] == 'L';
 		valid &= strchr("VSHGC2XI",txt[2]) != NULL;
@@ -77,7 +76,7 @@ la_proto_node *la_media_adv_parse(char const *txt) {
 	// default to error
 	msg->err = true;
 
-	int payload_len = strlen(txt);
+	size_t payload_len = strlen(txt);
 	// Message size 0EV122234V
 	if(check_format(txt)) {
 		msg->err = false;
@@ -107,7 +106,7 @@ la_proto_node *la_media_adv_parse(char const *txt) {
 		char *end = strchr(txt, '/');
 		// if there is no / only available links are present
 		if(end == NULL)  {
-			int index = 9;
+			size_t index = 9;
 			while(index < payload_len) {
 				msg->available_links[index - 9] = txt[index];
 				index++;
@@ -116,7 +115,7 @@ la_proto_node *la_media_adv_parse(char const *txt) {
 			msg->text[0] = '\0';
 		} else {
 			// Copy all link until / is found
-			int index = 9;
+			size_t index = 9;
 			while(index < payload_len) {
 				if(txt[index] != '/') {
 					msg->available_links[index - 9] = txt[index];
@@ -163,8 +162,8 @@ void la_media_adv_format_text(la_vstring * const vstr, void const * const data, 
 
 	// print all available links
 	LA_ISPRINTF(vstr, indent, "%s", "Available links: ");
-	int count = (int)strlen(msg->available_links);
-	for(int i = 0; i < count; i++) {
+	size_t count = strlen(msg->available_links);
+	for(size_t i = 0; i < count; i++) {
 		const char *link = get_link_description(msg->available_links[i]);
 		if(i == count - 1) {
 			la_vstring_append_sprintf(vstr, "%s\n", link);
@@ -202,8 +201,8 @@ void la_media_adv_format_json(la_vstring * const vstr, void const * const data) 
 	la_json_object_end(vstr);
 
 	la_json_array_start(vstr, "links_avail");
-	int count = (int)strlen(msg->available_links);
-	for(int i = 0; i < count; i++) {
+	size_t count = strlen(msg->available_links);
+	for(size_t i = 0; i < count; i++) {
 		la_json_object_start(vstr, NULL);
 		la_json_append_char(vstr, "code", msg->available_links[i]);
 		la_json_append_string(vstr, "descr", get_link_description(msg->available_links[i]));
