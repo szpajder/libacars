@@ -112,7 +112,7 @@ static char *guess_arinc_msg_type(char const *txt, la_arinc_msg *msg) {
 		}
 	}
 	if(imi == ARINC_MSG_UNKNOWN) {
-		la_debug_print("%s", "No known IMI found\n");
+		la_debug_print("No known IMI found\n");
 		return NULL;
 	}
 	char *gs_addr = NULL;

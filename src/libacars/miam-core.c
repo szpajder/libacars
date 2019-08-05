@@ -214,7 +214,7 @@ static bool is_printable(uint8_t const *buf, uint32_t data_len) {
 			return false;
 		}
 	}
-	la_debug_print("%s\n", "true");
+	la_debug_print("true\n");
 	return true;
 }
 
@@ -292,11 +292,11 @@ la_proto_node *la_miam_core_pdu_parse(char const *txt) {
 	hpad -= 0x30;	// get digit value: '1' -> 1
 	char *delim = strchr(txt, '|');
 	if(delim == NULL) {
-		la_debug_print("%s", "Header/body delimiter not found\n");
+		la_debug_print("Header/body delimiter not found\n");
 		return NULL;
 	}
 	if(delim == txt) {
-		la_debug_print("%s", "Empty header\n");
+		la_debug_print("Empty header\n");
 		return NULL;
 	}
 // Assume the initial part is the Header - try to decode it
@@ -304,7 +304,7 @@ la_proto_node *la_miam_core_pdu_parse(char const *txt) {
 	if(header.buf == NULL || header.len < hpad) { // BASE85 decoder failed or result too short
 		return NULL;
 	}
-	la_debug_print_buf_hex(header.buf, header.len, "%s:\n", "Decoded header");
+	la_debug_print_buf_hex(header.buf, header.len, "Decoded header:\n");
 
 // Decode message body, if exists and if it's encoded
 	uint8_t *bodybuf = NULL;
@@ -668,7 +668,7 @@ static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrl
 #ifdef WITH_ZLIB
 		if(pdu->compression == LA_MIAM_CORE_V1_COMP_DEFLATE) {
 			la_inflate_result inflated = la_inflate(bodybuf, bodylen);
-			la_debug_print_buf_hex(inflated.buf, (int)inflated.buflen, "%s", "Decompressed content:\n");
+			la_debug_print_buf_hex(inflated.buf, (int)inflated.buflen, "Decompressed content:\n");
 // If it's text, it needs a NULL terminator.
 // If it's not text, it doesn't hurt either. The buffer is larger than len anyway.
 			inflated.buf[inflated.buflen] = '\0';
@@ -1056,7 +1056,7 @@ static la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrl
 #ifdef WITH_ZLIB
 		if(pdu->compression == LA_MIAM_CORE_V2_COMP_DEFLATE) {
 			la_inflate_result inflated = la_inflate(bodybuf, bodylen);
-			la_debug_print_buf_hex(inflated.buf, (int)inflated.buflen, "%s", "Decompressed content:\n");
+			la_debug_print_buf_hex(inflated.buf, (int)inflated.buflen, "Decompressed content:\n");
 // If it's text, it needs a NULL terminator.
 // If it's not text, it doesn't hurt either. The buffer is larger than len anyway.
 			inflated.buf[inflated.buflen] = '\0';

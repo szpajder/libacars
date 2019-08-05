@@ -152,7 +152,7 @@ static la_proto_node *la_miam_file_transfer_request_parse(char const *txt) {
 	node->next = NULL;
 	return node;
 hdr_error:
-	la_debug_print("%s\n", "Not a file_transfer_request header");
+	la_debug_print("Not a file_transfer_request header\n");
 	LA_XFREE(msg);
 	return NULL;
 }
@@ -203,7 +203,7 @@ static la_proto_node *la_miam_file_transfer_accept_parse(char const *txt) {
 	node->next = NULL;
 	return node;
 hdr_error:
-	la_debug_print("%s\n", "Not a file_transfer_accept header");
+	la_debug_print("Not a file_transfer_accept header\n");
 	LA_XFREE(msg);
 	return NULL;
 }
@@ -242,7 +242,7 @@ static la_proto_node *la_miam_file_segment_parse(char const *txt) {
 	node->next = next;
 	return node;
 hdr_error:
-	la_debug_print("%s\n", "Not a file_segment header");
+	la_debug_print("Not a file_segment header\n");
 	LA_XFREE(msg);
 	return NULL;
 }
@@ -278,7 +278,7 @@ static la_proto_node *la_miam_file_transfer_abort_parse(char const *txt) {
 	node->next = NULL;
 	return node;
 hdr_error:
-	la_debug_print("%s\n", "Not a file_transfer_abort header");
+	la_debug_print("Not a file_transfer_abort header\n");
 	LA_XFREE(msg);
 	return NULL;
 }
@@ -310,7 +310,7 @@ static la_proto_node *la_miam_xoff_ind_parse(char const *txt) {
 	node->next = NULL;
 	return node;
 hdr_error:
-	la_debug_print("%s\n", "Not a xoff_ind header");
+	la_debug_print("Not a xoff_ind header\n");
 	LA_XFREE(msg);
 	return NULL;
 }
@@ -356,7 +356,7 @@ static la_proto_node *la_miam_xon_ind_parse(char const *txt) {
 	node->next = NULL;
 	return node;
 hdr_error:
-	la_debug_print("%s\n", "Not a xon_ind header");
+	la_debug_print("Not a xon_ind header\n");
 	LA_XFREE(msg);
 	return NULL;
 }
@@ -398,7 +398,7 @@ la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_d
 		}
 	}
 	if(fid == LA_MIAM_FID_UNKNOWN) {
-		la_debug_print("%s", "not a MIAM message (unknown ACARS CF frame)\n");
+		la_debug_print("not a MIAM message (unknown ACARS CF frame)\n");
 		return NULL;
 	}
 	la_miam_frame_id_descriptor *fid_descriptor = la_dict_search(la_miam_frame_id_descriptor_table, fid);

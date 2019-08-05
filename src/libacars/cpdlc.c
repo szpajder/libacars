@@ -37,7 +37,7 @@ la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	la_assert(msg->asn_type != NULL);
 	if(len == 0) {
 // empty payload is not an error
-		la_debug_print("%s", "Empty CPDLC message, decoding skipped\n");
+		la_debug_print("Empty CPDLC message, decoding skipped\n");
 		return node;
 	}
 

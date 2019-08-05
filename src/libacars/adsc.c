@@ -1663,7 +1663,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_contract_request_parse) {
 static int la_adsc_tag_parse(la_adsc_tag_t *t, la_dict const *tag_descriptor_table, uint8_t *buf, uint32_t len) {
 	uint32_t tag_len = 1;
 	if(len < tag_len) {
-		la_debug_print("%s", "Buffer len is 0\n");
+		la_debug_print("Buffer len is 0\n");
 		return -1;
 	}
 
@@ -1726,7 +1726,7 @@ la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc
 // DIS payload consists of an error code only, without any tag.
 // Let's insert a fake tag value of 255.
 		if(len < 1) {
-			la_debug_print("%s", "DIS message too short");
+			la_debug_print("DIS message too short\n");
 			msg->err = true;
 			break;
 		}
