@@ -25,7 +25,7 @@ extern "C" {
 #endif
 
 // la_vstring_append_sprintf with variable indentation
-#define LA_ISPRINTF(vstr, i, f, ...) la_vstring_append_sprintf(vstr, "%*s" f, i, "", __VA_ARGS__)
+#define LA_ISPRINTF(vstr, i, f, ...) la_vstring_append_sprintf(vstr, "%*s" f, i, "", ##__VA_ARGS__)
 
 typedef struct {
 	char *str;		// string buffer pointer
