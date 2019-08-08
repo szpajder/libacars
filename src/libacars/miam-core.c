@@ -229,7 +229,7 @@ int bodylen, la_miam_core_pdu_type const pdu_type) {
 	la_assert(hdrbuf != NULL);
 	la_assert(pdu_type == LA_MIAM_CORE_PDU_ALO || pdu_type == LA_MIAM_CORE_PDU_ALR);
 
-	la_miam_core_v1v2_alo_alr_pdu *pdu = LA_XCALLOC(1, sizeof(la_miam_core_v1v2_alo_alr_pdu));
+	LA_NEW(la_miam_core_v1v2_alo_alr_pdu, pdu);
 	la_proto_node *node = la_proto_node_new();
 	if(pdu_type == LA_MIAM_CORE_PDU_ALO) {
 		node->td = &la_DEF_miam_core_v1v2_alo_pdu;
@@ -595,7 +595,7 @@ la_proto_node *la_proto_tree_find_miam_core(la_proto_node *root) {
 static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
 	la_assert(hdrbuf != NULL);
 
-	la_miam_core_v1_data_pdu *pdu = LA_XCALLOC(1, sizeof(la_miam_core_v1_data_pdu));
+	LA_NEW(la_miam_core_v1_data_pdu, pdu);
 	la_proto_node *node = la_proto_node_new();
 	node->td = &la_DEF_miam_core_v1_data_pdu;
 	node->data = pdu;
@@ -705,7 +705,7 @@ static la_proto_node *la_miam_core_v1_ack_parse(uint8_t const *hdrbuf, int hdrle
 	(void)bodybuf;
 	(void)bodylen;
 
-	la_miam_core_v1_ack_pdu *pdu = LA_XCALLOC(1, sizeof(la_miam_core_v1_ack_pdu));
+	LA_NEW(la_miam_core_v1_ack_pdu, pdu);
 	la_proto_node *node = la_proto_node_new();
 	node->td = &la_DEF_miam_core_v1_ack_pdu;
 	node->data = pdu;
@@ -993,7 +993,7 @@ la_type_descriptor const la_DEF_miam_core_v1_ack_pdu = {
 static la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
 	la_assert(hdrbuf != NULL);
 
-	la_miam_core_v2_data_pdu *pdu = LA_XCALLOC(1, sizeof(la_miam_core_v2_data_pdu));
+	LA_NEW(la_miam_core_v2_data_pdu, pdu);
 	la_proto_node *node = la_proto_node_new();
 	node->td = &la_DEF_miam_core_v2_data_pdu;
 	node->data = pdu;
@@ -1092,7 +1092,7 @@ static la_proto_node *la_miam_core_v2_ack_parse(uint8_t const *hdrbuf, int hdrle
 	(void)bodybuf;
 	(void)bodylen;
 
-	la_miam_core_v2_ack_pdu *pdu = LA_XCALLOC(1, sizeof(la_miam_core_v2_ack_pdu));
+	LA_NEW(la_miam_core_v2_ack_pdu, pdu);
 	la_proto_node *node = la_proto_node_new();
 	node->td = &la_DEF_miam_core_v2_ack_pdu;
 	node->data = pdu;

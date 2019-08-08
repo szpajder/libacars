@@ -91,7 +91,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 	}
 
 	la_proto_node *node = la_proto_node_new();
-	la_acars_msg *msg = LA_XCALLOC(1, sizeof(la_acars_msg));
+	LA_NEW(la_acars_msg, msg);
 	node->data = msg;
 	node->td = &la_DEF_acars_message;
 	char *buf2 = LA_XCALLOC(len, sizeof(char));

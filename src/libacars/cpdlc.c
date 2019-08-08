@@ -25,7 +25,7 @@ la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 		return NULL;
 
 	la_proto_node *node = la_proto_node_new();
-	la_cpdlc_msg *msg = LA_XCALLOC(1, sizeof(la_cpdlc_msg));
+	LA_NEW(la_cpdlc_msg, msg);
 	node->data = msg;
 	node->td = &la_DEF_cpdlc_message;
 

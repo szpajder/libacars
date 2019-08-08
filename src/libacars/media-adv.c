@@ -70,7 +70,7 @@ la_proto_node *la_media_adv_parse(char const *txt) {
 		return NULL;
 	}
 
-	la_media_adv_msg *msg = LA_XCALLOC(1, sizeof(la_media_adv_msg));
+	LA_NEW(la_media_adv_msg, msg);
 	la_proto_node *node = NULL;
 	la_proto_node *next_node = NULL;
 	// default to error

@@ -162,7 +162,7 @@ la_proto_node *la_arinc_parse(char const *txt, la_msg_dir const msg_dir) {
 	if(txt == NULL) {
 		return NULL;
 	}
-	la_arinc_msg *msg = LA_XCALLOC(1, sizeof(la_arinc_msg));
+	LA_NEW(la_arinc_msg, msg);
 	la_proto_node *node = NULL;
 	la_proto_node *next_node = NULL;
 

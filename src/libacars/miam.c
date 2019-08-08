@@ -210,7 +210,7 @@ hdr_error:
 
 static la_proto_node *la_miam_file_segment_parse(char const *txt) {
 	la_assert(txt != NULL);
-	la_miam_file_segment_msg *msg = LA_XCALLOC(1, sizeof(la_miam_file_segment_msg));
+	LA_NEW(la_miam_file_segment_msg, msg);
 	int i;
 
 	if((i = la_strntouint16_t(txt, 3)) < 0) {
@@ -411,7 +411,7 @@ la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_d
 	if(next_node == NULL) {
 		return NULL;
 	}
-	la_miam_msg *msg = LA_XCALLOC(1, sizeof(la_miam_msg));
+	LA_NEW(la_miam_msg, msg);
 	msg->frame_id = fid;
 	la_proto_node *node = la_proto_node_new();
 	node->data = msg;

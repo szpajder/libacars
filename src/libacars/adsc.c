@@ -436,7 +436,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_nack_parse) {
 	uint32_t tag_len = 2;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	la_adsc_nack_t *n = LA_XCALLOC(1, sizeof(la_adsc_basic_report_t));
+	LA_NEW(la_adsc_nack_t, n);
 
 	n->contract_req_num = buf[0];
 	if(buf[1] > LA_ADSC_NACK_MAX_REASON_CODE) {
@@ -506,7 +506,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_noncomp_notify_parse) {
 	uint32_t tag_len = 2;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	la_adsc_noncomp_notify_t *n = LA_XCALLOC(1, sizeof(la_adsc_noncomp_notify_t));
+	LA_NEW(la_adsc_noncomp_notify_t, n);
 	t->data = n;
 
 	n->contract_req_num = buf[0];
@@ -541,7 +541,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_basic_report_parse) {
 	const uint32_t tag_len = 10;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	la_adsc_basic_report_t *r = LA_XCALLOC(1, sizeof(la_adsc_basic_report_t));
+	LA_NEW(la_adsc_basic_report_t, r);
 	t->data = r;
 
 	la_bitstream_t *bs = la_bitstream_init(tag_len * 8);
@@ -573,7 +573,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_flight_id_parse) {
 	const uint32_t tag_len = 6;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	la_adsc_flight_id_t *f = LA_XCALLOC(1, sizeof(la_adsc_flight_id_t));
+	LA_NEW(la_adsc_flight_id_t, f);
 	t->data = f;
 
 	la_bitstream_t *bs = la_bitstream_init(tag_len * 8);
@@ -601,7 +601,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_predicted_route_parse) {
 	const uint32_t tag_len = 17;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	la_adsc_predicted_route_t *r = LA_XCALLOC(1, sizeof(la_adsc_predicted_route_t));
+	LA_NEW(la_adsc_predicted_route_t, r);
 	t->data = r;
 
 	la_bitstream_t *bs = la_bitstream_init(tag_len * 8);
@@ -634,7 +634,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_earth_air_ref_parse) {
 	const uint32_t tag_len = 5;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	la_adsc_earth_air_ref_t *r = LA_XCALLOC(1, sizeof(la_adsc_earth_air_ref_t));
+	LA_NEW(la_adsc_earth_air_ref_t, r);
 	t->data = r;
 
 	la_bitstream_t *bs = la_bitstream_init(tag_len * 8);
@@ -660,7 +660,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_intermediate_projection_parse) {
 	const uint32_t tag_len = 8;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	la_adsc_intermediate_projection_t *p = LA_XCALLOC(1, sizeof(la_adsc_intermediate_projection_t));
+	LA_NEW(la_adsc_intermediate_projection_t, p);
 	t->data = p;
 
 	la_bitstream_t *bs = la_bitstream_init(tag_len * 8);
@@ -689,7 +689,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_fixed_projection_parse) {
 	const uint32_t tag_len = 9;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	la_adsc_fixed_projection_t *p = LA_XCALLOC(1, sizeof(la_adsc_fixed_projection_t));
+	LA_NEW(la_adsc_fixed_projection_t, p);
 	t->data = p;
 
 	la_bitstream_t *bs = la_bitstream_init(tag_len * 8);
@@ -716,7 +716,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_meteo_parse) {
 	const uint32_t tag_len = 4;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	la_adsc_meteo_t *m = LA_XCALLOC(1, sizeof(la_adsc_meteo_t));
+	LA_NEW(la_adsc_meteo_t, m);
 	t->data = m;
 
 	la_bitstream_t *bs = la_bitstream_init(tag_len * 8);
@@ -742,7 +742,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_airframe_id_parse) {
 	const uint32_t tag_len = 3;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	la_adsc_airframe_id_t *a = LA_XCALLOC(1, sizeof(la_adsc_airframe_id_t));
+	LA_NEW(la_adsc_airframe_id_t, a);
 	t->data = a;
 
 	memcpy(a->icao_hex, buf, tag_len);
@@ -1554,7 +1554,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_uint8_t_parse) {
 	uint32_t tag_len = 1;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	uint8_t *ptr = LA_XCALLOC(1, sizeof(uint8_t));
+	LA_NEW(uint8_t, ptr);
 	*ptr = buf[0];
 	la_debug_print("val=%u\n", *ptr);
 	t->data = ptr;
@@ -1565,7 +1565,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_reporting_interval_parse) {
 	uint32_t tag_len = 1;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	la_adsc_report_interval_req_t *ri = LA_XCALLOC(1, sizeof(la_adsc_report_interval_req_t));
+	LA_NEW(la_adsc_report_interval_req_t, ri);
 	t->data = ri;
 	uint8_t sf = (buf[0] & 0xc0) >> 6;
 // convert scaling factor to multiplier value
@@ -1583,7 +1583,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_lat_dev_change_parse) {
 	uint32_t tag_len = 1;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	la_adsc_lat_dev_chg_event_t *e = LA_XCALLOC(1, sizeof(la_adsc_lat_dev_chg_event_t));
+	LA_NEW(la_adsc_lat_dev_chg_event_t, e);
 	t->data = e;
 
 	e->lat_dev_threshold = (double)buf[0] / 8.0;
@@ -1594,7 +1594,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_vspd_change_parse) {
 	uint32_t tag_len = 1;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	la_adsc_vspd_chg_event_t *e = LA_XCALLOC(1, sizeof(la_adsc_vspd_chg_event_t));
+	LA_NEW(la_adsc_vspd_chg_event_t, e);
 	t->data = e;
 
 	e->vspd_threshold = (char)buf[0] * 64;
@@ -1605,7 +1605,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_alt_range_parse) {
 	uint32_t tag_len = 4;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	la_adsc_alt_range_event_t *e = LA_XCALLOC(1, sizeof(la_adsc_alt_range_event_t));
+	LA_NEW(la_adsc_alt_range_event_t, e);
 	t->data = e;
 
 	uint32_t tmp = 0;
@@ -1620,7 +1620,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_acft_intent_group_parse) {
 	uint32_t tag_len = 2;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
-	la_adsc_acft_intent_group_req_t *aig = LA_XCALLOC(1, sizeof(la_adsc_acft_intent_group_req_t));
+	LA_NEW(la_adsc_acft_intent_group_req_t, aig);
 	t->data = aig;
 	aig->modulus = buf[0];
 	aig->acft_intent_projection_time = buf[1];
@@ -1634,7 +1634,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_contract_request_parse) {
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
 	int consumed_bytes = 0;
-	la_adsc_req_t *r = LA_XCALLOC(1, sizeof(la_adsc_req_t));
+	LA_NEW(la_adsc_req_t, r);
 	t->data = r;
 
 	r->contract_num = buf[0];
@@ -1649,7 +1649,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_contract_request_parse) {
 			la_debug_print("Tag %d unknown - assuming end-of-request\n", (int)buf[0]);
 			break;
 		}
-		la_adsc_tag_t *req_tag = LA_XCALLOC(1, sizeof(la_adsc_tag_t));
+		LA_NEW(la_adsc_tag_t, req_tag);
 		r->req_tag_list = la_list_append(r->req_tag_list, req_tag);
 		if((consumed_bytes = la_adsc_tag_parse(req_tag, la_adsc_request_tag_descriptor_table, buf, len)) < 0) {
 			return -1;
@@ -1693,7 +1693,7 @@ la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc
 		return NULL;
 
 	la_proto_node *node = la_proto_node_new();
-	la_adsc_msg_t *msg = LA_XCALLOC(1, sizeof(la_adsc_msg_t));
+	LA_NEW(la_adsc_msg_t, msg);
 	node->data = msg;
 	node->td = &la_DEF_adsc_message;
 	la_adsc_tag_t *tag = NULL;

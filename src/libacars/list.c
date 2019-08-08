@@ -16,7 +16,7 @@ la_list *la_list_next(la_list const * const l) {
 }
 
 la_list *la_list_append(la_list *l, void *data) {
-	la_list *new = LA_XCALLOC(1, sizeof(la_list));
+	LA_NEW(la_list, new);
 	new->data = data;
 	if(l == NULL) {
 		return new;

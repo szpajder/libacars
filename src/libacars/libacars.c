@@ -46,7 +46,7 @@ static void la_proto_node_format_json(la_vstring * const vstr, la_proto_node con
 }
 
 la_proto_node *la_proto_node_new() {
-	la_proto_node *node = LA_XCALLOC(1, sizeof(la_proto_node));
+	LA_NEW(la_proto_node, node);
 	return node;
 }
 

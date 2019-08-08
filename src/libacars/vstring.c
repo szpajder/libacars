@@ -39,7 +39,7 @@ static size_t la_vstring_space_left(la_vstring const * const vstr) {
 }
 
 la_vstring *la_vstring_new() {
-	la_vstring *vstr = LA_XCALLOC(1, sizeof(la_vstring));
+	LA_NEW(la_vstring, vstr);
 	vstr->str = LA_XCALLOC(LA_VSTR_INITIAL_SIZE, sizeof(char));
 	vstr->allocated_size = LA_VSTR_INITIAL_SIZE;
 	vstr->len = 0;
