@@ -35,7 +35,8 @@ except of writing the message to a log file or screen. However ACARS messages
 can also contain binary encoded data. A common example are air traffic services
 applications, like ADS-C or CPDLC. libacars provides decoders for these kinds of
 messages. The API allows access to all message fields and their values.
-Pretty-printing routine for all supported payload types are provided as well.
+Routines for producing human readable and JSON output for all supported payload
+types are provided as well.
 
 ### What libacars does not do
 
@@ -190,7 +191,7 @@ Debug messages will be printed to stderr.
 
 Let's assume that your program has successfully received, demodulated,
 descrambled and deinterleaved a series of bytes which most probably is an ACARS
-message. You have raw bytes stores in a buffer and want libacars to do the rest
+message. You have raw bytes stored in a buffer and want libacars to do the rest
 of the work. Here is a simple program code:
 
 
@@ -452,6 +453,23 @@ CPDLC Uplink Message:
    Facility function: control
    VHF: 128.100 MHz
 ```
+
+### Example 4: JSON output
+
+You can serialize the output into a JSON string for further processing.
+Use any of the above examples and replace the line:
+
+```C
+	la_vstring *vstr = la_proto_tree_format_text(NULL, node);
+```
+
+with:
+
+```C
+	la_vstring *vstr = la_proto_tree_format_json(NULL, node);
+```
+
+Piece of cake.
 
 ### Accessing message fields
 
