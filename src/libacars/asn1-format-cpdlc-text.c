@@ -528,7 +528,7 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCUplinkMessage) {
 		indent++;
 	}
 	la_asn1_output_cpdlc_as_text(vstr, &asn_DEF_FANSATCMessageHeader, &msg->aTCMessageheader, indent);
-	LA_ISPRINTF(vstr, indent, "%s:\n", "Message data");
+	LA_ISPRINTF(vstr, indent, "Message data:\n");
 	indent++;
 	la_asn1_output_cpdlc_as_text(vstr, &asn_DEF_FANSATCUplinkMsgElementId, &msg->aTCuplinkmsgelementId, indent);
 	if(msg->aTCuplinkmsgelementid_seqOf != NULL) {
@@ -545,7 +545,7 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCDownlinkMessage) {
 		indent++;
 	}
 	la_asn1_output_cpdlc_as_text(vstr, &asn_DEF_FANSATCMessageHeader, &msg->aTCMessageheader, indent);
-	LA_ISPRINTF(vstr, indent, "%s:\n", "Message data");
+	LA_ISPRINTF(vstr, indent, "Message data:\n");
 	indent++;
 	la_asn1_output_cpdlc_as_text(vstr, &asn_DEF_FANSATCDownlinkMsgElementId, &msg->aTCDownlinkmsgelementid, indent);
 	if(msg->aTCdownlinkmsgelementid_seqOf != NULL) {

@@ -978,14 +978,14 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_predicted_route_format_text) {
 	LA_CAST_PTR(r, la_adsc_predicted_route_t *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
-	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s", "Next waypoint:\n");
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Next waypoint:\n");
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Lat: %.7f\n", r->lat_next);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Lon: %.7f\n", r->lon_next);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Alt: %d ft\n", r->alt_next);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "ETA: %d sec\n", r->eta_next);
 	ctx->indent--;
-	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s", "Next+1 waypoint:\n");
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "Next+1 waypoint:\n");
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Lat: %.7f\n", r->lat_next_next);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Lon: %.7f\n", r->lon_next_next);
@@ -1794,12 +1794,12 @@ void la_adsc_format_text(la_vstring * const vstr, void const * const data, int i
 		.indent = indent
 	};
 	if(msg->tag_list == NULL) {
-		LA_ISPRINTF(ctx.vstr, ctx.indent, "%s", "-- Empty ADS-C message\n");
+		LA_ISPRINTF(ctx.vstr, ctx.indent, "-- Empty ADS-C message\n");
 		return;
 	}
 	la_list_foreach(msg->tag_list, la_adsc_tag_output_text, &ctx);
 	if(msg->err == true) {
-		LA_ISPRINTF(ctx.vstr, ctx.indent, "%s", "-- Malformed ADS-C message\n");
+		LA_ISPRINTF(ctx.vstr, ctx.indent, "-- Malformed ADS-C message\n");
 	}
 }
 

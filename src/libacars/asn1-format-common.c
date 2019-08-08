@@ -201,7 +201,7 @@ LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_any) {
 	if(label != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s: ", label);
 	} else {
-		LA_ISPRINTF(vstr, indent, "%s", "");
+		LA_ISPRINTF(vstr, indent, "");
 	}
 	asn_sprintf(vstr, td, sptr, 1);
 }
@@ -216,7 +216,7 @@ LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_OCTET_STRING) {
 	if(label != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s: ", label);
 	} else {
-		LA_ISPRINTF(vstr, indent, "%s", "");
+		LA_ISPRINTF(vstr, indent, "");
 	}
 	asn_sprintf(vstr, td, sptr, 1);
 }

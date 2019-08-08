@@ -548,7 +548,7 @@ static void la_miam_xoff_ind_format_text(la_vstring * const vstr, void const * c
 	LA_CAST_PTR(msg, la_miam_xoff_ind_msg *, data);
 	indent++;
 	if(msg->file_id == 0xFFF) {
-		LA_ISPRINTF(vstr, indent, "%s\n", "File ID: 0xFFF (all)");
+		LA_ISPRINTF(vstr, indent, "File ID: 0xFFF (all)\n");
 	} else {
 		LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	}
@@ -573,7 +573,7 @@ static void la_miam_xon_ind_format_text(la_vstring * const vstr, void const * co
 	LA_CAST_PTR(msg, la_miam_xon_ind_msg *, data);
 	indent++;
 	if(msg->file_id == 0xFFF) {
-		LA_ISPRINTF(vstr, indent, "%s\n", "File ID: 0xFFF (all)");
+		LA_ISPRINTF(vstr, indent, "File ID: 0xFFF (all)\n");
 	} else {
 		LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	}
@@ -602,7 +602,7 @@ void la_miam_format_text(la_vstring * const vstr, void const * const data, int i
 	LA_CAST_PTR(msg, la_miam_msg *, data);
 	la_miam_frame_id_descriptor *fid_descriptor = la_dict_search(la_miam_frame_id_descriptor_table, msg->frame_id);
 	la_assert(fid_descriptor != NULL);
-	LA_ISPRINTF(vstr, indent, "%s\n", "MIAM:");
+	LA_ISPRINTF(vstr, indent, "MIAM:\n");
 	LA_ISPRINTF(vstr, indent+1, "%s:\n", fid_descriptor->description);
 }
 

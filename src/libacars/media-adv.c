@@ -145,7 +145,7 @@ void la_media_adv_format_text(la_vstring * const vstr, void const * const data, 
 	LA_CAST_PTR(msg, la_media_adv_msg *, data);
 
 	if(msg->err == true) {
-		LA_ISPRINTF(vstr, indent, "%s", "-- Unparseable Media Advisory message\n");
+		LA_ISPRINTF(vstr, indent, "-- Unparseable Media Advisory message\n");
 		return;
 	}
 
@@ -161,7 +161,7 @@ void la_media_adv_format_text(la_vstring * const vstr, void const * const data, 
 	);
 
 	// print all available links
-	LA_ISPRINTF(vstr, indent, "%s", "Available links: ");
+	LA_ISPRINTF(vstr, indent, "Available links: ");
 	size_t count = strlen(msg->available_links);
 	for(size_t i = 0; i < count; i++) {
 		const char *link = get_link_description(msg->available_links[i]);

@@ -462,7 +462,7 @@ la_miam_core_pdu_type const pdu_type) {
 		(pdu_type == LA_MIAM_CORE_PDU_ALO ? "supported" : "selected"));
 	la_miam_bitmask_format_text(vstr, pdu->compression,
 		la_miam_core_v1v2_alo_alr_compression_names, indent + 1);
-	LA_ISPRINTF(vstr, indent, "%s", "Networks supported:\n");
+	LA_ISPRINTF(vstr, indent, "Networks supported:\n");
 	la_miam_bitmask_format_text(vstr, pdu->networks,
 		la_miam_core_v1v2_alo_alr_network_names, indent + 1);
 // Not checking for body errors here, as there is no body in ALO and ALR PDUs
@@ -789,7 +789,7 @@ static void la_miam_core_v1_data_format_text(la_vstring * const vstr, void const
 	case LA_MIAM_CORE_V1_APP_ACARS_2CHAR:
 	case LA_MIAM_CORE_V1_APP_ACARS_4CHAR:
 	case LA_MIAM_CORE_V1_APP_ACARS_6CHAR:
-		LA_ISPRINTF(vstr, indent, "%s", "ACARS:\n");
+		LA_ISPRINTF(vstr, indent, "ACARS:\n");
 		indent++;
 		LA_ISPRINTF(vstr, indent, "Label: %c%c",
 			pdu->app_id[0], pdu->app_id[1]);
@@ -809,7 +809,7 @@ static void la_miam_core_v1_data_format_text(la_vstring * const vstr, void const
 
 		break;
 	case LA_MIAM_CORE_V1_APP_NONACARS_6CHAR:
-		LA_ISPRINTF(vstr, indent, "%s", "Non-ACARS payload:\n");
+		LA_ISPRINTF(vstr, indent, "Non-ACARS payload:\n");
 		indent++;
 		LA_ISPRINTF(vstr, indent, "Application ID: %s\n", pdu->app_id);
 		break;
@@ -817,7 +817,7 @@ static void la_miam_core_v1_data_format_text(la_vstring * const vstr, void const
 		break;
 	}
 
-	LA_ISPRINTF(vstr, indent, "%s", "Message:\n");
+	LA_ISPRINTF(vstr, indent, "Message:\n");
 	indent++;
 	if(pdu->data != NULL) {
 // Don't trust pdu->encoding - if the payload is printable, then print it as text.
@@ -1168,7 +1168,7 @@ static void la_miam_core_v2_data_format_text(la_vstring * const vstr, void const
 	case LA_MIAM_CORE_V2_APP_ACARS_2CHAR:
 	case LA_MIAM_CORE_V2_APP_ACARS_4CHAR:
 	case LA_MIAM_CORE_V2_APP_ACARS_6CHAR:
-		LA_ISPRINTF(vstr, indent, "%s", "ACARS:\n");
+		LA_ISPRINTF(vstr, indent, "ACARS:\n");
 		indent++;
 		LA_ISPRINTF(vstr, indent, "Label: %c%c",
 			pdu->app_id[0], pdu->app_id[1]);
@@ -1195,13 +1195,13 @@ static void la_miam_core_v2_data_format_text(la_vstring * const vstr, void const
 		break;
 	case LA_MIAM_CORE_V2_APP_NONACARS_6CHAR:
 	default:	// including 0x8-0x15
-		LA_ISPRINTF(vstr, indent, "%s", "Non-ACARS payload:\n");
+		LA_ISPRINTF(vstr, indent, "Non-ACARS payload:\n");
 		indent++;
 		LA_ISPRINTF(vstr, indent, "Application ID: %s\n", pdu->app_id);
 		break;
 	}
 
-	LA_ISPRINTF(vstr, indent, "%s", "Message:\n");
+	LA_ISPRINTF(vstr, indent, "Message:\n");
 	indent++;
 	if(pdu->data != NULL) {
 // Don't trust pdu->encoding - if the payload is printable, then print it as text.

@@ -204,7 +204,7 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 
 	LA_CAST_PTR(msg, la_acars_msg *, data);
 	if(msg->err) {
-		LA_ISPRINTF(vstr, indent, "%s", "-- Unparseable ACARS message\n");
+		LA_ISPRINTF(vstr, indent, "-- Unparseable ACARS message\n");
 		return;
 	}
 	LA_ISPRINTF(vstr, indent, "ACARS%s:\n", msg->crc_ok ? "" : " (warning: CRC error)");
@@ -225,7 +225,7 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 		la_vstring_append_sprintf(vstr, "%s", "\n");
 	}
 
-	LA_ISPRINTF(vstr, indent, "%s\n", "Message:");
+	LA_ISPRINTF(vstr, indent, "Message:\n");
 	la_isprintf_multiline_text(vstr, indent+1, msg->txt);
 }
 

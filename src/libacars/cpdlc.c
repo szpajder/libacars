@@ -57,7 +57,7 @@ void la_cpdlc_format_text(la_vstring *vstr, void const * const data, int indent)
 
 	LA_CAST_PTR(msg, la_cpdlc_msg *, data);
 	if(msg->err == true) {
-		LA_ISPRINTF(vstr, indent, "%s", "-- Unparseable FANS-1/A message\n");
+		LA_ISPRINTF(vstr, indent, "-- Unparseable FANS-1/A message\n");
 		return;
 	}
 	if(msg->asn_type != NULL) {
@@ -65,13 +65,13 @@ void la_cpdlc_format_text(la_vstring *vstr, void const * const data, int indent)
 			if(la_config.dump_asn1) {
 				// asn_fprint does not indent the first line
 				if(indent > 0) {
-					LA_ISPRINTF(vstr, indent * 4, "%s", "");
+					LA_ISPRINTF(vstr, indent * 4, "");
 				}
 				asn_sprintf(vstr, msg->asn_type, msg->data, indent+1);
 			}
 			la_asn1_output_cpdlc_as_text(vstr, msg->asn_type, msg->data, indent);
 		} else {
-			LA_ISPRINTF(vstr, indent, "%s\n", "-- <empty PDU>");
+			LA_ISPRINTF(vstr, indent, "-- <empty PDU>\n");
 		}
 	}
 }

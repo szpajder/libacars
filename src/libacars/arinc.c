@@ -221,7 +221,7 @@ void la_arinc_format_text(la_vstring * const vstr, void const * const data, int 
 	LA_CAST_PTR(msg, la_arinc_msg *, data);
 	LA_ISPRINTF(vstr, indent, "%s:\n", imi_props[msg->imi].description);
 	if(!msg->crc_ok) {
-		LA_ISPRINTF(vstr, indent + 1, "%s", "-- CRC check failed\n");
+		LA_ISPRINTF(vstr, indent + 1, "-- CRC check failed\n");
 	}
 }
 
