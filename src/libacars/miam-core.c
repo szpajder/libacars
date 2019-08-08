@@ -222,9 +222,8 @@ static bool is_printable(uint8_t const *buf, uint32_t data_len) {
 
 static la_proto_node *v1v2_alo_alr_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf,
 int bodylen, la_miam_core_pdu_type const pdu_type) {
-// -Wunused-parameter
-	(void)bodybuf;
-	(void)bodylen;
+	LA_UNUSED(bodybuf);
+	LA_UNUSED(bodylen);
 
 	la_assert(hdrbuf != NULL);
 	la_assert(pdu_type == LA_MIAM_CORE_PDU_ALO || pdu_type == LA_MIAM_CORE_PDU_ALR);
@@ -701,9 +700,8 @@ end:
 
 static la_proto_node *la_miam_core_v1_ack_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
 	la_assert(hdrbuf != NULL);
-// -Wunused-parameter - no body present in ack PDU
-	(void)bodybuf;
-	(void)bodylen;
+	LA_UNUSED(bodybuf);
+	LA_UNUSED(bodylen);
 
 	LA_NEW(la_miam_core_v1_ack_pdu, pdu);
 	la_proto_node *node = la_proto_node_new();
@@ -1088,9 +1086,8 @@ end:
 
 static la_proto_node *la_miam_core_v2_ack_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf, int bodylen) {
 	la_assert(hdrbuf != NULL);
-// -Wunused-parameter
-	(void)bodybuf;
-	(void)bodylen;
+	LA_UNUSED(bodybuf);
+	LA_UNUSED(bodylen);
 
 	LA_NEW(la_miam_core_v2_ack_pdu, pdu);
 	la_proto_node *node = la_proto_node_new();

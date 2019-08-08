@@ -607,9 +607,8 @@ void la_miam_format_text(la_vstring * const vstr, void const * const data, int i
 }
 
 void la_miam_format_json(la_vstring * const vstr, void const * const data) {
-// -Wunused-parameter
-	(void)vstr;
-	(void)data;
+	LA_UNUSED(vstr);
+	LA_UNUSED(data);
 	// NOOP
 }
 

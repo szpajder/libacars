@@ -66,6 +66,6 @@
 
 #define LA_CAST_PTR(x, t, y) t x = (t)(y)
 #define LA_NEW(type, x) type *(x) = LA_XCALLOC(1, sizeof(type))
-
+#define LA_UNUSED(x) (void)(x)
 
 #endif // !LA_MACROS_H

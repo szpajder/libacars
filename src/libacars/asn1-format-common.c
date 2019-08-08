@@ -25,17 +25,15 @@ char const *la_value2enum(asn_TYPE_descriptor_t *td, long const value) {
 
 void la_format_INTEGER_with_unit_as_text(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td,
 	void const *sptr, int indent, char const * const unit, double multiplier, int decimal_places) {
-// -Wunused-parameter
-	(void)td;
+	LA_UNUSED(td);
 	LA_CAST_PTR(val, long *, sptr);
 	LA_ISPRINTF(vstr, indent, "%s: %.*f%s\n", label, decimal_places, (double)(*val) * multiplier, unit);
 }
 
 void la_format_INTEGER_with_unit_as_json(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td,
 	void const *sptr, int indent, char const * const unit, double multiplier, int decimal_places) {
-// -Wunused-parameter
-	(void)td;
-	(void)indent;
+	LA_UNUSED(td);
+	LA_UNUSED(indent);
 	LA_CAST_PTR(valptr, long *, sptr);
 	double val = (double)(*valptr) * multiplier;
 	la_json_object_start(vstr, label);
@@ -222,9 +220,8 @@ LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_OCTET_STRING) {
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_OCTET_STRING) {
-// -Wunused-parameter
-	(void)td;
-	(void)indent;
+	LA_UNUSED(td);
+	LA_UNUSED(indent);
 	LA_CAST_PTR(octstr, OCTET_STRING_t *, sptr);
 	char *buf = (char *)octstr->buf;
 	int size = octstr->size;
@@ -236,12 +233,11 @@ LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_OCTET_STRING) {
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_NULL) {
-// -Wunused-parameter
-	(void)vstr;
-	(void)label;
-	(void)td;
-	(void)sptr;
-	(void)indent;
+	LA_UNUSED(vstr);
+	LA_UNUSED(label);
+	LA_UNUSED(td);
+	LA_UNUSED(sptr);
+	LA_UNUSED(indent);
 	// NOOP
 }
 
@@ -256,8 +252,7 @@ LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_ENUM) {
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_ENUM) {
-// -Wunused-parameter
-	(void)indent;
+	LA_UNUSED(indent);
 	long const value = *(long const *)sptr;
 	char const *s = la_value2enum(td, value);
 	if(s != NULL) {
@@ -268,18 +263,16 @@ LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_ENUM) {
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_long) {
-// -Wunused-parameter
-	(void)td;
-	(void)indent;
+	LA_UNUSED(td);
+	LA_UNUSED(indent);
 
 	LA_CAST_PTR(valptr, long *, sptr);
 	la_json_append_long(vstr, label, *valptr);
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_bool) {
-// -Wunused-parameter
-	(void)td;
-	(void)indent;
+	LA_UNUSED(td);
+	LA_UNUSED(indent);
 
 	LA_CAST_PTR(valptr, BOOLEAN_t *, sptr);
 	la_json_append_bool(vstr, label, (*valptr) ? true : false);

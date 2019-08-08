@@ -442,8 +442,7 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSVerticalRateMetric) {
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSBeaconCode) {
-// -Wunused-parameter
-	(void)td;
+	LA_UNUSED(td);
 	LA_CAST_PTR(code, FANSBeaconCode_t *, sptr);
 	long **cptr = code->list.array;
 	LA_ISPRINTF(vstr, indent, "%s: %ld%ld%ld%ld\n",
@@ -456,22 +455,19 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSBeaconCode) {
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSTime) {
-// -Wunused-parameter
-	(void)td;
+	LA_UNUSED(td);
 	LA_CAST_PTR(t, FANSTime_t *, sptr);
 	LA_ISPRINTF(vstr, indent, "%s: %02ld:%02ld\n", label, t->hours, t->minutes);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSTimestamp) {
-// -Wunused-parameter
-	(void)td;
+	LA_UNUSED(td);
 	LA_CAST_PTR(t, FANSTimestamp_t *, sptr);
 	LA_ISPRINTF(vstr, indent, "%s: %02ld:%02ld:%02ld\n", label, t->hours, t->minutes, t->seconds);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLatitude) {
-// -Wunused-parameter
-	(void)td;
+	LA_UNUSED(td);
 	LA_CAST_PTR(lat, FANSLatitude_t *, sptr);
 	long const ldir = lat->latitudeDirection;
 	char const *ldir_name = la_value2enum(&asn_DEF_FANSLatitudeDirection, ldir);
@@ -492,8 +488,7 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLatitude) {
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLongitude) {
-// -Wunused-parameter
-	(void)td;
+	LA_UNUSED(td);
 	LA_CAST_PTR(lat, FANSLongitude_t *, sptr);
 	long const ldir = lat->longitudeDirection;
 	char const *ldir_name = la_value2enum(&asn_DEF_FANSLongitudeDirection, ldir);
@@ -520,8 +515,7 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLongitude) {
 // the label to be printed for each element in the sequence). The same applies
 // to la_asn1_format_text_FANSATCDownlinkMessage.
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCUplinkMessage) {
-// -Wunused-parameter
-	(void)td;
+	LA_UNUSED(td);
 	LA_CAST_PTR(msg, FANSATCUplinkMessage_t *, sptr);
 	if(label != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s:\n", label);
@@ -537,8 +531,7 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCUplinkMessage) {
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCDownlinkMessage) {
-// -Wunused-parameter
-	(void)td;
+	LA_UNUSED(td);
 	LA_CAST_PTR(msg, FANSATCDownlinkMessage_t *, sptr);
 	if(label != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s:\n", label);

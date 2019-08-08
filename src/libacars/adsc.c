@@ -784,8 +784,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_nack_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_nack_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(n, la_adsc_nack_t *, data);
 	la_json_append_long(ctx->vstr, "contract_req_num", n->contract_req_num);
 	la_json_append_long(ctx->vstr, "reason", n->reason);
@@ -815,16 +814,14 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_dis_reason_code_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_dis_reason_code_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(rc, uint8_t *, data);
 	int reason = (int)(*rc >> 4);
 	la_json_append_long(ctx->vstr, "reason_code", reason);
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_group_format_text) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(g, la_adsc_noncomp_group_t *, data);
 
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Tag %u:\n", g->noncomp_tag);
@@ -843,8 +840,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_group_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_group_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(g, la_adsc_noncomp_group_t *, data);
 
 	la_json_append_long(ctx->vstr, "noncomp_tag", g->noncomp_tag);
@@ -876,8 +872,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_notify_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_notify_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(n, la_adsc_noncomp_notify_t *, data);
 	la_json_append_long(ctx->vstr, "contract_req_num", n->contract_req_num);
 	la_json_array_start(ctx->vstr, "msg_groups");
@@ -928,8 +923,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_basic_report_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_basic_report_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	static const float accuracy_table[] = {
 		[0] = -1.0f,	// NAV capability lost
 		[1] = 30.0f,	// less than 30 nm
@@ -968,8 +962,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_flight_id_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_flight_id_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(f, la_adsc_flight_id_t *, data);
 	la_json_append_string(ctx->vstr, "flight_id", f->id);
 }
@@ -995,8 +988,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_predicted_route_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_predicted_route_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(r, la_adsc_predicted_route_t *, data);
 	la_json_object_start(ctx->vstr, "next_wpt");
 	la_json_append_double(ctx->vstr, "lat", r->lat_next);
@@ -1022,8 +1014,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_earth_ref_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_earth_ref_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(r, la_adsc_earth_air_ref_t *, data);
 	la_json_append_double(ctx->vstr, "true_trk_deg", r->heading);
 	la_json_append_bool(ctx->vstr, "true_trk_valid", r->heading_invalid ? false : true);
@@ -1042,8 +1033,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_air_ref_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_air_ref_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(r, la_adsc_earth_air_ref_t *, data);
 	la_json_append_double(ctx->vstr, "true_hdg_deg", r->heading);
 	la_json_append_bool(ctx->vstr, "true_hdg_valid", r->heading_invalid ? false : true);
@@ -1063,8 +1053,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_intermediate_projection_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_intermediate_projection_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(p, la_adsc_intermediate_projection_t *, data);
 	la_json_append_double(ctx->vstr, "dist_nm", p->distance);
 	la_json_append_double(ctx->vstr, "true_trk_deg", p->track);
@@ -1085,8 +1074,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_fixed_projection_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_fixed_projection_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(p, la_adsc_fixed_projection_t *, data);
 	la_json_append_double(ctx->vstr, "lat", p->lat);
 	la_json_append_double(ctx->vstr, "lon", p->lon);
@@ -1105,8 +1093,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_meteo_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_meteo_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(m, la_adsc_meteo_t *, data);
 	la_json_append_double(ctx->vstr, "wind_spd_kts", m->wind_speed);
 	la_json_append_double(ctx->vstr, "wind_dir_true_deg", m->wind_dir);
@@ -1123,8 +1110,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_airframe_id_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_airframe_id_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(a, la_adsc_airframe_id_t *, data);
 	la_json_append_long(ctx->vstr, "icao_id",
 		((long)(a->icao_hex[0]) << 16) |
@@ -1385,16 +1371,14 @@ static void la_adsc_contract_request_destroy(void *data) {
  ****************/
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_empty_tag_format_text) {
-// -Wunused-parameter
-	(void)data;
+	LA_UNUSED(data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s\n", label);
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_empty_tag_format_json) {
-// -Wunused-parameter
-	(void)label;
-	(void)data;
-	(void)ctx;
+	LA_UNUSED(label);
+	LA_UNUSED(data);
+	LA_UNUSED(ctx);
 	// NOOP
 }
 
@@ -1406,8 +1390,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_tag_with_contract_number_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_tag_with_contract_number_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	la_json_append_long(ctx->vstr, "contract_num", *(uint8_t *)data);
 }
 
@@ -1416,8 +1399,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_modulus_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_modulus_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	la_json_append_long(ctx->vstr, "modulus", *(uint8_t *)data);
 }
 
@@ -1427,8 +1409,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_reporting_interval_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_reporting_interval_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(t, la_adsc_report_interval_req_t const * const, data);
 	la_json_append_long(ctx->vstr, "interval_secs", (int)(t->scaling_factor) * (int)(t->rate));
 }
@@ -1440,8 +1421,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_acft_intent_group_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_acft_intent_group_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(t, la_adsc_acft_intent_group_req_t const * const, data);
 	la_json_append_long(ctx->vstr, "modulus", t->modulus);
 	la_json_append_long(ctx->vstr, "proj_time_mins", t->acft_intent_projection_time);
@@ -1457,8 +1437,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_lat_dev_change_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_lat_dev_change_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(e, la_adsc_lat_dev_chg_event_t const * const, data);
 	la_json_append_double(ctx->vstr, "lat_dev_treshold_nm", e->lat_dev_threshold);
 }
@@ -1474,8 +1453,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_vspd_change_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_vspd_change_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(e, la_adsc_vspd_chg_event_t const * const, data);
 	la_json_append_long(ctx->vstr, "vspd_ftmin_threshold", abs(e->vspd_threshold));
 	la_json_append_bool(ctx->vstr, "higher_than", e->vspd_threshold >= 0 ? true : false);
@@ -1492,8 +1470,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_alt_range_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_alt_range_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(e, la_adsc_alt_range_event_t const * const, data);
 	la_json_append_long(ctx->vstr, "floor_alt", e->floor_alt);
 	la_json_append_long(ctx->vstr, "ceiling_alt", e->ceiling_alt);
@@ -1522,8 +1499,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_contract_request_format_text) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_contract_request_format_json) {
-// -Wunused-parameter
-	(void)label;
+	LA_UNUSED(label);
 	LA_CAST_PTR(r, la_adsc_req_t const * const, data);
 	la_json_append_long(ctx->vstr, "contract_num", r->contract_num);
 

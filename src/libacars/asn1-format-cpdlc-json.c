@@ -133,9 +133,8 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSVerticalRateMetric) {
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSBeaconCode) {
-// -Wunused-parameter
-	(void)td;
-	(void)indent;
+	LA_UNUSED(td);
+	LA_UNUSED(indent);
 	LA_CAST_PTR(code, FANSBeaconCode_t *, sptr);
 	long **cptr = code->list.array;
 	char str[5] = {
@@ -149,9 +148,8 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSBeaconCode) {
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSTime) {
-// -Wunused-parameter
-	(void)td;
-	(void)indent;
+	LA_UNUSED(td);
+	LA_UNUSED(indent);
 	LA_CAST_PTR(t, FANSTime_t *, sptr);
 	la_json_object_start(vstr, label);
 	la_json_append_long(vstr, "hour", t->hours);
@@ -160,9 +158,8 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSTime) {
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSTimestamp) {
-// -Wunused-parameter
-	(void)td;
-	(void)indent;
+	LA_UNUSED(td);
+	LA_UNUSED(indent);
 	LA_CAST_PTR(t, FANSTimestamp_t *, sptr);
 	la_json_object_start(vstr, label);
 	la_json_append_long(vstr, "hour", t->hours);
@@ -172,9 +169,8 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSTimestamp) {
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSLatitude) {
-// -Wunused-parameter
-	(void)td;
-	(void)indent;
+	LA_UNUSED(td);
+	LA_UNUSED(indent);
 	LA_CAST_PTR(lat, FANSLatitude_t *, sptr);
 	long const ldir = lat->latitudeDirection;
 	char const *ldir_name = la_value2enum(&asn_DEF_FANSLatitudeDirection, ldir);
@@ -188,9 +184,8 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSLatitude) {
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSLongitude) {
-// -Wunused-parameter
-	(void)td;
-	(void)indent;
+	LA_UNUSED(td);
+	LA_UNUSED(indent);
 	LA_CAST_PTR(lat, FANSLongitude_t *, sptr);
 	long const ldir = lat->longitudeDirection;
 	char const *ldir_name = la_value2enum(&asn_DEF_FANSLongitudeDirection, ldir);
