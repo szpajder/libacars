@@ -1,8 +1,8 @@
 # libacars [![Build Status](https://travis-ci.com/szpajder/libacars.svg?branch=master)](https://travis-ci.com/szpajder/libacars) [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/szpajder/libacars.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/szpajder/libacars/context:cpp)
 
-libacars is a library for decoding various ACARS message payloads.
+libacars is a library for decoding ACARS message contents.
 
-Current stable version: **1.2.0** (released Feb 26, 2019)
+Current stable version: **1.3.0** (released Aug 9, 2019)
 
 ## Supported message types
 
