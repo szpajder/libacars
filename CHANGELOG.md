@@ -1,5 +1,15 @@
 # ChangeLog
 
+## Version 1.3.0 (2019-08-09):
+* JSON output support for all message types. Any protocol tree can be
+  serialized into a JSON string with `la_proto_tree_format_json()` function.
+  Functions for serializing each individual message type into JSON are provided
+  as well.  Refer to `doc/API_REFERENCE.md` for details.
+* `decode_acars_apps` application now supports both human readable and JSON
+  output. To enable JSON output, set `LA_JSON` environment variable to any
+  value. If `LA_JSON` is not set, the program displays human readable output.
+* Small bugfixes in ACARS and MIAM decoders.
+
 ## Version 1.2.0 (2019-02-26):
 * Added support for decoding Media Independent Aircraft Messaging (MIAM - ACARS
   label MA) version 1 and 2. All types of MIAM frames are decoded, provided that
