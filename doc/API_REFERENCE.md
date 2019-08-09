@@ -1,6 +1,6 @@
 # libacars API Reference
 
-API version: 1.2
+API version: 1.3
 
 Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
 
@@ -32,11 +32,14 @@ A structure describing a particular message data type. It provides methods
 #include <libacars/libacars.h>
 
 typedef void (la_print_type_f)(la_vstring * const vstr, void const * const data, int indent);
+typedef void (la_json_type_f)(la_vstring * const vstr, void const * const data);
 typedef void (la_destroy_type_f)(void *data);
 
 typedef struct {
         la_print_type_f *format_text;
         la_destroy_type_f *destroy;
+        la_json_type_f *format_json;
+        char *json_key;
 } la_type_descriptor;
 ```
 
@@ -46,10 +49,13 @@ typedef struct {
   memory used by a variable of this type. If the variable is of a simple type
   (eg. a scalar variable or a flat struct), then it can be freed by a simple
   call to `free()`. In this case `destroy` pointer is NULL.
+- `la_json_type_f *format_json` - a pointer to a function which serializes the
+  message of this type into a JSON string.
+- `char *json_key` - JSON key name for this type.
 
 It is not advised to invoke methods from `la_type_descriptor` directly.
-`la_proto_tree_format_text()` and `la_proto_tree_destroy()` wrapper functions
-shall be used instead.
+`la_proto_tree_format_text()`, `la_proto_tree_format_json()` and
+`la_proto_tree_destroy()` wrapper functions shall be used instead.
 
 ### la_proto_node
 
@@ -103,6 +109,20 @@ human-readable text and appending the result to the variable-length string
 pointed to by `vstr`. If `vstr` is NULL, the function stores the result in a
 newly allocated variable-length string (which should be later freed by the
 caller using `la_proto_tree_destroy()`.
+
+### la_proto_tree_format_json()
+
+```C
+#include <libacars/libacars.h>
+
+la_vstring *la_proto_tree_format_json(la_vstring *vstr, la_proto_node const * const root)
+```
+
+Walks the whole protocol tree pointed to by `root`, serializing each node into a
+JSON string and appending the result to the variable-length string pointed to by
+`vstr`. If `vstr` is NULL, the function stores the result in a newly allocated
+variable-length string (which should be later freed by the caller using
+`la_proto_tree_destroy()`.
 
 ### la_proto_tree_destroy()
 
@@ -205,6 +225,22 @@ Use this function if you want to serialize only the ACARS protocol node and not
 its child nodes. In most cases `la_proto_tree_format_text()` should be used
 instead.
 
+### la_acars_format_json()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/acars.h>
+
+void la_acars_format_json(la_vstring *vstr, void const * const data);
+```
+
+Serializes a decoded ACARS message pointed to by `data` into a JSON string and
+appends the result to `vstr` (which must be non-NULL).
+
+Use this function if you want to serialize only the ACARS protocol node and not
+its child nodes. In most cases `la_proto_tree_format_json()` should be used
+instead.
+
 ### la_acars_decode_apps()
 
 ```C
@@ -243,8 +279,6 @@ found in the tree, the function returns NULL.
 ARINC-622 describes a generic format for carrying Air Traffic Services (ATS)
 applications in ACARS message text. The API is defined in `<libacars/arinc.h>`.
 It might be used in a program which already performs basic ACARS decoding.
-Refer to the [Programmer's Guide](PROG_GUIDE.md) and to `src/examples/decode_arinc.c`
-for a working example which uses this API.
 
 ### la_arinc_msg
 
@@ -316,6 +350,22 @@ non-NULL).
 
 Use this function if you want to serialize only the ARINC protocol node and not
 its child nodes. In most cases `la_proto_tree_format_text()` should be used
+instead.
+
+### la_arinc_format_json()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/arinc.h>
+
+void la_arinc_format_json(la_vstring *vstr, void const * const data);
+```
+
+Serializes a decoded ARINC-622 message pointed to by `data` into a JSON string
+and appends the result to `vstr` (which must be non-NULL).
+
+Use this function if you want to serialize only the ARINC protocol node and not
+its child nodes. In most cases `la_proto_tree_format_json()` should be used
 instead.
 
 ### la_proto_tree_find_arinc()
@@ -408,6 +458,21 @@ text indented by `indent` spaces and appends the result to `vstr` (which must be
 non-NULL). As the ADS-C protocol node is always the leaf (terminating) node in
 the protocol tree, this function will have the same effect as
 `la_proto_tree_format_text()` which should be used instead in most cases.
+
+### la_adsc_format_json()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/adsc.h>
+
+void la_adsc_format_json(la_vstring *vstr, void const * const data);
+```
+
+Serializes a decoded ADS-C message pointed to by `data` into a JSON string
+and appends the result to `vstr` (which must be non-NULL). As the ADS-C protocol
+node is always the leaf (terminating) node in the protocol tree, this function
+will have the same effect as `la_proto_tree_format_text()` which should be used
+instead in most cases.
 
 ### la_adsc_destroy()
 
@@ -519,6 +584,21 @@ the protocol tree, this function will have the same effect as
 `la_proto_tree_format_text()` which should be used instead of this function in
 most cases.
 
+### la_cpdlc_format_json()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/cpdlc.h>
+
+void la_cpdlc_format_json(la_vstring * const vstr, void const * const data);
+```
+
+Serializes a decoded CPDLC message pointed to by `data` into a JSON string and
+appends the result to `vstr` (which must be non-NULL). As the CPDLC protocol
+node is always the leaf (terminating) node in the protocol tree, this function
+will have the same effect as `la_proto_tree_format_json()` which should be used
+instead of this function in most cases.
+
 ### la_cpdlc_destroy()
 
 ```C
@@ -600,7 +680,7 @@ which is the root of the decoded protocol tree. The `data` pointer of the top
 `la_proto_node` will point at a `la_media_adv_msg` structure.  If the message
 could not be decoded, the `err` flag will be set to true.
 
-### la_media_adv_format_text
+### la_media_adv_format_text()
 
 ```C
 #include <libacars/libacars.h>
@@ -614,6 +694,21 @@ human-readable text indented by `indent` spaces and appends the result to `vstr`
 (which must be non-NULL). As the Media Advisory protocol node is always the leaf
 (terminating) node in the protocol tree, this function will have the same effect
 as `la_proto_tree_format_text()` which should be used instead in most cases.
+
+### la_media_adv_format_json()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/media-adv.h>
+
+void la_media_adv_format_json(la_vstring * const vstr, void const * const data);
+```
+
+Serializes a decoded Media Advisory message pointed to by `data` into a JSON
+string and appends the result to `vstr` (which must be non-NULL). As the Media
+Advisory protocol node is always the leaf (terminating) node in the protocol
+tree, this function will have the same effect as `la_proto_tree_format_json()`
+which should be used instead in most cases.
 
 ### la_proto_tree_find_media_adv()
 
@@ -819,6 +914,18 @@ Serializes a decoded MIAM ACARS CF frame pointed to by `data` into a
 human-readable text indented by `indent` spaces and appends the result to `vstr`
 (which must be non-NULL).
 
+### la_miam_format_json()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam.h>
+
+void la_miam_format_json(la_vstring * const vstr, void const * const data);
+```
+
+Serializes a decoded MIAM ACARS CF frame pointed to by `data` into a JSON string
+and appends the result to `vstr` (which must be non-NULL).
+
 ### la_proto_tree_find_miam()
 
 ```C
@@ -939,6 +1046,18 @@ Serializes a decoded MIAM CORE PDU pointed to by `data` into a human-readable
 text indented by `indent` spaces and appends the result to `vstr` (which must be
 non-NULL).
 
+### la_miam_core_format_json()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam-core.h>
+
+void la_miam_core_format_json(la_vstring * const vstr, void const * const data);
+```
+
+Serializes a decoded MIAM CORE PDU pointed to by `data` into a JSON string and
+appends the result to `vstr` (which must be non-NULL).
+
 ### la_proto_tree_find_miam_core()
 
 ```C
@@ -1055,6 +1174,18 @@ Appends the contents of `buffer` of length `size` to the end of `vstr`.
 Automatically extends `vstr` if it's too short to fit the result. Use this
 function to append non-NULL-terminated strings to the `la_vstring`.
 
+### la_isprintf_multiline_text()
+
+```C
+#include <libacars/vstring.h>
+
+void la_isprintf_multiline_text(la_vstring * const vstr, int const indent, char const *txt);
+```
+
+Appends the contents of `txt` to the end of `vstr`. If `txt` contains multiple
+lines of text (separated by `'\n'` characters), then each line is separately
+indented by `indent` spaces.
+
 ## la_list API
 
 `la_list` is a single-linked list.
@@ -1160,6 +1291,123 @@ node_free(l->data);
 
 This function should be used when data chunks are complex structures composed of
 multiple allocated memory chunks.
+
+## JSON API
+
+`<libacars/json.h>` provides a simple set of routines to construct a JSON
+string. The API is completely stateless. It supports escaping of characters in
+string values only. No escaping is performed on key names.
+
+### la_json_start()
+
+```C
+#include <libacars/vstring.h>
+#include <libacars/json.h>
+
+void la_json_start(la_vstring * const vstr);
+```
+
+Start a JSON string by appending an initial `{` character to the string `vstr`.
+
+### la_json_end()
+
+```C
+void la_json_end(la_vstring * const vstr);
+```
+
+Terminates the JSON string by emitting `}` character (and trimming preceding
+comma, if present).
+
+### la_json_append_bool()
+
+```C
+void la_json_append_bool(la_vstring * const vstr, char const * const key, bool const val);
+```
+
+Emits a boolean value `val` as a JSON key named `key`.
+
+### la_json_append_double()
+
+```C
+void la_json_append_double(la_vstring * const vstr, char const * const key, double const val);
+```
+
+Emits a double precision floating point value `val` as a JSON key named `key`.
+
+### la_json_append_long()
+
+```C
+void la_json_append_long(la_vstring * const vstr, char const * const key, long const val);
+```
+
+Emits a long integer value `val` as a JSON key named `key`.
+
+### la_json_append_char()
+
+```C
+void la_json_append_char(la_vstring * const vstr, char const * const key, char const val);
+```
+
+Emits a char value `val` as a JSON key named `key`.
+
+### la_json_append_string()
+
+```C
+void la_json_append_string(la_vstring * const vstr, char const * const key, char const * const val);
+```
+
+Emits a string value `val` as a JSON key named `key`. Escapes all characters
+which require this.
+
+### la_json_append_octet_string()
+
+```C
+void la_json_append_octet_string(la_vstring * const vstr, char const * const key,
+	uint8_t const * const buf, size_t len);
+```
+
+Emits a JSON array named `key` containing a string of `len` octets stored in `buf`.
+Octet values are serialized as decimal integers.
+
+### la_json_object_start()
+
+```C
+void la_json_object_start(la_vstring * const vstr, char const * const key);
+```
+
+Begins a JSON object named `key` by emitting a key name and an opening `{`
+character. Every invocation of this function requires using
+`la_json_object_end()` later on - otherwise a malformed JSON string will be
+produced.
+
+### la_json_object_end()
+
+```C
+void la_json_object_end(la_vstring * const vstr);
+```
+
+Ends a previously opened JSON object by emitting a terminating `}` character
+and a comma.
+
+### la_json_array_start()
+
+```C
+void la_json_array_start(la_vstring * const vstr, char const * const key);
+```
+
+Begins a JSON array named `key` by emitting a key name and an opening `[`
+character. Every invocation of this function requires using
+`la_json_array_end()` later on - otherwise a malformed JSON string will be
+produced.
+
+### la_json_array_end()
+
+```C
+void la_json_array_end(la_vstring * const vstr);
+```
+
+Ends a previously opened JSON array by emitting a terminating `]` character
+and a comma.
 
 ## Miscellaneous functions and variables
 

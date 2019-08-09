@@ -47,11 +47,11 @@
 
 #ifdef DEBUG
 #define la_debug_print(fmt, ...) \
-	do { fprintf(stderr, "%s(): " fmt, __func__, __VA_ARGS__); } while (0)
+	do { fprintf(stderr, "%s(): " fmt, __func__, ##__VA_ARGS__); } while (0)
 
 #define la_debug_print_buf_hex(buf, len, fmt, ...) \
 	do { \
-		fprintf(stderr, "%s(): " fmt, __func__, __VA_ARGS__); \
+		fprintf(stderr, "%s(): " fmt, __func__, ##__VA_ARGS__); \
 		fprintf(stderr, "%s(): ", __func__); \
 		for(int zz = 0; zz < (len); zz++) { \
 			fprintf(stderr, "%02x ", buf[zz]); \
@@ -65,5 +65,7 @@
 #endif
 
 #define LA_CAST_PTR(x, t, y) t x = (t)(y)
+#define LA_NEW(type, x) type *(x) = LA_XCALLOC(1, sizeof(type))
+#define LA_UNUSED(x) (void)(x)
 
 #endif // !LA_MACROS_H

@@ -73,11 +73,13 @@ add_library (acars_core OBJECT
 	adsc.c
 	arinc.c
 	asn1-format-common.c
-	asn1-format-cpdlc.c
+	asn1-format-cpdlc-text.c
+	asn1-format-cpdlc-json.c
 	asn1-util.c
 	bitstream.c
 	cpdlc.c
 	crc.c
+	json.c
 	libacars.c
 	list.c
 	media-adv.c
@@ -118,6 +120,7 @@ install(FILES
 	adsc.h
 	arinc.h
 	cpdlc.h
+	json.h
 	libacars.h
 	list.h
 	media-adv.h

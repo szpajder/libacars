@@ -39,7 +39,7 @@ static size_t la_vstring_space_left(la_vstring const * const vstr) {
 }
 
 la_vstring *la_vstring_new() {
-	la_vstring *vstr = LA_XCALLOC(1, sizeof(la_vstring));
+	LA_NEW(la_vstring, vstr);
 	vstr->str = LA_XCALLOC(LA_VSTR_INITIAL_SIZE, sizeof(char));
 	vstr->allocated_size = LA_VSTR_INITIAL_SIZE;
 	vstr->len = 0;
@@ -51,6 +51,23 @@ void la_vstring_destroy(la_vstring *vstr, bool destroy_buffer) {
 		LA_XFREE(vstr->str);
 	}
 	LA_XFREE(vstr);
+}
+
+void la_isprintf_multiline_text(la_vstring * const vstr, int const indent, char const *txt) {
+	la_assert(vstr != NULL);
+	la_assert(indent >= 0);
+	if(txt == NULL) {
+		return;
+	}
+// have to work on a copy, because strtok modifies its first argument
+	char *line = strdup(txt);
+	char *ptr = line;
+	char *next_line = NULL;
+	while((ptr = strtok_r(ptr, "\n", &next_line)) != NULL) {
+		LA_ISPRINTF(vstr, indent, "%s\n", ptr);
+		ptr = next_line;
+	}
+	LA_XFREE(line);
 }
 
 void la_vstring_append_sprintf(la_vstring * const vstr, char const *fmt, ...) {

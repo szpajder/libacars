@@ -4,7 +4,7 @@
  *  Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
  */
 
-#include <string.h>				// memcpy()
+#include <string.h>				// memcpy(), strdup()
 #include <libacars/libacars.h>			// la_proto_node, la_proto_tree_find_protocol
 #include <libacars/macros.h>			// la_assert()
 #include <libacars/arinc.h>			// la_arinc_parse()
@@ -12,12 +12,16 @@
 #include <libacars/miam.h>			// la_miam_parse()
 #include <libacars/crc.h>			// la_crc16_ccitt()
 #include <libacars/vstring.h>			// la_vstring, LA_ISPRINTF()
+#include <libacars/json.h>			// la_json_append_*()
 #include <libacars/util.h>			// la_debug_print(), LA_CAST_PTR()
 #include <libacars/acars.h>
 
 #define LA_ACARS_MIN_LEN	16		// including CRC and DEL
 #define DEL 0x7f
 #define ETX 0x03
+#define ACK 0x06
+#define NAK 0x15
+#define IS_DOWNLINK_BLK(bid) ((bid) >= '0' && (bid) <= '9')
 
 la_proto_node *la_acars_decode_apps(char const * const label,
 char const * const txt, la_msg_dir const msg_dir) {
@@ -87,7 +91,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 	}
 
 	la_proto_node *node = la_proto_node_new();
-	la_acars_msg *msg = LA_XCALLOC(1, sizeof(la_acars_msg));
+	LA_NEW(la_acars_msg, msg);
 	node->data = msg;
 	node->td = &la_DEF_acars_message;
 	char *buf2 = LA_XCALLOC(len, sizeof(char));
@@ -122,10 +126,13 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 	}
 	msg->reg[7] = '\0';
 
-	/* ACK/NAK */
 	msg->ack = buf2[k++];
-	if (msg->ack == 0x15)
+// change special values to something printable
+	if (msg->ack == NAK) {
 		msg->ack = '!';
+	} else if(msg->ack == ACK) {
+		msg->ack = '^';
+	}
 
 	msg->label[0] = buf2[k++];
 	msg->label[1] = buf2[k++];
@@ -147,7 +154,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 		goto end;
 	}
 
-	if (msg->mode <= 'Z' && msg->block_id <= '9') {
+	if (IS_DOWNLINK_BLK(msg->block_id)) {
 		/* message no */
 		for (i = 0; i < 4 && k < len; i++, k++) {
 			msg->no[i] = buf2[k];
@@ -173,7 +180,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 		}
 // If the message direction is unknown, guess it using the block ID character.
 		if(msg_dir == LA_MSG_DIR_UNKNOWN) {
-			if(msg->block_id >= '0' && msg->block_id <= '9') {
+			if(IS_DOWNLINK_BLK(msg->block_id)) {
 		                msg_dir = LA_MSG_DIR_AIR2GND;
 			} else {
 				msg_dir = LA_MSG_DIR_GND2AIR;
@@ -197,27 +204,51 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 
 	LA_CAST_PTR(msg, la_acars_msg *, data);
 	if(msg->err) {
-		LA_ISPRINTF(vstr, indent, "%s", "-- Unparseable ACARS message\n");
+		LA_ISPRINTF(vstr, indent, "-- Unparseable ACARS message\n");
 		return;
 	}
 	LA_ISPRINTF(vstr, indent, "ACARS%s:\n", msg->crc_ok ? "" : " (warning: CRC error)");
 	indent++;
 
-	if(msg->mode < 0x5d) {		// air-to-ground
-		LA_ISPRINTF(vstr, indent, "Reg: %s Flight: %s\n", msg->reg, msg->flight_id);
+	LA_ISPRINTF(vstr, indent, "Reg: %s", msg->reg);
+	if(IS_DOWNLINK_BLK(msg->block_id)) {
+		la_vstring_append_sprintf(vstr, " Flight: %s\n", msg->flight_id);
+	} else {
+		la_vstring_append_sprintf(vstr, "%s", "\n");
 	}
-	LA_ISPRINTF(vstr, indent, "Mode: %1c Label: %s Blk id: %c Ack: %c Msg no.: %s\n",
-		msg->mode, msg->label, msg->block_id, msg->ack, msg->no);
-	LA_ISPRINTF(vstr, indent, "%s\n", "Message:");
-// Indent multi-line messages properly
-	char *line = strdup(msg->txt);	// have to work on a copy, because strtok modifies its first argument
-	char *ptr = line;
-	char *next_line = NULL;
-	while((ptr = strtok_r(ptr, "\n", &next_line)) != NULL) {
-		LA_ISPRINTF(vstr, indent+1, "%s\n", ptr);
-		ptr = next_line;
+
+	LA_ISPRINTF(vstr, indent, "Mode: %1c Label: %s Blk id: %c Ack: %c",
+		msg->mode, msg->label, msg->block_id, msg->ack);
+	if(IS_DOWNLINK_BLK(msg->block_id)) {
+		la_vstring_append_sprintf(vstr, " Msg no.: %s\n", msg->no);
+	} else {
+		la_vstring_append_sprintf(vstr, "%s", "\n");
 	}
-	LA_XFREE(line);
+
+	LA_ISPRINTF(vstr, indent, "Message:\n");
+	la_isprintf_multiline_text(vstr, indent+1, msg->txt);
+}
+
+void la_acars_format_json(la_vstring *vstr, void const * const data) {
+	la_assert(vstr);
+	la_assert(data);
+
+	LA_CAST_PTR(msg, la_acars_msg *, data);
+	la_json_append_bool(vstr, "err", msg->err);
+	if(msg->err) {
+		return;
+	}
+	la_json_append_bool(vstr, "crc_ok", msg->crc_ok);
+	la_json_append_string(vstr, "reg", msg->reg);
+	la_json_append_char(vstr, "mode", msg->mode);
+	la_json_append_string(vstr, "label", msg->label);
+	la_json_append_char(vstr, "blk_id", msg->block_id);
+	la_json_append_char(vstr, "ack", msg->ack);
+	if(IS_DOWNLINK_BLK(msg->block_id)) {
+		la_json_append_string(vstr, "flight", msg->flight_id);
+		la_json_append_string(vstr, "msg_no", msg->no);
+	}
+	la_json_append_string(vstr, "msg_text", msg->txt);
 }
 
 void la_acars_destroy(void *data) {
@@ -231,6 +262,8 @@ void la_acars_destroy(void *data) {
 
 la_type_descriptor const la_DEF_acars_message = {
 	.format_text = la_acars_format_text,
+	.format_json = la_acars_format_json,
+	.json_key = "acars",
 	.destroy = la_acars_destroy
 };
 

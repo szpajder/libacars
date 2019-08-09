@@ -34,18 +34,19 @@ int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t *buf
 }
 
 void la_asn1_output(la_vstring *vstr, la_asn_formatter const * const asn1_formatter_table,
-	size_t asn1_formatter_table_len, asn_TYPE_descriptor_t *td, const void *sptr, int indent) {
+	size_t asn1_formatter_table_len, asn_TYPE_descriptor_t *td, const void *sptr, int indent,
+	bool const dump_unknown_types) {
 	if(td == NULL || sptr == NULL) return;
 	la_asn_formatter *formatter = lfind(td, asn1_formatter_table, &asn1_formatter_table_len,
 		sizeof(la_asn_formatter), &la_compare_fmtr);
 	if(formatter != NULL) {
 		formatter->format(vstr, formatter->label, td, sptr, indent);
-	} else {
+	} else if(dump_unknown_types) {
 		LA_ISPRINTF(vstr, indent, "-- Formatter for type %s not found, ASN.1 dump follows:\n", td->name);
 		if(indent > 0) {
-			LA_ISPRINTF(vstr, indent * 4, "%s", "");	// asn_fprint does not indent the first line
+			LA_ISPRINTF(vstr, indent * 4, "");	// asn_fprint does not indent the first line
 		}
 		asn_sprintf(vstr, td, sptr, indent+1);
-		LA_ISPRINTF(vstr, indent, "%s", "-- ASN.1 dump end\n");
+		LA_ISPRINTF(vstr, indent, "-- ASN.1 dump end\n");
 	}
 }

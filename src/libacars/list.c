@@ -16,7 +16,7 @@ la_list *la_list_next(la_list const * const l) {
 }
 
 la_list *la_list_append(la_list *l, void *data) {
-	la_list *new = LA_XCALLOC(1, sizeof(la_list));
+	LA_NEW(la_list, new);
 	new->data = data;
 	if(l == NULL) {
 		return new;
@@ -38,9 +38,10 @@ size_t la_list_length(la_list const *l) {
 
 void la_list_foreach(la_list *l, void (*cb)(), void *ctx) {
 	la_assert(cb);
-	do {
+	while(l != NULL) {
 		cb(l->data, ctx);
-	} while((l = la_list_next(l)) != NULL);
+		l = la_list_next(l);
+	}
 }
 
 void la_list_free_full(la_list *l, void (*node_free)()) {
