@@ -1,5 +1,12 @@
 # ChangeLog
 
+## Version 1.3.1 (2019-09-20):
+* Binary releases for Windows were mistakenly built with AVX instruction set
+  enabled which caused the lib to fail on older CPUs (https://github.com/szpajder/libacars/issues/3).
+  Thanks to G7GQW for reporting and to Jonti Olds for analysis.
+* Downgraded optimization level for release builds from -O3 to -O2 to reduce
+  chances of similar problems for cross-platform builds.
+
 ## Version 1.3.0 (2019-08-09):
 * JSON output support for all message types. Any protocol tree can be
   serialized into a JSON string with `la_proto_tree_format_json()` function.
