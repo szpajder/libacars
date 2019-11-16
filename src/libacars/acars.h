@@ -18,6 +18,7 @@ extern "C" {
 typedef struct {
 	bool crc_ok;
 	bool err;
+	bool final_block;
 	char mode;
 	char reg[8];
 	char ack;

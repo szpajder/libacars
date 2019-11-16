@@ -19,6 +19,7 @@
 #define LA_ACARS_MIN_LEN	16		// including CRC and DEL
 #define DEL 0x7f
 #define ETX 0x03
+#define ETB 0x17
 #define ACK 0x06
 #define NAK 0x15
 #define IS_DOWNLINK_BLK(bid) ((bid) >= '0' && (bid) <= '9')
@@ -110,13 +111,23 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 
 	uint16_t crc = la_crc16_ccitt(buf, len, 0);
 	la_debug_print("CRC check result: %04x\n", crc);
-	len -= 3;
+	len -= 2;
 	msg->crc_ok = (crc == 0);
 
 	int i = 0;
 	for(i = 0; i < len; i++) {
 		buf2[i] = buf[i] & 0x7f;
 	}
+
+	if(buf2[len-1] == ETX) {
+		msg->final_block = true;
+	} else if(buf2[len-1] == ETB) {
+		msg->final_block = false;
+	} else {
+		la_debug_print("%02x: no ETX/ETB byte at end of text\n", buf2[len-1]);
+		goto fail;
+	}
+	len--;
 
 	int k = 0;
 	msg->mode = buf2[k++];
@@ -149,7 +160,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 	msg->no[0] = '\0';
 	msg->flight_id[0] = '\0';
 
-	if(k >= len || txt_start == ETX) {	// empty message text
+	if(k >= len || txt_start == ETX || txt_start == ETB) {	// empty message text
 		msg->txt = strdup("");
 		goto end;
 	}
@@ -217,8 +228,8 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 		la_vstring_append_sprintf(vstr, "%s", "\n");
 	}
 
-	LA_ISPRINTF(vstr, indent, "Mode: %1c Label: %s Blk id: %c Ack: %c",
-		msg->mode, msg->label, msg->block_id, msg->ack);
+	LA_ISPRINTF(vstr, indent, "Mode: %1c Label: %s Blk id: %c More: %d Ack: %c",
+		msg->mode, msg->label, msg->block_id, !msg->final_block, msg->ack);
 	if(IS_DOWNLINK_BLK(msg->block_id)) {
 		la_vstring_append_sprintf(vstr, " Msg no.: %s\n", msg->no);
 	} else {
@@ -239,6 +250,7 @@ void la_acars_format_json(la_vstring *vstr, void const * const data) {
 		return;
 	}
 	la_json_append_bool(vstr, "crc_ok", msg->crc_ok);
+	la_json_append_bool(vstr, "more", !msg->final_block);
 	la_json_append_string(vstr, "reg", msg->reg);
 	la_json_append_char(vstr, "mode", msg->mode);
 	la_json_append_string(vstr, "label", msg->label);
