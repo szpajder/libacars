@@ -252,6 +252,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 // ACARS preamble has been consumed up to this point.
 // If this is an uplink with an empty message text, then we are done.
 		if(!IS_DOWNLINK_BLK(msg->block_id)) {
+			msg->txt = strdup("");
 			goto end;
 		} else {
 			la_debug_print("No text field in downlink message\n");
@@ -292,11 +293,11 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 		remaining -= offset;
 	}
 
+	msg->txt = LA_XCALLOC(remaining + 1, sizeof(char));
 	if(remaining < 1) {
 		goto end;
 	}
 
-	msg->txt = LA_XCALLOC(remaining + 1, sizeof(char));
 	memcpy(msg->txt, ptr, remaining);
 	node->next = la_acars_decode_apps(msg->label, msg->txt, msg_dir);
 	goto end;
@@ -341,10 +342,8 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 		}
 		la_vstring_append_sprintf(vstr, "%s", "\n");
 	}
-	if(msg->txt != NULL) {
-		LA_ISPRINTF(vstr, indent, "Message:\n");
-		la_isprintf_multiline_text(vstr, indent+1, msg->txt);
-	}
+	LA_ISPRINTF(vstr, indent, "Message:\n");
+	la_isprintf_multiline_text(vstr, indent+1, msg->txt);
 }
 
 void la_acars_format_json(la_vstring *vstr, void const * const data) {
@@ -373,9 +372,7 @@ void la_acars_format_json(la_vstring *vstr, void const * const data) {
 	if(msg->mfi[0] != '\0') {
 		la_json_append_string(vstr, "mfi", msg->mfi);
 	}
-	if(msg->txt != NULL) {
-		la_json_append_string(vstr, "msg_text", msg->txt);
-	}
+	la_json_append_string(vstr, "msg_text", msg->txt);
 }
 
 void la_acars_destroy(void *data) {
