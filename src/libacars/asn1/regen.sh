@@ -15,8 +15,6 @@ rm -f Makefile.am.sample converter-sample.c
 
 # enable printing of CHOICE names by asn_print()
 patch -p0 < patches/print_choice_names.diff
-# silence compiler warnings on missing _DEFAULT_SOURCE
-patch -p0 < patches/asn_system_h_default_source.diff
 # make asn_fprint accept indentation level as a parameter
 patch -p0 < patches/asn_fprint_parameterized_indentation.diff
 # expose _fetch_present_idx from constr_CHOICE.c
