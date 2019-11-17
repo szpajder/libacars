@@ -16,8 +16,9 @@
 #include <libacars/util.h>			// la_debug_print(), LA_CAST_PTR()
 #include <libacars/acars.h>
 
-#define LA_ACARS_MIN_LEN	16		// including CRC and DEL
+#define LA_ACARS_PREAMBLE_LEN	16		// including CRC and DEL, not including SOH
 #define DEL 0x7f
+#define STX 0x02
 #define ETX 0x03
 #define ETB 0x17
 #define ACK 0x06
@@ -86,6 +87,8 @@ end:
 	return ret;
 }
 
+// Note: buf must contain raw ACARS bytes, NOT including initial SOH byte
+// (0x01) and including terminating DEL byte (0x7f).
 la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 	if(buf == NULL) {
 		return NULL;
@@ -98,8 +101,8 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 	char *buf2 = LA_XCALLOC(len, sizeof(char));
 
 	msg->err = false;
-	if(len < LA_ACARS_MIN_LEN) {
-		la_debug_print("too short: %u < %u\n", len, LA_ACARS_MIN_LEN);
+	if(len < LA_ACARS_PREAMBLE_LEN) {
+		la_debug_print("Preamble too short: %u < %u\n", len, LA_ACARS_PREAMBLE_LEN);
 		goto fail;
 	}
 
@@ -118,6 +121,8 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 	for(i = 0; i < len; i++) {
 		buf2[i] = buf[i] & 0x7f;
 	}
+	la_debug_print_buf_hex(buf2, len, "After CRC and parity bit removal:\n");
+	la_debug_print("Length: %d\n", len);
 
 	if(buf2[len-1] == ETX) {
 		msg->final_block = true;
@@ -128,16 +133,22 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 		goto fail;
 	}
 	len--;
+// Here we have DEL, CRC and ETX/ETB bytes removed.
+// There at least 12 bytes remaining.
 
-	int k = 0;
-	msg->mode = buf2[k++];
+	int remaining = len;
+	char *ptr = buf2;
 
-	for (i = 0; i < 7; i++, k++) {
-		msg->reg[i] = buf2[k];
-	}
+	msg->mode = *ptr;
+	ptr++; remaining--;
+
+	memcpy(msg->reg, ptr, 7);
 	msg->reg[7] = '\0';
+	ptr += 7; remaining -= 7;
 
-	msg->ack = buf2[k++];
+	msg->ack = *ptr;
+	ptr++; remaining--;
+
 // change special values to something printable
 	if (msg->ack == NAK) {
 		msg->ack = '!';
@@ -145,13 +156,18 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 		msg->ack = '^';
 	}
 
-	msg->label[0] = buf2[k++];
-	msg->label[1] = buf2[k++];
-	if (msg->label[1] == 0x7f)
+	msg->label[0] = *ptr++;
+	msg->label[1] = *ptr++;
+	remaining -= 2;
+
+	if (msg->label[1] == 0x7f) {
 		msg->label[1] = 'd';
+	}
 	msg->label[2] = '\0';
 
-	msg->block_id = buf2[k++];
+	msg->block_id = *ptr;
+	ptr++; remaining--;
+
 	if (msg->block_id == 0) {
 		msg->block_id = ' ';
 	}
@@ -164,43 +180,50 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 		}
 		la_debug_print("Assuming msg_dir=%d\n", msg_dir);
 	}
+	if(remaining < 1) {
+// ACARS preamble has been consumed up to this point.
+// If this is an uplink with an empty message text, then we are done.
+		if(!IS_DOWNLINK_BLK(msg->block_id)) {
+			msg->txt = strdup("");
+			goto end;
+		} else {
+			la_debug_print("No text field in downlink message\n");
+			goto fail;
+		}
+	}
+// Otherwise we expect STX here.
+	if(*ptr != STX) {
+		la_debug_print("%02x: No STX byte after preamble\n", *ptr);
+		goto fail;
+	}
+	ptr++; remaining--;
 
-	char txt_start = buf2[k++];
+// Replace NULLs in message text to make it printable
+// XXX: Should we replace all nonprintable chars here?
+	for(i = 0; i < remaining; i++) {
+		if(ptr[i] == 0) {
+			ptr[i] = '.';
+		}
+	}
+// Extract downlink-specific fields from message text
+	if (IS_DOWNLINK_BLK(msg->block_id)) {
+		if(remaining < 10) {
+			la_debug_print("Downlink text field too short: %d < 10\n", remaining);
+			goto fail;
+		}
+		memcpy(msg->no, ptr, 4);
+		ptr += 4; remaining -= 4;
+		memcpy(msg->flight_id, ptr, 6);
+		ptr += 6; remaining -= 6;
+	}
 
-	msg->no[0] = '\0';
-	msg->flight_id[0] = '\0';
-
-	if(k >= len || txt_start == ETX || txt_start == ETB) {	// empty message text
-		msg->txt = strdup("");
+	msg->txt = LA_XCALLOC(remaining + 1, sizeof(char));
+	if(remaining < 1) {
 		goto end;
 	}
 
-	if (IS_DOWNLINK_BLK(msg->block_id)) {
-		/* message no */
-		for (i = 0; i < 4 && k < len; i++, k++) {
-			msg->no[i] = buf2[k];
-		}
-		msg->no[i] = '\0';
-
-		/* Flight id */
-		for (i = 0; i < 6 && k < len; i++, k++) {
-			msg->flight_id[i] = buf2[k];
-		}
-		msg->flight_id[i] = '\0';
-	}
-
-	len -= k;
-	msg->txt = LA_XCALLOC(len + 1, sizeof(char));
-	msg->txt[len] = '\0';
-	if(len > 0) {
-		memcpy(msg->txt, buf2 + k, len);
-// Replace NULLs in text to make it printable
-		for(i = 0; i < len; i++) {
-			if(msg->txt[i] == 0)
-				msg->txt[i] = '.';
-		}
-		node->next = la_acars_decode_apps(msg->label, msg->txt, msg_dir);
-	}
+	memcpy(msg->txt, ptr, remaining);
+	node->next = la_acars_decode_apps(msg->label, msg->txt, msg_dir);
 	goto end;
 fail:
 	msg->err = true;
