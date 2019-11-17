@@ -23,10 +23,23 @@ typedef struct {
 	char reg[8];
 	char ack;
 	char label[3];
+	char sublabel[3];
+	char mfi[3];
 	char block_id;
 	char no[5];
 	char flight_id[7];
 	char *txt;
+// padding for ABI compatibility
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
+	void (*reserved4)(void);
+	void (*reserved5)(void);
+	void (*reserved6)(void);
+	void (*reserved7)(void);
+	void (*reserved8)(void);
+	void (*reserved9)(void);
 } la_acars_msg;
 
 // acars.c
@@ -34,6 +47,8 @@ extern la_type_descriptor const la_DEF_acars_message;
 la_proto_node *la_acars_decode_apps(char const * const label,
 	char const * const txt, la_msg_dir const msg_dir);
 la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir);
+int la_acars_extract_sublabel_and_mfi(char const * const label, la_msg_dir const msg_dir,
+	char const * const txt, int const len, char *sublabel, char *mfi);
 void la_acars_format_text(la_vstring *vstr, void const * const data, int indent);
 void la_acars_format_json(la_vstring *vstr, void const * const data);
 la_proto_node *la_proto_tree_find_acars(la_proto_node *root);

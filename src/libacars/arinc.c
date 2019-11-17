@@ -103,6 +103,15 @@ static char *guess_arinc_msg_type(char const *txt, la_arinc_msg *msg) {
 	}
 	la_assert(msg);
 	la_arinc_imi imi = ARINC_MSG_UNKNOWN;
+
+// H1 messages start with sublabel and MFI - these fields must be stripped
+// before passing message text to this routine. This is done by
+// la_acars_extract_sublabel_and_mfi(). In any case, message text
+// must start with the ground address, optionally preceded by '/'.
+	if(txt[0] == '/') {
+		txt++;
+	}
+
 	char *imi_ptr = NULL;
 	for(la_arinc_imi_map const *p = imi_map; ; p++) {
 		if(p->imi_string == NULL) break;
@@ -117,23 +126,19 @@ static char *guess_arinc_msg_type(char const *txt, la_arinc_msg *msg) {
 	}
 	char *gs_addr = NULL;
 	size_t gs_addr_len = 0;
-// Check for seven-character ground address (/AKLCDYA.AT1... or #MD/AA AKLCDYA.AT1...)
-	if(imi_ptr - txt >= 8) {
-		if(imi_ptr[-8] == '/' || imi_ptr[-8] == ' ') {
-			if(is_numeric_or_uppercase(imi_ptr - 7, 7)) {
-				gs_addr = imi_ptr - 7;
-				gs_addr_len = 7;
-				goto complete;
-			}
+// Check for seven-character ground address ("AKLCDYA.AT1...")
+	if(imi_ptr - txt == 7) {
+		if(is_numeric_or_uppercase(imi_ptr - 7, 7)) {
+			gs_addr = imi_ptr - 7;
+			gs_addr_len = 7;
+			goto complete;
 		}
-// Check for four-character ground address (/EDYY.AFN... or #M1B/B0 EDYY.AFN...)
-	} else if(imi_ptr - txt >= 5) {
-		if(imi_ptr[-5] == '/') {
-			if(is_numeric_or_uppercase(imi_ptr - 4, 4)) {
-				gs_addr = imi_ptr - 4;
-				gs_addr_len = 4;
-				goto complete;
-			}
+// Check for four-character ground address ("EDYY.AFN...")
+	} else if(imi_ptr - txt == 4) {
+		if(is_numeric_or_uppercase(imi_ptr - 4, 4)) {
+			gs_addr = imi_ptr - 4;
+			gs_addr_len = 4;
+			goto complete;
 		}
 	}
 	la_debug_print("IMI %d found but no GS address\n", imi);

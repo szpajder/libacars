@@ -108,7 +108,7 @@ typedef struct {
 	void (*reserved3)(void);
 } la_miam_xon_ind_msg;
 
-la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
+la_proto_node *la_miam_parse(char const *txt);
 void la_miam_format_text(la_vstring * const vstr, void const * const data, int indent);
 void la_miam_format_json(la_vstring * const vstr, void const * const data);
 

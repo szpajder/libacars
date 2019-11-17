@@ -58,7 +58,7 @@ char const * const txt, la_msg_dir const msg_dir) {
 			if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
 				goto end;
 			}
-			if((ret = la_miam_parse(label, txt, msg_dir)) != NULL) {
+			if((ret = la_miam_parse(txt)) != NULL) {
 				goto end;
 			}
 			break;
@@ -67,7 +67,7 @@ char const * const txt, la_msg_dir const msg_dir) {
 	case 'M':
 		switch(label[1]) {
 		case 'A':
-			if((ret = la_miam_parse(label, txt, msg_dir)) != NULL) {
+			if((ret = la_miam_parse(txt)) != NULL) {
 				goto end;
 			}
 			break;
@@ -85,6 +85,74 @@ char const * const txt, la_msg_dir const msg_dir) {
 	}
 end:
 	return ret;
+}
+
+#define COPY_IF_NOT_NULL(d, s, l) do { \
+	if((d) != NULL && (s) != NULL) { \
+		memcpy((d), (s), (l)); \
+	} } while(0)
+
+#define BUF_CLEAR(p, l) do { \
+	if((p) != NULL) { \
+		memset((p), 0, (l)); \
+	} } while(0)
+
+int la_acars_extract_sublabel_and_mfi(char const * const label, la_msg_dir const msg_dir,
+	char const * const txt, int const len, char *sublabel, char *mfi) {
+
+	if(txt == NULL || label == NULL || strlen(label) < 2) {
+		return -1;
+	}
+	if(msg_dir != LA_MSG_DIR_AIR2GND && msg_dir != LA_MSG_DIR_GND2AIR) {
+		return -1;
+	}
+
+	int consumed = 0;
+	int remaining = len;
+	char const *ptr = txt;
+	char const *sublabel_ptr = NULL, *mfi_ptr = NULL;
+
+	BUF_CLEAR(sublabel, 3);
+	BUF_CLEAR(mfi, 3);
+
+	if(label[0] == 'H' && label[1] == '1') {
+		if(msg_dir == LA_MSG_DIR_GND2AIR) {
+// Note: this algorithm works correctly only for service-related messages
+// without SMT header. The header, if present, precedes the "- #" character
+// sequence, while this algorithm expects this sequence to appear at the
+// start of the message text. However this is not a big deal since the main
+// purpose of this routine is to skip initial sublabel/MFI part and return
+// a pointer to the beginning of the next layer application payload (eg.
+// ARINC-622 ATS message). Right now libacars does not decode any application
+// layer protocols transmitted with SMT headers, so it's not a huge issue.
+			if(remaining >= 5 && strncmp(ptr, "- #", 3) == 0) {
+				la_debug_print("Uplink sublabel: %c%c\n", ptr[3], ptr[4]);
+				sublabel_ptr = ptr + 3;
+				ptr += 5; consumed += 5; remaining -= 5;
+			}
+		} else if(msg_dir == LA_MSG_DIR_AIR2GND) {
+			if(remaining >= 4 && ptr[0] == '#' && ptr[3] == 'B') {
+				la_debug_print("Downlink sublabel: %c%c\n", ptr[1], ptr[2]);
+				sublabel_ptr = ptr + 1;
+				ptr += 4; consumed += 4; remaining -= 4;
+			}
+		}
+// Look for MFI only if sublabel has been found
+		if(sublabel_ptr == NULL) {
+			goto end;
+		}
+// MFI format is the same for both directions
+		if(remaining >= 4 && ptr[0] == '/' && ptr[3] == ' ') {
+			la_debug_print("MFI: %c%c\n", ptr[1], ptr[2]);
+			mfi_ptr = ptr + 1;
+			ptr += 4; consumed += 4; remaining -= 4;
+		}
+	}
+end:
+	COPY_IF_NOT_NULL(sublabel, sublabel_ptr, 2);
+	COPY_IF_NOT_NULL(mfi, mfi_ptr, 2);
+	la_debug_print("consumed %d bytes\n", consumed);
+	return consumed;
 }
 
 // Note: buf must contain raw ACARS bytes, NOT including initial SOH byte
@@ -217,6 +285,14 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 		ptr += 6; remaining -= 6;
 	}
 
+// Extract sublabel and MFI if present
+	int offset = la_acars_extract_sublabel_and_mfi(msg->label, msg_dir,
+		ptr, remaining, msg->sublabel, msg->mfi);
+	if(offset > 0) {
+		ptr += offset;
+		remaining -= offset;
+	}
+
 	msg->txt = LA_XCALLOC(remaining + 1, sizeof(char));
 	if(remaining < 1) {
 		goto end;
@@ -259,7 +335,13 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 	} else {
 		la_vstring_append_sprintf(vstr, "%s", "\n");
 	}
-
+	if(msg->sublabel[0] != '\0') {
+		LA_ISPRINTF(vstr, indent, "Sublabel: %s", msg->sublabel);
+		if(msg->mfi[0] != '\0') {
+			la_vstring_append_sprintf(vstr, " MFI: %s", msg->mfi);
+		}
+		la_vstring_append_sprintf(vstr, "%s", "\n");
+	}
 	LA_ISPRINTF(vstr, indent, "Message:\n");
 	la_isprintf_multiline_text(vstr, indent+1, msg->txt);
 }
@@ -283,6 +365,12 @@ void la_acars_format_json(la_vstring *vstr, void const * const data) {
 	if(IS_DOWNLINK_BLK(msg->block_id)) {
 		la_json_append_string(vstr, "flight", msg->flight_id);
 		la_json_append_string(vstr, "msg_no", msg->no);
+	}
+	if(msg->sublabel[0] != '\0') {
+		la_json_append_string(vstr, "sublabel", msg->sublabel);
+	}
+	if(msg->mfi[0] != '\0') {
+		la_json_append_string(vstr, "mfi", msg->mfi);
 	}
 	la_json_append_string(vstr, "msg_text", msg->txt);
 }

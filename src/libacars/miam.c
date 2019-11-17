@@ -361,30 +361,12 @@ hdr_error:
 	return NULL;
 }
 
-la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_dir const msg_dir) {
+la_proto_node *la_miam_parse(char const *txt) {
 	if(txt == NULL) {
 		return NULL;
 	}
-	la_assert(label != NULL);
-	la_assert(strlen(label) >= 2);
-
 	size_t len = strlen(txt);
 
-// Handle messages to ACARS peripherals (label H1):
-// - uplinks with OAT prefix "- #<2-char-sublabel>",
-// - downlinks with OAT prefix "#<2-char-sublabel>B"
-// Strip the OAT prefix and sublabel field, then continue as usual.
-	if(label[0] == 'H' && label[1] == '1') {
-		if(msg_dir == LA_MSG_DIR_GND2AIR) {
-			if(len >= 5 && strncmp(txt, "- #", 3) == 0) {
-				txt += 5; len -= 5;
-			}
-		} else if(msg_dir == LA_MSG_DIR_AIR2GND) {
-			if(len >= 4 && txt[0] == '#' && txt[3] == 'B') {
-				txt += 4; len -= 4;
-			}
-		}
-	}
 // First character identifies the ACARS CF frame
 	if(len == 0) {
 		return NULL;
