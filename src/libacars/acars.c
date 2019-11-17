@@ -342,8 +342,10 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 		}
 		la_vstring_append_sprintf(vstr, "%s", "\n");
 	}
-	LA_ISPRINTF(vstr, indent, "Message:\n");
-	la_isprintf_multiline_text(vstr, indent+1, msg->txt);
+	if(msg->txt[0] != '\0') {
+		LA_ISPRINTF(vstr, indent, "Message:\n");
+		la_isprintf_multiline_text(vstr, indent+1, msg->txt);
+	}
 }
 
 void la_acars_format_json(la_vstring *vstr, void const * const data) {
