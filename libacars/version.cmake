@@ -6,8 +6,8 @@ execute_process(COMMAND git describe --always --tags --dirty
 if ("${GIT_VERSION_}" STREQUAL "")
 	set(VERSION "char const * const LA_VERSION=\"${LA_VERSION}\";\n")
 else()
-	string(REGEX REPLACE "^v" "" GIT_VERSION ${GIT_VERSION_})
-	set(VERSION "char const * const LA_VERSION=\"${GIT_VERSION}\";\n")
+	string(REGEX REPLACE ".*-g" "" GIT_VERSION ${GIT_VERSION_})
+	set(VERSION "char const * const LA_VERSION=\"${LA_VERSION}-${GIT_VERSION}\";\n")
 endif()
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/version.c)

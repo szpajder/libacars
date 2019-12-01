@@ -100,16 +100,17 @@ set(acars_obj_files $<TARGET_OBJECTS:asn1> $<TARGET_OBJECTS:acars_core>)
 add_library(acars SHARED ${acars_obj_files})
 target_link_libraries (acars m ${acars_extra_libs})
 set_property (TARGET acars PROPERTY SOVERSION ${LA_VERSION_MAJOR})
+set_target_properties(acars PROPERTIES OUTPUT_NAME "acars-${LA_VERSION_MAJOR}")
 if (HAVE_LD_VERSION_SCRIPT)
 	set_property (TARGET acars PROPERTY LINK_DEPENDS ${acars_ldscript})
 endif()
 
 add_library(acars_static ${acars_obj_files})
-set_target_properties(acars_static PROPERTIES OUTPUT_NAME "acars")
+set_target_properties(acars_static PROPERTIES OUTPUT_NAME "acars-${LA_VERSION_MAJOR}")
 
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.pc.in"
-	"${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
+	"${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-${LA_VERSION_MAJOR}.pc"
 	@ONLY
 )
 
@@ -131,20 +132,22 @@ install(FILES
 	miam-core.h
 	version.h
 	vstring.h
-	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+	DESTINATION
+	"${CMAKE_INSTALL_INCLUDEDIR}/${LA_SUBDIR}/${PROJECT_NAME}"
 )
 install(FILES
-	"${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
-	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+	"${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-${LA_VERSION_MAJOR}.pc"
+	DESTINATION
+	"${CMAKE_INSTALL_LIBDIR}/pkgconfig"
 )
 install(FILES
 	"${PROJECT_SOURCE_DIR}/README.md"
 	"${PROJECT_SOURCE_DIR}/LICENSE.md"
-	DESTINATION ${CMAKE_INSTALL_DOCDIR}
+	DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/doc/${LA_SUBDIR}"
 )
 install(DIRECTORY
 	"${PROJECT_SOURCE_DIR}/doc/"
-	DESTINATION ${CMAKE_INSTALL_DOCDIR}
+	DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/doc/${LA_SUBDIR}"
 )
 # Copy zlib1.dll to the bundle on Windows
 if(WIN32 AND ZLIB_FOUND
