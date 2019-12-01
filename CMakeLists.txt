@@ -29,10 +29,11 @@ if(MINGW)
 endif()
 
 include_directories (
-	${PROJECT_SOURCE_DIR}/src
+	${PROJECT_SOURCE_DIR}
 )
 
-add_subdirectory (src)
+add_subdirectory (libacars)
+add_subdirectory (examples)
 
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
