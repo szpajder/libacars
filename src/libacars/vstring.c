@@ -9,7 +9,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>			// memcpy
+#include <string.h>			// memcpy, strdup, strsep
 #include <libacars/macros.h>		// la_assert, la_debug_print
 #include <libacars/util.h>		// LA_XCALLOC, LA_XFREE
 #include <libacars/vstring.h>		// la_vstring
@@ -59,15 +59,15 @@ void la_isprintf_multiline_text(la_vstring * const vstr, int const indent, char 
 	if(txt == NULL) {
 		return;
 	}
-// have to work on a copy, because strtok modifies its first argument
-	char *line = strdup(txt);
-	char *ptr = line;
-	char *next_line = NULL;
-	while((ptr = strtok_r(ptr, "\n", &next_line)) != NULL) {
-		LA_ISPRINTF(vstr, indent, "%s\n", ptr);
-		ptr = next_line;
-	}
-	LA_XFREE(line);
+// have to work on a copy, because strsep modifies its first argument
+	char *copy = strdup(txt);
+	char *ptr = copy;
+	char *line = NULL;
+	do {
+		line = strsep(&ptr, "\n");
+		LA_ISPRINTF(vstr, indent, "%s\n", line);
+	} while(ptr != NULL && ptr[0] != '\0');
+	LA_XFREE(copy);
 }
 
 void la_vstring_append_sprintf(la_vstring * const vstr, char const *fmt, ...) {
