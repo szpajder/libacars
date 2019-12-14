@@ -54,6 +54,7 @@ ACARS_2.0 {
     la_list_foreach;
     la_list_free;
     la_list_free_full;
+    la_list_free_full_with_ctx;
     la_list_length;
     la_list_next;
     la_media_adv_format_json;
