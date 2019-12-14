@@ -82,6 +82,7 @@ add_library (acars_core OBJECT
 	bitstream.c
 	cpdlc.c
 	crc.c
+	hash.c
 	json.c
 	libacars.c
 	list.c
@@ -124,6 +125,7 @@ install(FILES
 	adsc.h
 	arinc.h
 	cpdlc.h
+	hash.h
 	json.h
 	libacars.h
 	list.h
