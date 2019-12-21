@@ -172,6 +172,36 @@ bool la_hash_remove(la_hash *h, void *key) {
 	return true;
 }
 
+static void la_free_noop(void *data) {
+	LA_UNUSED(data);
+// noop
+}
+
+// Iterates over hash entries executing la_hash_if_func() for each key-value
+// pair. If the func returns true, removes the entry from the hash.
+int la_hash_foreach_remove(la_hash *h, la_hash_if_func *if_func, void *if_func_ctx) {
+	la_assert(h != NULL);
+	la_assert(if_func != NULL);
+
+	la_list *keys_to_delete = NULL;
+	int num_keys_deleted = 0;
+	for(size_t i = 0; i < LA_HASH_SIZE; i++) {
+		for(la_list *l = h->buckets[i]; l != NULL; l = la_list_next(l)) {
+			LA_CAST_PTR(elem, la_hash_element *, l->data);
+			if(if_func(elem->key, elem->value, if_func_ctx) == true) {
+				keys_to_delete = la_list_append(keys_to_delete, elem->key);
+				num_keys_deleted++;
+			}
+		}
+	}
+	for(la_list *l = keys_to_delete; l != NULL; l = la_list_next(l)) {
+		la_hash_remove(h, l->data);
+	}
+// can't use la_list_free() here, as keys have already been freed by la_hash_remove()
+	la_list_free_full(keys_to_delete, la_free_noop);
+	return num_keys_deleted;
+}
+
 // This is a callback for la_list_free_full_with_ctx()
 static void la_hash_element_destroy(void *elemptr, void *hashptr) {
 	la_assert(hashptr != NULL);

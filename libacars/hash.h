@@ -7,6 +7,7 @@
 #define LA_HASH_H 1
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,6 +16,7 @@ extern "C" {
 typedef struct la_hash_s la_hash;
 typedef uint32_t (la_hash_func)(void const *key);
 typedef bool (la_hash_compare_func)(void const *key1, void const *key2);
+typedef bool (la_hash_if_func)(void const *key, void const *value, void const *ctx);
 typedef void (la_hash_key_destroy_func)(void *key);
 typedef void (la_hash_value_destroy_func)(void *value);
 
@@ -25,6 +27,7 @@ bool la_hash_remove(la_hash *h, void *key);
 void *la_hash_lookup(la_hash const *h, void const *key);
 uint32_t la_hash_key_str(void const *k);
 bool la_hash_compare_str(void const *key1, void const *key2);
+int la_hash_foreach_remove(la_hash *h, la_hash_if_func *if_func, void *if_func_ctx);
 void la_hash_destroy(la_hash *h);
 
 #ifdef __cplusplus

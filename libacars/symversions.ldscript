@@ -52,6 +52,7 @@ ACARS_2.0 {
     la_json_start;
     la_hash_compare_str;
     la_hash_destroy;
+    la_hash_foreach_remove;
     la_hash_remove;
     la_hash_insert;
     la_hash_key_str;
