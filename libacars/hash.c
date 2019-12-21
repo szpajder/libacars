@@ -153,9 +153,6 @@ bool la_hash_remove(la_hash *h, void *key) {
 	if(list_node == NULL) {
 		return false;
 	}
-	LA_CAST_PTR(elem, la_hash_element *, list_node->data);
-	la_hash_destroy_key(h, elem->key);
-	la_hash_destroy_value(h, elem->value);
 // If prev_node is not NULL, then join two list parts together.
 // Otherwise replace the top of the list in the bucket.
 	if(prev_node != NULL) {
@@ -165,6 +162,10 @@ bool la_hash_remove(la_hash *h, void *key) {
 		h->buckets[bucket] = list_node->next;
 	}
 	list_node->next = NULL;
+// Now free the key and value
+	LA_CAST_PTR(elem, la_hash_element *, list_node->data);
+	la_hash_destroy_key(h, elem->key);
+	la_hash_destroy_value(h, elem->value);
 // This will free elem too
 // XXX: use la_hash_element_destroy instead?
 	la_list_free(list_node);
