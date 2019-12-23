@@ -31,7 +31,7 @@
 #define HASH_MULT 17
 
 // FIXME: make this configurable
-#define LA_ACARS_REASM_TABLE_CLEANUP_INTERVAL 50
+#define LA_ACARS_REASM_TABLE_CLEANUP_INTERVAL 10
 static struct timeval reasm_timeout_uplink = { .tv_sec = 90, .tv_usec = 0 };	// VAT4
 static struct timeval reasm_timeout_downlink = { .tv_sec = 11*60, .tv_usec = 0 }; // VGT4
 
