@@ -86,6 +86,12 @@ ACARS_2.0 {
     la_proto_tree_find_protocol;
     la_proto_tree_format_json;
     la_proto_tree_format_text;
+    la_reasm_ctx_init;
+    la_reasm_ctx_destroy;
+    la_reasm_fragment_add;
+    la_reasm_payload_get;
+    la_reasm_table_init;
+    la_reasm_table_lookup;
     LA_VERSION;
     la_vstring_append_buffer;
     la_vstring_append_sprintf;
