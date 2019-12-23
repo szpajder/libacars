@@ -40,7 +40,7 @@ typedef struct {
 	la_list *fragment_list;		// payloads of all fragments gathered so far
 } la_reasm_table_entry;
 
-la_reasm_ctx *la_reasm_ctx_init() {
+la_reasm_ctx *la_reasm_ctx_new() {
 	LA_NEW(la_reasm_ctx, rctx);
 	return rctx;
 }
@@ -91,7 +91,7 @@ la_reasm_table *la_reasm_table_lookup(la_reasm_ctx *rctx, void const *table_id) 
 
 #define LA_REASM_DEFAULT_CLEANUP_INTERVAL 100
 
-la_reasm_table *la_reasm_table_init(la_reasm_ctx *rctx, void const *table_id,
+la_reasm_table *la_reasm_table_new(la_reasm_ctx *rctx, void const *table_id,
 la_reasm_table_funcs funcs, int const cleanup_interval) {
 	la_assert(rctx != NULL);
 	la_assert(table_id != NULL);

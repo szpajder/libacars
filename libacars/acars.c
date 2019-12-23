@@ -383,7 +383,7 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 	if(rtables != NULL) {		// reassembly engine is enabled
 		acars_rtable = la_reasm_table_lookup(rtables, &la_DEF_acars_message);
 		if(acars_rtable == NULL) {
-			acars_rtable = la_reasm_table_init(rtables, &la_DEF_acars_message,
+			acars_rtable = la_reasm_table_new(rtables, &la_DEF_acars_message,
 				acars_reasm_funcs, LA_ACARS_REASM_TABLE_CLEANUP_INTERVAL);
 		}
 		bool down = IS_DOWNLINK_BLK(msg->block_id);

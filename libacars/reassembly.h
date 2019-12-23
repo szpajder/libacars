@@ -59,9 +59,9 @@ typedef enum {
 } la_reasm_status;
 
 // reassembly.c
-la_reasm_ctx *la_reasm_ctx_init();
+la_reasm_ctx *la_reasm_ctx_new();
 void la_reasm_ctx_destroy(void *ctx);
-la_reasm_table *la_reasm_table_init(la_reasm_ctx *rctx, void const *table_id,
+la_reasm_table *la_reasm_table_new(la_reasm_ctx *rctx, void const *table_id,
 	la_reasm_table_funcs funcs, int const cleanup_interval);
 la_reasm_table *la_reasm_table_lookup(la_reasm_ctx *rctx, void const *table_id);
 la_reasm_status la_reasm_fragment_add(la_reasm_table *rtable, la_reasm_fragment_info const *finfo);
