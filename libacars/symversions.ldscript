@@ -5,6 +5,7 @@ ACARS_2.0 {
     la_acars_format_json;
     la_acars_format_text;
     la_acars_parse;
+    la_acars_parse_and_reassemble;
     la_adsc_destroy;
     la_adsc_format_json;
     la_adsc_format_text;
