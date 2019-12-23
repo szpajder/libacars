@@ -236,9 +236,6 @@ la_reasm_status la_reasm_fragment_add(la_reasm_table *rtable, la_reasm_fragment_
 		rt_entry->fragment_list = la_list_append(rt_entry->fragment_list, strdup(finfo->msg_data));
 		rt_entry->last_seq_num = finfo->seq_num;
 
-// Update fragment counter
-		rtable->frag_cnt++;
-
 // If we've come to this point successfully and finfo->last_fragment is set,
 // then this message is now ready for reassembly. Otherwise it's not.
 		ret = finfo->last_fragment ? LA_REASM_COMPLETE : LA_REASM_IN_PROGRESS;
@@ -256,11 +253,11 @@ la_reasm_status la_reasm_fragment_add(la_reasm_table *rtable, la_reasm_fragment_
 		goto end;
 	}
 end:
-// Expire old entries if necessary.
+// Update fragment counter and expire old entries if necessary.
 // Expiration is performed in relation to rx_time of the fragment currently
 // being processed. This allows processing historical data with timestamps in
 // the past.
-	if(rtable->frag_cnt > rtable->cleanup_interval) {
+	if(++rtable->frag_cnt > rtable->cleanup_interval) {
 		la_reasm_table_cleanup(rtable, finfo->rx_time);
 		rtable->frag_cnt = 0;
 	}
