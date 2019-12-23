@@ -264,8 +264,11 @@ restart:
 	}
 
 // Skip duplicates / retransmissions.
+// If sequence numbers don't wrap, then treat fragments we've seen before as
+// duplicates too.
 
-	if(rt_entry->last_seq_num == finfo->seq_num) {
+	if(rt_entry->last_seq_num == finfo->seq_num ||
+	(finfo->seq_num_wrap == SEQ_WRAP_NONE && finfo->seq_num < rt_entry->last_seq_num)) {
 		la_debug_print("skipping duplicate fragment (seq_num: %d)\n", finfo->seq_num);
 		ret = LA_REASM_DUPLICATE;
 		goto end;
@@ -274,22 +277,6 @@ restart:
 // Check If the sequence number has incremented.
 
 	if(is_seq_num_in_sequence(rt_entry->last_seq_num, finfo->seq_num) == false) {
-
-// Special case: if sequence numbers do not wrap and every message is expected
-// to start with the same sequence number and the sequence number of this
-// fragment equals this value, then it might be a retransmission of the whole
-// message (all fragments).  Returning OUT_OF_SEQUENCE error on the first
-// fragment would prevent this message from being reassembled (all subsequent
-// fragments would trigger FIRST_FRAG_MISSING error).  We ditch the current
-// rt_entry and start the reassembly process from scratch.
-
-		if(finfo->seq_num_first != SEQ_FIRST_NONE &&
-		finfo->seq_num_wrap == SEQ_WRAP_NONE &&
-		finfo->seq_num == finfo->seq_num_first) {
-			la_debug_print("seq_num is 0, probably a complete retransmit - removing rt_entry\n");
-			la_hash_remove(rtable->fragment_table, lookup_key);
-			goto restart;
-		}
 
 // Probably one or more fragments have been lost. Reassembly is not possible.
 
