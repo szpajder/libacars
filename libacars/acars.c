@@ -337,6 +337,7 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 // block IDs (X, Y, Z, X, ...).
 		if(!IS_DOWNLINK_BLK(msg->block_id)) {
 			msg->txt = strdup("");
+			msg->reasm_status = LA_REASM_SKIPPED;
 			goto end;
 		} else {
 			la_debug_print("No text field in downlink message\n");
