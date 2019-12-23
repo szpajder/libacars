@@ -43,7 +43,7 @@ typedef struct {
 						// indication of the first fragment)
 	int seq_num_wrap;			// the value at which the sequence number wraps
 						// to 0 (SEQ_WRAP_NONE if it doesn't wrap)
-	bool last_fragment;			// is this the final fragment of this message?
+	bool is_final_fragment;			// is this the final fragment of this message?
 } la_reasm_fragment_info;
 
 typedef enum {

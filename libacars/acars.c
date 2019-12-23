@@ -403,7 +403,7 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 			.seq_num = down ? msg->msg_num_seq - 'A' : msg->block_id - 'A',
 			.seq_num_first = down ? 0 : SEQ_FIRST_NONE,
 			.seq_num_wrap = down ? SEQ_WRAP_NONE : 'X' - 'A',
-			.last_fragment = msg->final_block,
+			.is_final_fragment = msg->final_block,
 			.rx_time = rx_time,
 			.reasm_timeout = down ? reasm_timeout_downlink : reasm_timeout_uplink
 		});
