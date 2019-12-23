@@ -176,11 +176,14 @@ la_reasm_status la_reasm_fragment_add(la_reasm_table *rtable, la_reasm_fragment_
 	if(finfo->msg_info == NULL) {
 		return LA_REASM_ARGS_INVALID;
 	}
+
 // Don't allow zero timeout. This would prevent stale rt_entries from being expired,
 // causing a massive memory leak.
+
 	if(finfo->reasm_timeout.tv_sec == 0 && finfo->reasm_timeout.tv_usec == 0) {
 		return LA_REASM_ARGS_INVALID;
 	}
+
 	la_reasm_status ret = LA_REASM_UNKNOWN;
 	void *lookup_key = rtable->funcs.get_tmp_key(finfo->msg_info);
 	la_assert(lookup_key != NULL);
@@ -188,7 +191,9 @@ la_reasm_status la_reasm_fragment_add(la_reasm_table *rtable, la_reasm_fragment_
 restart:
 	rt_entry = la_hash_lookup(rtable->fragment_table, lookup_key);
 	if(rt_entry == NULL) {
+
 // Don't add if we know that this is not the first fragment of the message.
+
 		if(finfo->seq_num_first != SEQ_FIRST_NONE && finfo->seq_num_first != finfo->seq_num) {
 			la_debug_print("No rt_entry found and seq_num %d != seq_num_first %d,"
 				" not creating rt_entry\n", finfo->seq_num, finfo->seq_num_first);
@@ -196,10 +201,12 @@ restart:
 			goto end;
 		}
 		if(finfo->last_fragment) {
+
 // This is the first received fragment of this message and it's the final
 // fragment.  Either this message is not fragmented or all fragments except the
 // last one have been lost.  In either case there is no point in adding it to
 // the fragment table.
+
 			la_debug_print("No rt_entry found and last_fragment=true, not creating rt_entry\n");
 			ret = LA_REASM_SKIPPED;
 			goto end;
@@ -219,61 +226,100 @@ restart:
 	}
 
 // Check if the sequence number has wrapped (if we're supposed to handle wraparounds)
+
 	if(finfo->seq_num_wrap != SEQ_WRAP_NONE && finfo->seq_num == 0 &&
 	finfo->seq_num_wrap == rt_entry->last_seq_num + 1) {
 		la_debug_print("seq_num wrap at %d: %d -> %d\n", finfo->seq_num_wrap,
 			rt_entry->last_seq_num, finfo->seq_num);
+
 // Current seq_num is 0, so set last_seq_num to -1 to cause the seq_num check to succeed
+
 		rt_entry->last_seq_num = -1;
 	}
+
 // Check reassembly timeout
+
 	if(la_reasm_timed_out(finfo->rx_time, rt_entry->first_frag_rx_time, rt_entry->reasm_timeout) == true) {
 		if(rt_entry->last_seq_num == finfo->seq_num) {
+
 // This is a "true" timeout, ie. a duplicate fragment retransmitted many times
 // until timeout expires. We don't expect this reassembly to complete. Remove
 // this entry from the table and declare a timeout.
+
 			la_debug_print("duplicate fragment after timeout; removing rt_entry\n");
 			la_hash_remove(rtable->fragment_table, lookup_key);
 			ret = LA_REASM_TIMED_OUT;
 			goto end;
+
 		} else {
+
 // This is not a duplicate. Most probably the reassembly timeout has expired
 // due to lost fragments. This is probably a fragment belonging to the next
 // message. Remove current entry from the table and create a new one.
+
 			la_debug_print("timeout and not a duplicate; creating new rt_entry\n");
 			la_hash_remove(rtable->fragment_table, lookup_key);
 			goto restart;
 		}
 	}
+
 // Skip duplicates / retransmissions.
+
 	if(rt_entry->last_seq_num == finfo->seq_num) {
 		la_debug_print("skipping duplicate fragment (seq_num: %d)\n", finfo->seq_num);
 		ret = LA_REASM_DUPLICATE;
 		goto end;
 	}
-// If the sequence number is not contiguous, probably some fragments have been lost.
-// Reassembly is not possible.
+
+// Check If the sequence number has incremented.
+
 	if(is_seq_num_in_sequence(rt_entry->last_seq_num, finfo->seq_num) == false) {
+
+// Special case: if sequence numbers do not wrap and every message is expected
+// to start with the same sequence number and the sequence number of this
+// fragment equals this value, then it might be a retransmission of the whole
+// message (all fragments).  Returning OUT_OF_SEQUENCE error on the first
+// fragment would prevent this message from being reassembled (all subsequent
+// fragments would trigger FIRST_FRAG_MISSING error).  We ditch the current
+// rt_entry and start the reassembly process from scratch.
+
+		if(finfo->seq_num_first != SEQ_FIRST_NONE &&
+		finfo->seq_num_wrap == SEQ_WRAP_NONE &&
+		finfo->seq_num == finfo->seq_num_first) {
+			la_debug_print("seq_num is 0, probably a complete retransmit - removing rt_entry\n");
+			la_hash_remove(rtable->fragment_table, lookup_key);
+			goto restart;
+		}
+
+// Probably one or more fragments have been lost. Reassembly is not possible.
+
 		la_debug_print("seq_num %d out of sequence (last: %d)\n",
 			finfo->seq_num, rt_entry->last_seq_num);
 		la_hash_remove(rtable->fragment_table, lookup_key);
 		ret = LA_REASM_FRAG_OUT_OF_SEQUENCE;
 		goto end;
 	}
+
 // All checks succeeded. Add the fragment to the list.
+
 	la_debug_print("Good seq_num %d (last=%d), adding fragment to the list\n",
 		finfo->seq_num, rt_entry->last_seq_num);
 	rt_entry->fragment_list = la_list_append(rt_entry->fragment_list, strdup(finfo->msg_data));
 	rt_entry->last_seq_num = finfo->seq_num;
+
 // If we've come to this point successfully and finfo->last_fragment is set,
 // then reassembly of this message is finished. Otherwise we expect more
 // fragments to come.
+
 	ret = finfo->last_fragment ? LA_REASM_COMPLETE : LA_REASM_IN_PROGRESS;
+
 end:
+
 // Update fragment counter and expire old entries if necessary.
 // Expiration is performed in relation to rx_time of the fragment currently
 // being processed. This allows processing historical data with timestamps in
 // the past.
+
 	if(++rtable->frag_cnt > rtable->cleanup_interval) {
 		la_reasm_table_cleanup(rtable, finfo->rx_time);
 		rtable->frag_cnt = 0;
