@@ -23,7 +23,7 @@ typedef struct la_reasm_table_s {
 					// la_reasm_table_entries
 	la_reasm_table_funcs funcs;	// protocol-specific callbacks
 	int cleanup_interval;		// expire old entries every cleanup_interval
-					// number of added fragments
+					// number of processed fragments
 	int frag_cnt;			// counts added fragments (up to cleanup_interval)
 } la_reasm_table;
 
@@ -111,7 +111,7 @@ la_reasm_table_funcs funcs, int const cleanup_interval) {
 		funcs.destroy_key, la_reasm_table_entry_destroy);
 	rtable->funcs = funcs;
 
-// Replace insane value with reasonable default
+// Replace insane values with reasonable default
 	rtable->cleanup_interval = cleanup_interval > 0 ?
 		cleanup_interval : LA_REASM_DEFAULT_CLEANUP_INTERVAL;
 	rctx->rtables = la_list_append(rctx->rtables, rtable);
@@ -168,8 +168,8 @@ static bool is_seq_num_in_sequence(int const prev_seq_num, int const cur_seq_num
 }
 
 // Core reassembly logic.
-// Adds the given fragment to the reassembly table fragment list, provided that
-// sequence number validation and expiration timer checks succeeded.
+// Validates the given message fragment and appends it to the reassembly table
+// fragment list.
 la_reasm_status la_reasm_fragment_add(la_reasm_table *rtable, la_reasm_fragment_info const *finfo) {
 	la_assert(rtable != NULL);
 	la_assert(finfo != NULL);
