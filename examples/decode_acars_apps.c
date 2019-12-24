@@ -52,7 +52,9 @@ void usage() {
 bool json = false;
 
 void parse(char *label, char *txt, la_msg_dir msg_dir) {
-	la_proto_node *node = la_acars_decode_apps(label, txt, msg_dir);
+	int offset = la_acars_extract_sublabel_and_mfi(label, msg_dir, txt,
+		strlen(txt), NULL, NULL);
+	la_proto_node *node = la_acars_decode_apps(label, txt + offset, msg_dir);
 	printf("%s\n", txt);
 	if(node != NULL) {
 		la_vstring *vstr = NULL;

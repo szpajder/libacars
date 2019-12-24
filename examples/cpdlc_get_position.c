@@ -17,6 +17,7 @@
 #include <libacars/asn1/FANSPositionCurrent.h>
 #include <libacars/asn1/FANSPositionReport.h>
 #include <libacars/libacars.h>
+#include <libacars/acars.h>
 #include <libacars/arinc.h>
 #include <libacars/cpdlc.h>
 
@@ -112,8 +113,11 @@ void extract_position(FANSPositionReport_t rpt) {
 }
 
 void parse(char *txt) {
+// Skip sublabel and MFI if present, la_arinc_parse does not want them.
+	int offset = la_acars_extract_sublabel_and_mfi("H1", LA_MSG_DIR_AIR2GND,
+		txt, strlen(txt), NULL, NULL);
 // Parse the message and build the protocol tree
-	la_proto_node *node = la_arinc_parse(txt, LA_MSG_DIR_AIR2GND);
+	la_proto_node *node = la_arinc_parse(txt + offset, LA_MSG_DIR_AIR2GND);
 	printf("%s\n", txt);
 	if(node == NULL) {
 		printf("-- Failed to decode message\n");
