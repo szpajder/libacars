@@ -25,6 +25,7 @@ size_t la_list_length(la_list const *l);
 void la_list_foreach(la_list *l, void (*cb)(), void *ctx);
 void la_list_free(la_list *l);
 void la_list_free_full(la_list *l, void (*node_free)());
+void la_list_free_full_with_ctx(la_list *l, void (*node_free)(), void *ctx);
 
 #ifdef __cplusplus
 }

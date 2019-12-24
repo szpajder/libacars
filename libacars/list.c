@@ -44,6 +44,20 @@ void la_list_foreach(la_list *l, void (*cb)(), void *ctx) {
 	}
 }
 
+void la_list_free_full_with_ctx(la_list *l, void (*node_free)(), void *ctx) {
+	if(l == NULL) {
+		return;
+	}
+	la_list_free_full_with_ctx(l->next, node_free, ctx);
+	l->next = NULL;
+	if(node_free != NULL) {
+		node_free(l->data, ctx);
+	} else {
+		LA_XFREE(l->data);
+	}
+	LA_XFREE(l);
+}
+
 void la_list_free_full(la_list *l, void (*node_free)()) {
 	if(l == NULL) {
 		return;

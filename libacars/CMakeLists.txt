@@ -82,12 +82,14 @@ add_library (acars_core OBJECT
 	bitstream.c
 	cpdlc.c
 	crc.c
+	hash.c
 	json.c
 	libacars.c
 	list.c
 	media-adv.c
 	miam.c
 	miam-core.c
+	reassembly.c
 	util.c
 	vstring.c
 	${CMAKE_CURRENT_BINARY_DIR}/version.c
@@ -124,12 +126,14 @@ install(FILES
 	adsc.h
 	arinc.h
 	cpdlc.h
+	hash.h
 	json.h
 	libacars.h
 	list.h
 	media-adv.h
 	miam.h
 	miam-core.h
+	reassembly.h
 	version.h
 	vstring.h
 	DESTINATION
