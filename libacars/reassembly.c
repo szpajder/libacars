@@ -49,7 +49,6 @@ static void la_reasm_table_entry_destroy(void *rt_ptr) {
 	if(rt_ptr == NULL) {
 		return;
 	}
-	la_debug_print("table_entry_destroy\n");
 	LA_CAST_PTR(rt_entry, la_reasm_table_entry *, rt_ptr);
 	la_list_free(rt_entry->fragment_list);
 	LA_XFREE(rt_entry);
@@ -59,7 +58,6 @@ static void la_reasm_table_destroy(void *table) {
 	if(table == NULL) {
 		return;
 	}
-	la_debug_print("table_destroy\n");
 	LA_CAST_PTR(rtable, la_reasm_table *, table);
 	la_hash_destroy(rtable->fragment_table);
 	LA_XFREE(rtable);
@@ -69,7 +67,6 @@ void la_reasm_ctx_destroy(void *ctx) {
 	if(ctx == NULL) {
 		return;
 	}
-	la_debug_print("ctx_destroy\n");
 	LA_CAST_PTR(rctx, la_reasm_ctx *, ctx);
 	la_list_free_full(rctx->rtables, la_reasm_table_destroy);
 	LA_XFREE(rctx);
@@ -154,7 +151,6 @@ static bool is_rt_entry_expired(void const *keyptr, void const *valptr, void con
 static void la_reasm_table_cleanup(la_reasm_table *rtable, struct timeval now) {
 	la_assert(rtable != NULL);
 	la_assert(rtable->fragment_table != NULL);
-	la_debug_print("current time: %lu.%lu\n", now.tv_sec, now.tv_usec);
 	int deleted_count = la_hash_foreach_remove(rtable->fragment_table,
 		is_rt_entry_expired, &now);
 	la_debug_print("Expired %d entries\n", deleted_count);
@@ -329,7 +325,6 @@ char *la_reasm_payload_get(la_reasm_table *rtable, void const *msg_info) {
 	if(rt_entry == NULL) {
 		goto end;
 	}
-	la_debug_print("Found rt_entry for message, prev_seq_num: %d\n", rt_entry->prev_seq_num);
 	la_vstring *vstr = la_vstring_new();
 	la_list *l = rt_entry->fragment_list;
 	while(l != NULL) {
