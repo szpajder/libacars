@@ -15,6 +15,11 @@ typedef struct {
 	void *val;
 } la_dict;
 
+typedef struct {
+	uint8_t *buf;
+	size_t len;
+} la_octet_string;
+
 void *la_xcalloc(size_t nmemb, size_t size, const char *file, const int line, const char *func);
 void *la_xrealloc(void *ptr, size_t size, const char *file, const int line, const char *func);
 
@@ -28,5 +33,7 @@ char *la_hexdump(uint8_t *data, size_t len);
 int la_strntouint16_t(char const *txt, int const charcnt);
 size_t chomped_strlen(char const *s);
 char *la_simple_strptime(char const *s, struct tm *t);
+la_octet_string *la_octet_string_new(void *buf, size_t len);
+void la_octet_string_destroy(void *ostring_ptr);
 
 #endif // !LA_UTIL_H

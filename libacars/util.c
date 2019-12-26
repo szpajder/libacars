@@ -182,3 +182,19 @@ char *la_simple_strptime(char const *s, struct tm *t) {
 	}
 	return (char *)s + 12;
 }
+
+la_octet_string *la_octet_string_new(void *buf, size_t len) {
+	LA_NEW(la_octet_string, ostring);
+	ostring->buf = buf;
+	ostring->len = len;
+	return ostring;
+}
+
+void la_octet_string_destroy(void *ostring_ptr) {
+	if(ostring_ptr == NULL) {
+		return;
+	}
+	LA_CAST_PTR(ostring, la_octet_string *, ostring_ptr);
+	LA_XFREE(ostring->buf);
+	LA_XFREE(ostring);
+}
