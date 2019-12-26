@@ -9,8 +9,7 @@
 #include <libacars/macros.h>		// la_assert
 #include <libacars/hash.h>		// la_hash
 #include <libacars/list.h>		// la_list
-#include <libacars/vstring.h>		// la_vstring
-#include <libacars/util.h>		// LA_XCALLOC, LA_XFREE
+#include <libacars/util.h>		// LA_XCALLOC, LA_XFREE, la_octet_string
 #include <libacars/reassembly.h>
 
 typedef struct la_reasm_table_s {
@@ -34,7 +33,7 @@ struct la_reasm_ctx_s {
 // the header of the fragment list
 typedef struct {
 	int prev_seq_num;		// sequence number of previous fragment
-	int seq_num_wrap_count;		// number of sequence number wraparounds
+	int total_msg_len;		// sum of msg_data_len for all fragments received
 	struct timeval first_frag_rx_time;	// time of arrival of the first fragment
 	struct timeval reasm_timeout;	// reassembly timeout to be applied to this message
 	la_list *fragment_list;		// payloads of all fragments gathered so far
@@ -50,7 +49,7 @@ static void la_reasm_table_entry_destroy(void *rt_ptr) {
 		return;
 	}
 	LA_CAST_PTR(rt_entry, la_reasm_table_entry *, rt_ptr);
-	la_list_free(rt_entry->fragment_list);
+	la_list_free_full(rt_entry->fragment_list, la_octet_string_destroy);
 	LA_XFREE(rt_entry);
 }
 
@@ -211,6 +210,7 @@ restart:
 		rt_entry->prev_seq_num = SEQ_UNINITIALIZED;
 		rt_entry->first_frag_rx_time = finfo->rx_time;
 		rt_entry->reasm_timeout = finfo->reasm_timeout;
+		rt_entry->total_msg_len = 0;
 		la_debug_print("Adding new rt_table entry (rx_time: %lu.%lu timeout: %lu.%lu)\n",
 			rt_entry->first_frag_rx_time.tv_sec, rt_entry->first_frag_rx_time.tv_usec,
 			rt_entry->reasm_timeout.tv_sec, rt_entry->reasm_timeout.tv_usec);
@@ -285,9 +285,15 @@ restart:
 
 // All checks succeeded. Add the fragment to the list.
 
-	la_debug_print("Good seq_num %d (prev: %d), adding fragment to the list\n",
-		finfo->seq_num, rt_entry->prev_seq_num);
-	rt_entry->fragment_list = la_list_append(rt_entry->fragment_list, strdup(finfo->msg_data));
+	if(finfo->msg_data != NULL && finfo->msg_data_len > 0) {
+		la_debug_print("Good seq_num %d (prev: %d), adding fragment to the list\n",
+			finfo->seq_num, rt_entry->prev_seq_num);
+		uint8_t *msg_data = LA_XCALLOC(finfo->msg_data_len, sizeof(uint8_t));
+		memcpy(msg_data, finfo->msg_data, finfo->msg_data_len);
+		la_octet_string *ostring = la_octet_string_new(msg_data, finfo->msg_data_len);
+		rt_entry->fragment_list = la_list_append(rt_entry->fragment_list, ostring);
+		rt_entry->total_msg_len += finfo->msg_data_len;
+	}
 	rt_entry->prev_seq_num = finfo->seq_num;
 
 // If we've come to this point successfully and finfo->is_final_fragment is set,
@@ -313,29 +319,39 @@ end:
 }
 
 // Returns the reassembled payload and removes the packet data from reassembly table
-char *la_reasm_payload_get(la_reasm_table *rtable, void const *msg_info) {
+int la_reasm_payload_get(la_reasm_table *rtable, void const *msg_info, uint8_t **result) {
 	la_assert(rtable != NULL);
 	la_assert(msg_info != NULL);
+	la_assert(result != NULL);
 
 	void *tmp_key = rtable->funcs.get_tmp_key(msg_info);
 	la_assert(tmp_key);
 
-	char *ret = NULL;
+	size_t result_len = -1;
 	la_reasm_table_entry *rt_entry = la_hash_lookup(rtable->fragment_table, tmp_key);
 	if(rt_entry == NULL) {
+		result_len = -1;
 		goto end;
 	}
-	la_vstring *vstr = la_vstring_new();
-	la_list *l = rt_entry->fragment_list;
-	while(l != NULL) {
-		la_vstring_append_sprintf(vstr, "%s", (char *)l->data);
-		l = la_list_next(l);
+	if(rt_entry->total_msg_len < 1) {
+		result_len = 0;
+		goto end;
 	}
-	ret = vstr->str;
-	la_vstring_destroy(vstr, false);
+// Append a NULL byte at the end of the reassembled buffer, so that it can be
+// cast to char * if this is a text message.
+	uint8_t *reasm_buf = LA_XCALLOC(rt_entry->total_msg_len + 1, sizeof(uint8_t));
+	uint8_t *ptr = reasm_buf;
+	for(la_list *l = rt_entry->fragment_list; l != NULL; l = la_list_next(l)) {
+		LA_CAST_PTR(ostring, la_octet_string *, l->data);
+		memcpy(ptr, ostring->buf, ostring->len);
+		ptr += ostring->len;
+	}
+	reasm_buf[rt_entry->total_msg_len] = '\0'; // buffer len is total_msg_len + 1
+	*result = reasm_buf;
+	result_len = rt_entry->total_msg_len;
 	la_hash_remove(rtable->fragment_table, tmp_key);
 end:
 	LA_XFREE(tmp_key);
-	return ret;
+	return result_len;
 }
 

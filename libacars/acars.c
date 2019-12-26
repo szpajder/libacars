@@ -389,18 +389,11 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 		}
 		bool down = IS_DOWNLINK_BLK(msg->block_id);
 
-// Need a null-terminated copy of the message text here.
-// This will become unnecessary when the reassembly engine is converted
-// to work with byte buffers instead of character strings.
-		char *msg_text = LA_XCALLOC(remaining + 1, sizeof(char));
-		if(remaining > 0) {
-			memcpy(msg_text, ptr, remaining);
-		}
-
 		msg->reasm_status = la_reasm_fragment_add(acars_rtable,
 		&(la_reasm_fragment_info){
 			.msg_info = msg,
-			.msg_data = msg_text,
+			.msg_data = (uint8_t *)ptr,
+			.msg_data_len = remaining,
 			.seq_num = down ? msg->msg_num_seq - 'A' : msg->block_id - 'A',
 			.seq_num_first = down ? 0 : SEQ_FIRST_NONE,
 			.seq_num_wrap = down ? SEQ_WRAP_NONE : 'X' - 'A',
@@ -408,15 +401,14 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 			.rx_time = rx_time,
 			.reasm_timeout = down ? reasm_timeout_downlink : reasm_timeout_uplink
 		});
-// la_reasm_fragment_add() duplicates msg_data, so we can free it now.
-		LA_XFREE(msg_text);
 	}
-	if(msg->reasm_status == LA_REASM_COMPLETE) {
-		msg->txt = la_reasm_payload_get(acars_rtable, msg);
-// XXX: unnecessary?
-		if(msg->txt == NULL) {
-			msg->txt = strdup("");
-		}
+	uint8_t *reassembled_msg = NULL;
+	if(msg->reasm_status == LA_REASM_COMPLETE &&
+		la_reasm_payload_get(acars_rtable, msg, &reassembled_msg) > 0) {
+// reassembled_msg is a newly allocated byte buffer, which is guaranteed to
+// be NULL-terminated, so we can cast it to char * directly.
+		msg->txt = (char *)reassembled_msg;
+
 	} else {	// this will also trigger when reassembly engine is disabled
 		msg->txt = LA_XCALLOC(remaining + 1, sizeof(char));
 		if(remaining > 0) {

@@ -34,7 +34,8 @@ typedef struct {
 typedef struct {
 	void const *msg_info;			// pointer to message metadata (eg. header),
 						// used as hash key
-	char *msg_data;				// packet data buffer
+	uint8_t *msg_data;			// packet data buffer
+	int msg_data_len;			// packet data buffer length
 	struct timeval rx_time;			// fragment receive timestamp
 	struct timeval reasm_timeout;		// reassembly timeout to be applied to this message
 	int seq_num;				// sequence number of this fragment (non-negative)
@@ -65,7 +66,7 @@ la_reasm_table *la_reasm_table_new(la_reasm_ctx *rctx, void const *table_id,
 	la_reasm_table_funcs funcs, int const cleanup_interval);
 la_reasm_table *la_reasm_table_lookup(la_reasm_ctx *rctx, void const *table_id);
 la_reasm_status la_reasm_fragment_add(la_reasm_table *rtable, la_reasm_fragment_info const *finfo);
-char *la_reasm_payload_get(la_reasm_table *rtable, void const *message);
+int la_reasm_payload_get(la_reasm_table *rtable, void const *msg_info, uint8_t **result);
 
 #ifdef __cplusplus
 }
