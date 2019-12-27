@@ -192,7 +192,7 @@ restart:
 		if(finfo->seq_num_first != SEQ_FIRST_NONE && finfo->seq_num_first != finfo->seq_num) {
 			la_debug_print("No rt_entry found and seq_num %d != seq_num_first %d,"
 				" not creating rt_entry\n", finfo->seq_num, finfo->seq_num_first);
-			ret = LA_REASM_FIRST_FRAG_MISSING;
+			ret = LA_REASM_FRAG_OUT_OF_SEQUENCE;
 			goto end;
 		}
 		if(finfo->is_final_fragment) {
