@@ -75,8 +75,7 @@ la_reasm_table *la_reasm_table_lookup(la_reasm_ctx *rctx, void const *table_id) 
 	la_assert(rctx != NULL);
 	la_assert(table_id != NULL);
 
-	la_list *l = rctx->rtables;
-	while(l != NULL) {
+	for(la_list *l = rctx->rtables; l != NULL; l = la_list_next(l)) {
 		LA_CAST_PTR(rt, la_reasm_table *, l->data);
 		if(rt->key == table_id) {
 			return rt;
