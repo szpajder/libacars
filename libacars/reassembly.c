@@ -236,27 +236,13 @@ restart:
 // Check reassembly timeout
 
 	if(la_reasm_timed_out(finfo->rx_time, rt_entry->first_frag_rx_time, rt_entry->reasm_timeout) == true) {
-		if(rt_entry->prev_seq_num == finfo->seq_num) {
 
-// This is a "true" timeout, ie. a duplicate fragment retransmitted many times
-// until timeout expires. We don't expect this reassembly to complete. Remove
-// this entry from the table and declare a timeout.
+// If reassembly timeout has expired, we treat this fragment as a part of
+// a new message. Remove the old rt_entry and create new one.
 
-			la_debug_print("duplicate fragment after timeout; removing rt_entry\n");
-			la_hash_remove(rtable->fragment_table, lookup_key);
-			ret = LA_REASM_TIMED_OUT;
-			goto end;
-
-		} else {
-
-// This is not a duplicate. Most probably the reassembly timeout has expired
-// due to lost fragments. This is probably a fragment belonging to the next
-// message. Remove current entry from the table and create a new one.
-
-			la_debug_print("timeout and not a duplicate; creating new rt_entry\n");
+			la_debug_print("reasm timeout expired; creating new rt_entry\n");
 			la_hash_remove(rtable->fragment_table, lookup_key);
 			goto restart;
-		}
 	}
 
 // Skip duplicates / retransmissions.
