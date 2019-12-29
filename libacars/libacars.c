@@ -10,10 +10,6 @@
 #include <libacars/json.h>
 #include <libacars/util.h>		// LA_XCALLOC, LA_XFREE
 
-la_config_struct la_config = {
-	.dump_asn1 = false
-};
-
 static void la_proto_node_format_text(la_vstring * const vstr, la_proto_node const * const node, int indent) {
 	la_assert(indent >= 0);
 	if(node->data != NULL) {

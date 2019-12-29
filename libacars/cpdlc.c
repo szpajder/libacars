@@ -15,7 +15,7 @@
 #include <libacars/asn1-util.h>				// la_asn1_decode_as()
 #include <libacars/asn1-format-cpdlc.h>			// la_asn1_output_cpdlc_as_*()
 #include <libacars/cpdlc.h>				// la_cpdlc_msg
-#include <libacars/libacars.h>				// la_proto_node, la_config, la_proto_tree_find_protocol
+#include <libacars/libacars.h>				// la_proto_node, la_config_get_bool, la_proto_tree_find_protocol
 #include <libacars/util.h>				// la_debug_print(), LA_CAST_PTR
 #include <libacars/vstring.h>				// la_vstring, la_vstring_append_sprintf()
 #include <libacars/json.h>				// la_json_append_bool()
@@ -62,7 +62,9 @@ void la_cpdlc_format_text(la_vstring *vstr, void const * const data, int indent)
 	}
 	if(msg->asn_type != NULL) {
 		if(msg->data != NULL) {
-			if(la_config.dump_asn1) {
+			bool dump_asn1 = false;
+			(void)la_config_get_bool("dump_asn1", &dump_asn1);
+			if(dump_asn1 == true) {
 				// asn_fprint does not indent the first line
 				if(indent > 0) {
 					LA_ISPRINTF(vstr, indent * 4, "");

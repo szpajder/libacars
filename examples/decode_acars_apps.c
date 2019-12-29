@@ -7,7 +7,7 @@
 #include <stdio.h>		// printf(), fprintf(), fgets()
 #include <stdlib.h>		// getenv()
 #include <string.h>		// strcmp(), strchr(), strlen()
-#include <libacars/libacars.h>	// la_config, la_proto_node, la_msg_dir
+#include <libacars/libacars.h>	// la_proto_node, la_msg_dir
 				// la_proto_tree_format_text(), la_proto_tree_destroy()
 #include <libacars/acars.h>	// la_acars_decode_apps()
 #include <libacars/vstring.h>	// la_vstring, la_vstring_destroy()
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
 	la_msg_dir msg_dir = LA_MSG_DIR_UNKNOWN;
 	char *dump_asn1 = getenv("ENABLE_ASN1_DUMPS");
 	if(dump_asn1 != NULL && !strcmp(dump_asn1, "1")) {
-		la_config.dump_asn1 = true;
+		la_config_set_bool("dump_asn1", true);
 	}
 	if(getenv("LA_JSON") != NULL) {
 		json = true;
