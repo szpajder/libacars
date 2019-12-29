@@ -93,6 +93,7 @@ ACARS_2.0 {
     la_reasm_payload_get;
     la_reasm_table_new;
     la_reasm_table_lookup;
+    la_simple_free;
     LA_VERSION;
     la_vstring_append_buffer;
     la_vstring_append_sprintf;

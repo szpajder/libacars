@@ -39,6 +39,10 @@ uint32_t la_hash_key_str(void const *k) {
 	return (uint32_t)h;
 }
 
+void la_simple_free(void *data) {
+	LA_XFREE(data);
+}
+
 static void la_hash_destroy_key(la_hash *h, void *key) {
 	la_assert(h != NULL);
 	if(h->destroy_key != NULL) {
