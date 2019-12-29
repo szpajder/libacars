@@ -14,6 +14,17 @@ ACARS_2.0 {
     la_arinc_format_text;
     la_arinc_parse;
     la_config;
+    la_config_destroy;
+    la_config_init;
+    la_config_get_bool;
+    la_config_get_double;
+    la_config_get_int;
+    la_config_get_str;
+    la_config_set_bool;
+    la_config_set_double;
+    la_config_set_int;
+    la_config_set_str;
+    la_config_unset;
     la_cpdlc_destroy;
     la_cpdlc_format_json;
     la_cpdlc_format_text;

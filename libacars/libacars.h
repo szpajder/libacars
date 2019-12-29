@@ -21,7 +21,6 @@ typedef enum {
 } la_msg_dir;
 
 typedef void (la_print_type_f)(la_vstring * const vstr, void const * const data, int indent);
-// FIXME
 typedef void (la_json_type_f)(la_vstring * const vstr, void const * const data);
 typedef void (la_destroy_type_f)(void *data);
 
@@ -76,6 +75,21 @@ la_vstring *la_proto_tree_format_text(la_vstring *vstr, la_proto_node const * co
 la_vstring *la_proto_tree_format_json(la_vstring *vstr, la_proto_node const * const root);
 void la_proto_tree_destroy(la_proto_node *root);
 la_proto_node *la_proto_tree_find_protocol(la_proto_node *root, la_type_descriptor const * const td);
+
+// configuration.c
+void la_config_init();
+void la_config_destroy();
+bool la_config_set_bool(char const *name, bool const value);
+bool la_config_set_int(char const *name, long int const value);
+bool la_config_set_double(char const *name, double const value);
+bool la_config_set_str(char const *name, char const *value);
+bool la_config_get_bool(char const *name, bool *result);
+bool la_config_get_int(char const *name, long int *result);
+bool la_config_get_double(char const *name, double *result);
+bool la_config_get_str(char const *name, char **result);
+bool la_config_unset(char *name);
+
+// configuration.c
 
 #ifdef __cplusplus
 }

@@ -80,6 +80,7 @@ add_library (acars_core OBJECT
 	asn1-format-cpdlc-json.c
 	asn1-util.c
 	bitstream.c
+	configuration.c
 	cpdlc.c
 	crc.c
 	hash.c
