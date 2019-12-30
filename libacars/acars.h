@@ -16,6 +16,17 @@
 extern "C" {
 #endif
 
+// Supported radio link types
+// These are the allowed values of "acars_bearer" configuration option
+
+#define LA_ACARS_BEARER_INVALID   0             // do not use
+#define LA_ACARS_BEARER_VHF       1
+#define LA_ACARS_BEARER_HFDL      2
+#define LA_ACARS_BEARER_SATCOM    3
+
+#define LA_ACARS_BEARER_MIN       0
+#define LA_ACARS_BEARER_MAX       3
+
 typedef struct {
 	bool crc_ok;
 	bool err;

@@ -30,10 +30,36 @@
 #define HASH_INIT 5381
 #define HASH_MULT 17
 
-// FIXME: make this configurable
 #define LA_ACARS_REASM_TABLE_CLEANUP_INTERVAL 1000
-static struct timeval reasm_timeout_uplink = { .tv_sec = 90, .tv_usec = 0 };	// VAT4
-static struct timeval reasm_timeout_downlink = { .tv_sec = 11*60, .tv_usec = 0 }; // VGT4
+
+typedef struct {
+	struct timeval downlink, uplink;
+} la_acars_timeout_profile;
+
+// Reassembly timers for various ACARS radio bearers.
+static la_acars_timeout_profile const timeout_profiles[] = {
+	[LA_ACARS_BEARER_INVALID] = {
+		.downlink = { .tv_sec = 0,    .tv_usec = 0 },
+		.uplink   = { .tv_sec = 0,    .tv_usec = 0 }
+	},
+// Note: LA_ACARS_BEARER_VHF applies both to PoA and VDL2.
+// ARINC 618 specifies 420 and 90 seconds for VDL2, respectively,
+// however these values are too small and would result in many
+// incomplete reassemblies, especially in downlink direction.
+// PoA timers seem to work better in practice.
+	[LA_ACARS_BEARER_VHF] = {
+		.downlink = { .tv_sec = 660,  .tv_usec = 0 },    // VGT4
+		.uplink   = { .tv_sec = 90,   .tv_usec = 0 }     // VAT4
+	},
+	[LA_ACARS_BEARER_HFDL] = {
+		.downlink = { .tv_sec = 1260, .tv_usec = 0 },    // HFGT4
+		.uplink   = { .tv_sec = 370,  .tv_usec = 0 }     // HFAT4
+	},
+	[LA_ACARS_BEARER_SATCOM] = {
+		.downlink = { .tv_sec = 1260, .tv_usec = 0 },    // SGT4
+		.uplink   = { .tv_sec = 280,  .tv_usec = 0 }     // SAT4
+	}
+};
 
 typedef struct {
 	char *reg, *label, *msg_num;
@@ -282,7 +308,7 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 	}
 	len--;
 // Here we have DEL, CRC and ETX/ETB bytes removed.
-// There at least 12 bytes remaining.
+// There are at least 12 bytes remaining.
 
 	int remaining = len;
 	char *ptr = buf2;
@@ -389,6 +415,18 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 		}
 		bool down = IS_DOWNLINK_BLK(msg->block_id);
 
+		long int acars_bearer = LA_ACARS_BEARER_INVALID;
+		(void)la_config_get_int("acars_bearer", &acars_bearer);
+		if(acars_bearer < LA_ACARS_BEARER_MIN || acars_bearer > LA_ACARS_BEARER_MAX) {
+// This bearer will cause reassembly to fail with LA_REASM_INVALID_ARGS
+			acars_bearer = LA_ACARS_BEARER_INVALID;
+		}
+		la_acars_timeout_profile const *timeout_profile = timeout_profiles + acars_bearer;
+		la_debug_print("Using timeout profile for bearer %ld (up: %lu dn: %lu)\n",
+			acars_bearer,
+			timeout_profile->uplink.tv_sec,
+			timeout_profile->downlink.tv_sec);
+
 		msg->reasm_status = la_reasm_fragment_add(acars_rtable,
 		&(la_reasm_fragment_info){
 			.msg_info = msg,
@@ -399,7 +437,7 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 			.seq_num_wrap = down ? SEQ_WRAP_NONE : 'X' - 'A',
 			.is_final_fragment = msg->final_block,
 			.rx_time = rx_time,
-			.reasm_timeout = down ? reasm_timeout_downlink : reasm_timeout_uplink
+			.reasm_timeout = down ? timeout_profile->downlink : timeout_profile->uplink
 		});
 	}
 	uint8_t *reassembled_msg = NULL;
