@@ -415,9 +415,18 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 			memcpy(msg->txt, ptr, remaining);
 		}
 	}
-// XXX: do this only when reassembly is complete
+
 	if(strlen(msg->txt) > 0) {
-		node->next = la_acars_decode_apps(msg->label, msg->txt, msg_dir);
+		bool decode_apps = true;
+// If reassembly is enabled and is now in progress (ie. the message is not yet complete),
+// then decode_fragments config flag decides whether to decode apps in this message
+// or not.
+		if(rtables != NULL && msg->reasm_status == LA_REASM_IN_PROGRESS) {
+			(void)la_config_get_bool("decode_fragments", &decode_apps);
+		}
+		if(decode_apps) {
+			node->next = la_acars_decode_apps(msg->label, msg->txt, msg_dir);
+		}
 	}
 	goto end;
 fail:

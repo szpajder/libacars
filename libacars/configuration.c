@@ -50,7 +50,7 @@ typedef struct {
 	{ .name = _name, .value = LA_CONFIG_ITEM(LA_CONFVAR_STRING, _str, _value) }
 
 static const la_config_option config_defaults[] =
-#include "config_defaults.h"
+#include <libacars/config_defaults.h>
 
 #define CONFIG_DEFAULTS_COUNT (sizeof(config_defaults) / sizeof(la_config_option))
 
