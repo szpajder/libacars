@@ -151,6 +151,8 @@ static void la_reasm_table_cleanup(la_reasm_table *rtable, struct timeval now) {
 	la_assert(rtable->fragment_table != NULL);
 	int deleted_count = la_hash_foreach_remove(rtable->fragment_table,
 		is_rt_entry_expired, &now);
+// Avoid compiler warning when DEBUG is off
+	LA_UNUSED(deleted_count);
 	la_debug_print("Expired %d entries\n", deleted_count);
 }
 
