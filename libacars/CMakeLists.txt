@@ -74,8 +74,6 @@ option(ZLIB "Enable ZLIB support for MIAM" ON)
 set(WITH_ZLIB FALSE)
 
 if(ZLIB)
-# FindZLIB.cmake uses deprecated *_ROOT variable
-	cmake_policy(SET CMP0074 OLD)
 	find_package(ZLIB)
 	if(ZLIB_FOUND)
 		set(WITH_ZLIB TRUE)
