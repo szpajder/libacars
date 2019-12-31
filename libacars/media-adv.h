@@ -18,15 +18,15 @@ extern "C" {
 #define LA_MEDIA_ADV_LINK_TYPE_CNT 8
 
 typedef struct {
-	char version[2];
+	bool err;
+	uint8_t version;
+	uint8_t hour;
+	uint8_t minute;
+	uint8_t second;
 	char state[2];
 	char current_link[2];
-	char hour[3];
-	char minute[3];
-	char second[3];
 	char available_links[10];
 	char text[255];
-	bool err;
 // reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);

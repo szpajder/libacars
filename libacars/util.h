@@ -36,6 +36,8 @@ char *la_strsep(char **stringp, char const *delim);
 #define LA_STRSEP la_strsep
 #endif
 
+#define ATOI2(x,y) (10 * ((x) - '0') + ((y) - '0'))
+
 void *la_dict_search(const la_dict *list, int id);
 size_t la_slurp_hexstring(char *string, uint8_t **buf);
 char *la_hexdump(uint8_t *data, size_t len);

@@ -13,7 +13,7 @@
 #include <libacars/vstring.h>		// la_vstring, la_vstring_append_sprintf(),
 					// LA_ISPRINTF()
 #include <libacars/json.h>		// la_json_*()
-#include <libacars/util.h>		// LA_XCALLOC()
+#include <libacars/util.h>		// LA_XCALLOC(), ATOI2()
 
 typedef struct {
 	char const code;
@@ -81,8 +81,7 @@ la_proto_node *la_media_adv_parse(char const *txt) {
 	if(check_format(txt)) {
 		msg->err = false;
 		// First is version
-		msg->version[0] = txt[0];
-		msg->version[1] = '\0';
+		msg->version = txt[0] - '0';
 		// link status Established or Lost
 		msg->state[0] = txt[1];
 		msg->state[1] = '\0';
@@ -90,16 +89,16 @@ la_proto_node *la_media_adv_parse(char const *txt) {
 		msg->current_link[0] = txt[2];
 		msg->current_link[1] = '\0';
 		// time of state change
-		strncpy(msg->hour, &txt[3], 2);
-		if(atoi(msg->hour)>23) {
+		msg->hour = ATOI2(txt[3], txt[4]);
+		if(msg->hour > 23) {
 			msg->err = true;
 		}
-		strncpy(msg->minute, &txt[5], 2);
-		if(atoi(msg->minute)>59) {
+		msg->minute = ATOI2(txt[5], txt[6]);
+		if(msg->minute > 59) {
 			msg->err = true;
 		}
-		strncpy(msg->second, &txt[7], 2);
-		if(atoi(msg->second)>59) {
+		msg->second = ATOI2(txt[7], txt[8]);
+		if(msg->second > 59) {
 			msg->err = true;
 		}
 		// Available links are for 4 to symbol / if present
@@ -150,11 +149,11 @@ void la_media_adv_format_text(la_vstring * const vstr, void const * const data, 
 	}
 
 	// Version
-	LA_ISPRINTF(vstr, indent, "Media Advisory, version %s:\n", msg->version);
+	LA_ISPRINTF(vstr, indent, "Media Advisory, version %d:\n", msg->version);
 	indent++;
 
 	// Prepare time
-	LA_ISPRINTF(vstr, indent, "Link %s %s at %s:%s:%s UTC\n",
+	LA_ISPRINTF(vstr, indent, "Link %s %s at %02d:%02d:%02d UTC\n",
 		get_link_description(msg->current_link[0]),
 		(msg->state[0] == 'E') ? "established" : "lost",
 		msg->hour, msg->minute, msg->second
@@ -188,19 +187,15 @@ void la_media_adv_format_json(la_vstring * const vstr, void const * const data) 
 	if(msg->err == true) {
 		return;
 	}
-	la_json_append_string(vstr, "version", msg->version);
+	la_json_append_long(vstr, "version", msg->version);
 	la_json_object_start(vstr, "current_link");
 	la_json_append_char(vstr, "code", msg->current_link[0]);
 	la_json_append_string(vstr, "descr", get_link_description(msg->current_link[0]));
 	la_json_append_bool(vstr, "established", (msg->state[0] == 'E') ? true : false);
 	la_json_object_start(vstr, "time");
-// FIXME: timestamp fields should be stored as numbers, not strings. However
-// changing la_media_adv_msg structure would break ABI. We therefore
-// postpone the change to version 2 of the API and perform conversion here.
-// At least the JSON structure won't need a change later on.
-	la_json_append_long(vstr, "hour", atol(msg->hour));
-	la_json_append_long(vstr, "min", atol(msg->minute));
-	la_json_append_long(vstr, "sec", atol(msg->second));
+	la_json_append_long(vstr, "hour", msg->hour);
+	la_json_append_long(vstr, "min", msg->minute);
+	la_json_append_long(vstr, "sec", msg->second);
 	la_json_object_end(vstr);
 	la_json_object_end(vstr);
 

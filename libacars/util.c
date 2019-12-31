@@ -166,7 +166,6 @@ size_t chomped_strlen(char const *s) {
 // Do not use strptime() - it's not available on WIN32
 // Do not use sscanf() - it's too liberal on the input
 // (we do not want whitespaces between fields, for example)
-#define ATOI2(x,y) (10 * ((x) - '0') + ((y) - '0'))
 char *la_simple_strptime(char const *s, struct tm *t) {
 	if(strspn(s, "0123456789") < 12) {
 		return NULL;
