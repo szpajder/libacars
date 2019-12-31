@@ -21,6 +21,11 @@ typedef struct {
 	asn_TYPE_descriptor_t *asn_type;
 	void *data;
 	bool err;
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
 } la_cpdlc_msg;
 
 // cpdlc.c

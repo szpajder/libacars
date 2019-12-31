@@ -34,12 +34,22 @@ typedef struct {
 	la_adsc_format_type_f *format_text;
 	la_adsc_format_type_f *format_json;
 	la_adsc_destroy_type_f *destroy;
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
 } la_adsc_type_descriptor_t;
 
 // ADS-C message
 typedef struct {
 	bool err;
 	la_list *tag_list;
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
 } la_adsc_msg_t;
 
 // generic tag structure

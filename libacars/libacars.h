@@ -29,7 +29,7 @@ typedef struct {
 	la_destroy_type_f *destroy;
 	la_json_type_f *format_json;
 	char *json_key;
-// padding for ABI compatibility
+// reserved for future use
 	void (*reserved2)(void);
 	void (*reserved3)(void);
 	void (*reserved4)(void);
@@ -46,7 +46,7 @@ struct la_proto_node {
 	la_type_descriptor const *td;
 	void *data;
 	la_proto_node *next;
-// padding for ABI compatibility
+// reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
 	void (*reserved2)(void);

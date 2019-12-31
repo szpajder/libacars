@@ -31,6 +31,11 @@ typedef struct {
 	char air_reg[8];
 	la_arinc_imi imi;
 	bool crc_ok;
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
 } la_arinc_msg;
 
 la_proto_node *la_arinc_parse(char const *txt, la_msg_dir const msg_dir);

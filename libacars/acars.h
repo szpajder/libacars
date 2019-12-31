@@ -43,7 +43,7 @@ typedef struct {
 	char flight_id[7];
 	la_reasm_status reasm_status;
 	char *txt;
-// padding for ABI compatibility
+// reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
 	void (*reserved2)(void);

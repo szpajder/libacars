@@ -27,6 +27,11 @@ typedef struct {
 	char available_links[10];
 	char text[255];
 	bool err;
+// reserved for future use
+	void (*reserved0)(void);
+	void (*reserved1)(void);
+	void (*reserved2)(void);
+	void (*reserved3)(void);
 } la_media_adv_msg;
 
 la_proto_node *la_media_adv_parse(char const *txt);
