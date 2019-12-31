@@ -1,5 +1,6 @@
 include(CheckCSourceCompiles)
 include(TestBigEndian)
+include(CheckSymbolExists)
 
 # Check if LD supports linker scripts.
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/conftest.ldscript" "VERS_1 {
@@ -23,6 +24,7 @@ add_definitions(-D_XOPEN_SOURCE=600)
 add_definitions(-D_POSIX_C_SOURCE=200809L)
 
 # strsep
+# Also silence warnings about obsolete _BSD_SOURCE macro in ASN.1 code
 add_definitions(-D_DEFAULT_SOURCE)
 
 if (HAVE_LD_VERSION_SCRIPT)
@@ -31,6 +33,10 @@ if (HAVE_LD_VERSION_SCRIPT)
 endif()
 
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
+
+set(CMAKE_REQUIRED_FLAGS_SAVE ${CMAKE_REQUIRED_FLAGS})
+CHECK_SYMBOL_EXISTS(strsep string.h HAVE_STRSEP)
+set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_SAVE})
 
 find_library(LIBM m REQUIRED)
 

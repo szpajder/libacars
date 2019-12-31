@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <string.h>			// memcpy, strdup, strsep
 #include <libacars/macros.h>		// la_assert, la_debug_print
-#include <libacars/util.h>		// LA_XCALLOC, LA_XFREE
+#include <libacars/util.h>		// LA_XCALLOC, LA_XFREE, LA_STRSEP
 #include <libacars/vstring.h>		// la_vstring
 
 #define LA_VSTR_INITIAL_SIZE 256
@@ -64,7 +64,7 @@ void la_isprintf_multiline_text(la_vstring * const vstr, int const indent, char 
 	char *ptr = copy;
 	char *line = NULL;
 	do {
-		line = strsep(&ptr, "\n");
+		line = LA_STRSEP(&ptr, "\n");
 		LA_ISPRINTF(vstr, indent, "%s\n", line);
 	} while(ptr != NULL && ptr[0] != '\0');
 	LA_XFREE(copy);

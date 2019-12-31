@@ -6,10 +6,11 @@
 #include <stdio.h>		// fprintf
 #include <stdint.h>
 #include <stdlib.h>		// calloc, realloc, free
-#include <string.h>		// strerror, strlen, strdup, strnlen, strspn
+#include <string.h>		// strerror, strlen, strdup, strnlen, strspn, strpbrk
 #include <time.h>		// struct tm
 #include <errno.h>		// errno
 #include <unistd.h>		// _exit
+#include "config.h"		// HAVE_STRSEP
 #include <libacars/macros.h>	// la_debug_print()
 #include <libacars/util.h>
 
@@ -198,3 +199,19 @@ void la_octet_string_destroy(void *ostring_ptr) {
 	LA_XFREE(ostring->buf);
 	LA_XFREE(ostring);
 }
+
+#ifndef HAVE_STRSEP
+char *la_strsep(char **stringp, char const *delim) {
+	char *start = *stringp;
+	char *p;
+
+	p = (start != NULL) ? strpbrk(start, delim) : NULL;
+	if (p == NULL) {
+		*stringp = NULL;
+	} else {
+		*p = '\0';
+		*stringp = p + 1;
+	}
+	return start;
+}
+#endif

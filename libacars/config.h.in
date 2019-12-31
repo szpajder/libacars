@@ -8,5 +8,6 @@
 
 #cmakedefine WITH_ZLIB
 #cmakedefine IS_BIG_ENDIAN
+#cmakedefine HAVE_STRSEP
 
 #endif // !_CONFIG_H
