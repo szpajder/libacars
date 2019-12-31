@@ -28,6 +28,11 @@ add_definitions(-D_POSIX_C_SOURCE=200809L)
 # Also silence warnings about obsolete _BSD_SOURCE macro in ASN.1 code
 add_definitions(-D_DEFAULT_SOURCE)
 
+# strsep on MacOS
+if(APPLE)
+	add_definitions(-D_DARWIN_C_SOURCE)
+endif()
+
 if (HAVE_LD_VERSION_SCRIPT)
 	set(acars_ldscript "${CMAKE_CURRENT_SOURCE_DIR}/symversions.ldscript")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script,${acars_ldscript}")
