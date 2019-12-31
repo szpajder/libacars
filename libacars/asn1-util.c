@@ -10,6 +10,7 @@
 #include <libacars/asn1-util.h>			// la_asn_formatter
 #include <libacars/macros.h>			// LA_CAST_PTR, LA_ISPRINTF, la_debug_print()
 #include <libacars/vstring.h>			// la_vstring
+#include "config.h"				// LFIND_NMEMB_SIZE_SIZE_T, LFIND_NMEMB_SIZE_UINT
 
 static int la_compare_fmtr(const void *k, const void *m) {
 	LA_CAST_PTR(memb, la_asn_formatter *, m);
@@ -37,7 +38,12 @@ void la_asn1_output(la_vstring *vstr, la_asn_formatter const * const asn1_format
 	size_t asn1_formatter_table_len, asn_TYPE_descriptor_t *td, const void *sptr, int indent,
 	bool const dump_unknown_types) {
 	if(td == NULL || sptr == NULL) return;
-	la_asn_formatter *formatter = lfind(td, asn1_formatter_table, &asn1_formatter_table_len,
+#if defined LFIND_NMEMB_SIZE_SIZE_T
+	size_t table_len = asn1_formatter_table_len;
+#elif defined LFIND_NMEMB_SIZE_UINT
+	unsigned int table_len = (unsigned int)asn1_formatter_table_len;
+#endif
+	la_asn_formatter *formatter = lfind(td, asn1_formatter_table, &table_len,
 		sizeof(la_asn_formatter), &la_compare_fmtr);
 	if(formatter != NULL) {
 		formatter->format(vstr, formatter->label, td, sptr, indent);

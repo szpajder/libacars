@@ -9,5 +9,7 @@
 #cmakedefine WITH_ZLIB
 #cmakedefine IS_BIG_ENDIAN
 #cmakedefine HAVE_STRSEP
+#cmakedefine LFIND_NMEMB_SIZE_SIZE_T
+#cmakedefine LFIND_NMEMB_SIZE_UINT
 
 #endif // !_CONFIG_H

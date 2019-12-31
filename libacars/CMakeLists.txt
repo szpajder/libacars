@@ -1,6 +1,7 @@
 include(CheckCSourceCompiles)
 include(TestBigEndian)
 include(CheckSymbolExists)
+include(CheckPrototypeDefinition)
 
 # Check if LD supports linker scripts.
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/conftest.ldscript" "VERS_1 {
@@ -37,6 +38,30 @@ TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 set(CMAKE_REQUIRED_FLAGS_SAVE ${CMAKE_REQUIRED_FLAGS})
 CHECK_SYMBOL_EXISTS(strsep string.h HAVE_STRSEP)
 set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_SAVE})
+
+
+# lfind - Unix prototype
+check_prototype_definition(
+	lfind
+	"void *lfind(const void *key, const void *base, size_t *nmemb,
+	size_t size, int(*compar)(const void *, const void *))"
+	"NULL"
+	"stddef.h;search.h"
+	LFIND_NMEMB_SIZE_SIZE_T)
+
+# lfind - Windows prototype
+check_prototype_definition(
+	lfind
+	"void *lfind(const void *key, const void *base, unsigned int *nmemb,
+	unsigned int size, int(*compar)(const void *, const void *))"
+	"NULL"
+	"stddef.h;search.h"
+	LFIND_NMEMB_SIZE_UINT)
+
+if(NOT ${LFIND_NMEMB_SIZE_SIZE_T} AND NOT ${LFIND_NMEMB_SIZE_UINT})
+	message(FATAL_ERROR "Unable to determine lfind function prototype")
+endif()
+
 
 find_library(LIBM m REQUIRED)
 
