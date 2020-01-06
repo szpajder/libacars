@@ -272,15 +272,17 @@ restart:
 
 // All checks succeeded. Add the fragment to the list.
 
+	la_debug_print(D_INFO, "Good seq_num %d (prev: %d), adding fragment to the list\n",
+		finfo->seq_num, rt_entry->prev_seq_num);
+// Don't append fragments with empty payload (but increment seq_num anyway,
+// because empty fragment is not an error)
 	if(finfo->msg_data != NULL && finfo->msg_data_len > 0) {
-		la_debug_print(D_INFO, "Good seq_num %d (prev: %d), adding fragment to the list\n",
-			finfo->seq_num, rt_entry->prev_seq_num);
 		uint8_t *msg_data = LA_XCALLOC(finfo->msg_data_len, sizeof(uint8_t));
 		memcpy(msg_data, finfo->msg_data, finfo->msg_data_len);
 		la_octet_string *ostring = la_octet_string_new(msg_data, finfo->msg_data_len);
 		rt_entry->fragment_list = la_list_append(rt_entry->fragment_list, ostring);
-		rt_entry->total_msg_len += finfo->msg_data_len;
 	}
+	rt_entry->total_msg_len += finfo->msg_data_len;
 	rt_entry->prev_seq_num = finfo->seq_num;
 
 // If we've come to this point successfully and finfo->is_final_fragment is set,
