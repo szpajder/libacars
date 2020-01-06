@@ -13,30 +13,37 @@
 #include <libacars/reassembly.h>
 
 typedef struct la_reasm_table_s {
-	void const *key;		// a pointer identifying the protocol
-					// owning this reasm_table (la_type_descriptor
-					// can be used for this purpose). Due to small
-					// number of protocols, hash would be an overkill
-					// here.
-	la_hash *fragment_table;	// keyed with packet identifiers, values are
-					// la_reasm_table_entries
-	la_reasm_table_funcs funcs;	// protocol-specific callbacks
-	int cleanup_interval;		// expire old entries every cleanup_interval
-					// number of processed fragments
-	int frag_cnt;			// counts added fragments (up to cleanup_interval)
+	void const *key;			// a pointer identifying the protocol
+						// owning this reasm_table (la_type_descriptor
+						// can be used for this purpose). Due to small
+						// number of protocols, hash would be an overkill
+						// here.
+	la_hash *fragment_table;		// keyed with packet identifiers, values are
+						// la_reasm_table_entries
+	la_reasm_table_funcs funcs;		// protocol-specific callbacks
+	int cleanup_interval;			// expire old entries every cleanup_interval
+						// number of processed fragments
+	int frag_cnt;				// counts added fragments (up to cleanup_interval)
 } la_reasm_table;
 
 struct la_reasm_ctx_s {
-	la_list *rtables;		// list of reasm_tables, one per protocol
+	la_list *rtables;			// list of reasm_tables, one per protocol
 };
 
 // the header of the fragment list
 typedef struct {
-	int prev_seq_num;		// sequence number of previous fragment
-	int total_msg_len;		// sum of msg_data_len for all fragments received
+	int prev_seq_num;			// sequence number of previous fragment
+
+	int frags_collected_total_len;		// sum of msg_data_len for all fragments received
+
+	int total_pdu_len;			// total length of the reassembled message
+						// (copied from la_reasm_fragment_info of the 1st fragment)
+
 	struct timeval first_frag_rx_time;	// time of arrival of the first fragment
-	struct timeval reasm_timeout;	// reassembly timeout to be applied to this message
-	la_list *fragment_list;		// payloads of all fragments gathered so far
+
+	struct timeval reasm_timeout;		// reassembly timeout to be applied to this message
+
+	la_list *fragment_list;			// payloads of all fragments gathered so far
 } la_reasm_table_entry;
 
 la_reasm_ctx *la_reasm_ctx_new() {
@@ -211,7 +218,8 @@ restart:
 		rt_entry->prev_seq_num = SEQ_UNINITIALIZED;
 		rt_entry->first_frag_rx_time = finfo->rx_time;
 		rt_entry->reasm_timeout = finfo->reasm_timeout;
-		rt_entry->total_msg_len = 0;
+		rt_entry->total_pdu_len = LA_MAX(finfo->total_pdu_len, 0);
+		rt_entry->frags_collected_total_len = 0;
 		la_debug_print(D_INFO, "Adding new rt_table entry (rx_time: %lu.%lu timeout: %lu.%lu)\n",
 			rt_entry->first_frag_rx_time.tv_sec, rt_entry->first_frag_rx_time.tv_usec,
 			rt_entry->reasm_timeout.tv_sec, rt_entry->reasm_timeout.tv_usec);
@@ -282,14 +290,25 @@ restart:
 		la_octet_string *ostring = la_octet_string_new(msg_data, finfo->msg_data_len);
 		rt_entry->fragment_list = la_list_append(rt_entry->fragment_list, ostring);
 	}
-	rt_entry->total_msg_len += finfo->msg_data_len;
+	rt_entry->frags_collected_total_len += finfo->msg_data_len;
 	rt_entry->prev_seq_num = finfo->seq_num;
 
-// If we've come to this point successfully and finfo->is_final_fragment is set,
-// then reassembly of this message is finished. Otherwise we expect more
-// fragments to come.
+// If we've come to this point successfully, then reassembly is complete if:
+//
+// - total_pdu_len for this rt_entry is set and we've already collected
+//   required amount of data, or
+//
+// - total_pdu_len for this rt_entry is not known and the caller indicates
+//   that this is the final fragment of this message.
+//
+// Otherwise we expect more fragments to come.
 
-	ret = finfo->is_final_fragment ? LA_REASM_COMPLETE : LA_REASM_IN_PROGRESS;
+	if(rt_entry->total_pdu_len > 0) {
+		ret = rt_entry->frags_collected_total_len >= rt_entry->total_pdu_len ?
+			LA_REASM_COMPLETE : LA_REASM_IN_PROGRESS;
+	} else {
+		ret = finfo->is_final_fragment ? LA_REASM_COMPLETE : LA_REASM_IN_PROGRESS;
+	}
 
 end:
 
@@ -322,22 +341,22 @@ int la_reasm_payload_get(la_reasm_table *rtable, void const *msg_info, uint8_t *
 		result_len = -1;
 		goto end;
 	}
-	if(rt_entry->total_msg_len < 1) {
+	if(rt_entry->frags_collected_total_len < 1) {
 		result_len = 0;
 		goto end;
 	}
 // Append a NULL byte at the end of the reassembled buffer, so that it can be
 // cast to char * if this is a text message.
-	uint8_t *reasm_buf = LA_XCALLOC(rt_entry->total_msg_len + 1, sizeof(uint8_t));
+	uint8_t *reasm_buf = LA_XCALLOC(rt_entry->frags_collected_total_len + 1, sizeof(uint8_t));
 	uint8_t *ptr = reasm_buf;
 	for(la_list *l = rt_entry->fragment_list; l != NULL; l = la_list_next(l)) {
 		LA_CAST_PTR(ostring, la_octet_string *, l->data);
 		memcpy(ptr, ostring->buf, ostring->len);
 		ptr += ostring->len;
 	}
-	reasm_buf[rt_entry->total_msg_len] = '\0'; // buffer len is total_msg_len + 1
+	reasm_buf[rt_entry->frags_collected_total_len] = '\0'; // buffer len is frags_collected_total_len + 1
 	*result = reasm_buf;
-	result_len = rt_entry->total_msg_len;
+	result_len = rt_entry->frags_collected_total_len;
 	la_hash_remove(rtable->fragment_table, tmp_key);
 end:
 	LA_XFREE(tmp_key);

@@ -34,17 +34,32 @@ typedef struct {
 typedef struct {
 	void const *msg_info;			// pointer to message metadata (eg. header),
 						// used as hash key
+
 	uint8_t *msg_data;			// packet data buffer
+
 	int msg_data_len;			// packet data buffer length
+
+	int total_pdu_len;			// Total length of the reassembled message.
+						// If > 0, then reassembly is completed when
+						// total length of collected fragments reaches
+						// this value. If <= 0, then caller must signal
+						// the final fragment using is_final_fragment flag.
+
 	struct timeval rx_time;			// fragment receive timestamp
+
 	struct timeval reasm_timeout;		// reassembly timeout to be applied to this message
+
 	int seq_num;				// sequence number of this fragment (non-negative)
+
 	int seq_num_first;			// this sequence number indicates the first fragment
 						// of the message (SEQ_FIRST_NONE if there is no
 						// indication of the first fragment)
+
 	int seq_num_wrap;			// the value at which the sequence number wraps
 						// to 0 (SEQ_WRAP_NONE if it doesn't wrap)
+
 	bool is_final_fragment;			// is this the final fragment of this message?
+
 // reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
