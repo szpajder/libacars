@@ -121,7 +121,7 @@ static char *guess_arinc_msg_type(char const *txt, la_arinc_msg *msg) {
 		}
 	}
 	if(imi == ARINC_MSG_UNKNOWN) {
-		la_debug_print("No known IMI found\n");
+		la_debug_print(D_INFO, "No known IMI found\n");
 		return NULL;
 	}
 	char *gs_addr = NULL;
@@ -141,7 +141,7 @@ static char *guess_arinc_msg_type(char const *txt, la_arinc_msg *msg) {
 			goto complete;
 		}
 	}
-	la_debug_print("IMI %d found but no GS address\n", imi);
+	la_debug_print(D_ERROR, "IMI %d found but no GS address\n", imi);
 	return NULL;
 complete:
 	msg->imi = imi;
@@ -159,7 +159,7 @@ static bool la_is_crc_ok(char const * const text_part, uint8_t const * const bin
 	memcpy(buf + LA_ARINC_IMI_LEN + LA_ARINC_AIR_REG_LEN, binary_part, binary_part_len);
 	bool result = (la_crc16_arinc(buf, buflen, 0xFFFFu) == LA_CRC_ARINC_GOOD);
 	LA_XFREE(buf);
-	la_debug_print("crc_ok? %d\n", result);
+	la_debug_print(D_INFO, "crc_ok? %d\n", result);
 	return result;
 }
 
@@ -179,12 +179,12 @@ la_proto_node *la_arinc_parse(char const *txt, la_msg_dir const msg_dir) {
 	if(imi_props[msg->imi].app_type == ARINC_APP_TYPE_BINARY) {
 		size_t payload_len = strlen(payload);
 		if(payload_len < LA_ARINC_IMI_LEN + LA_ARINC_AIR_REG_LEN + LA_ARINC_CRC_LEN * 2) {
-			la_debug_print("payload too short: %zu\n", payload_len);
+			la_debug_print(D_ERROR, "payload too short: %zu\n", payload_len);
 			goto cleanup;
 		}
 		memcpy(msg->air_reg, payload + LA_ARINC_IMI_LEN, LA_ARINC_AIR_REG_LEN);
 		msg->air_reg[LA_ARINC_AIR_REG_LEN] = '\0';
-		la_debug_print("air_reg: %s\n", msg->air_reg);
+		la_debug_print(D_INFO, "air_reg: %s\n", msg->air_reg);
 		uint8_t *buf = NULL;
 		size_t buflen = la_slurp_hexstring(payload + LA_ARINC_IMI_LEN + LA_ARINC_AIR_REG_LEN, &buf);
 		msg->crc_ok = la_is_crc_ok(payload, buf, buflen);

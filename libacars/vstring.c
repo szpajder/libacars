@@ -25,7 +25,7 @@ static void la_vstring_grow(la_vstring * const vstr, size_t const space_needed) 
 	while(vstr->len + space_needed >= new_size) {
 		new_size *= LA_VSTR_SIZE_MULT;
 	}
-	la_debug_print("allocated_size=%zu len=%zu space_needed=%zu new_size: %zu\n",
+	la_debug_print(D_VERBOSE, "allocated_size=%zu len=%zu space_needed=%zu new_size: %zu\n",
 		vstr->allocated_size, vstr->len, space_needed, new_size);
 	la_assert(new_size <= LA_VSTR_SIZE_MAX);
 	vstr->str = LA_XREALLOC(vstr->str, new_size);

@@ -4,6 +4,9 @@
  *  Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
  */
 #include <stdbool.h>
+#ifdef DEBUG
+#include <stdlib.h>			// getenv, strtoul
+#endif
 #include <libacars/macros.h>		// la_assert
 #include <libacars/libacars.h>		// la_proto_node
 #include <libacars/vstring.h>
@@ -92,3 +95,16 @@ la_proto_node *la_proto_tree_find_protocol(la_proto_node *root, la_type_descript
 	}
 	return NULL;
 }
+
+#ifdef DEBUG
+
+uint32_t Debug = 0;
+
+void __attribute__ ((constructor)) la_debug_init() {
+	char *la_debug = getenv("LA_DEBUG");
+	if(la_debug != NULL) {
+		Debug = strtoul(la_debug, NULL, 10);
+	}
+}
+
+#endif

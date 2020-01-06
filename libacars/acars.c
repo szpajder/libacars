@@ -94,7 +94,7 @@ void la_acars_key_destroy(void *ptr) {
 		return;
 	}
 	LA_CAST_PTR(key, la_acars_key *, ptr);
-	la_debug_print("DESTROY KEY %s %s %s\n", key->reg, key->label, key->msg_num);
+	la_debug_print(D_INFO, "DESTROY KEY %s %s %s\n", key->reg, key->label, key->msg_num);
 	LA_XFREE(key->reg);
 	LA_XFREE(key->label);
 	LA_XFREE(key->msg_num);
@@ -118,7 +118,7 @@ void *la_acars_key_get(void const *msg) {
 	key->reg = strdup(amsg->reg);
 	key->label = strdup(amsg->label);
 	key->msg_num = strdup(amsg->msg_num);
-	la_debug_print("ALLOC KEY %s %s %s\n", key->reg, key->label, key->msg_num);
+	la_debug_print(D_INFO, "ALLOC KEY %s %s %s\n", key->reg, key->label, key->msg_num);
 	return (void *)key;
 }
 
@@ -231,13 +231,13 @@ int la_acars_extract_sublabel_and_mfi(char const * const label, la_msg_dir const
 // ARINC-622 ATS message). Right now libacars does not decode any application
 // layer protocols transmitted with SMT headers, so it's not a huge issue.
 			if(remaining >= 5 && strncmp(ptr, "- #", 3) == 0) {
-				la_debug_print("Uplink sublabel: %c%c\n", ptr[3], ptr[4]);
+				la_debug_print(D_INFO, "Uplink sublabel: %c%c\n", ptr[3], ptr[4]);
 				sublabel_ptr = ptr + 3;
 				ptr += 5; consumed += 5; remaining -= 5;
 			}
 		} else if(msg_dir == LA_MSG_DIR_AIR2GND) {
 			if(remaining >= 4 && ptr[0] == '#' && ptr[3] == 'B') {
-				la_debug_print("Downlink sublabel: %c%c\n", ptr[1], ptr[2]);
+				la_debug_print(D_INFO, "Downlink sublabel: %c%c\n", ptr[1], ptr[2]);
 				sublabel_ptr = ptr + 1;
 				ptr += 4; consumed += 4; remaining -= 4;
 			}
@@ -248,7 +248,7 @@ int la_acars_extract_sublabel_and_mfi(char const * const label, la_msg_dir const
 		}
 // MFI format is the same for both directions
 		if(remaining >= 4 && ptr[0] == '/' && ptr[3] == ' ') {
-			la_debug_print("MFI: %c%c\n", ptr[1], ptr[2]);
+			la_debug_print(D_INFO, "MFI: %c%c\n", ptr[1], ptr[2]);
 			mfi_ptr = ptr + 1;
 			ptr += 4; consumed += 4; remaining -= 4;
 		}
@@ -256,7 +256,7 @@ int la_acars_extract_sublabel_and_mfi(char const * const label, la_msg_dir const
 end:
 	COPY_IF_NOT_NULL(sublabel, sublabel_ptr, 2);
 	COPY_IF_NOT_NULL(mfi, mfi_ptr, 2);
-	la_debug_print("consumed %d bytes\n", consumed);
+	la_debug_print(D_INFO, "consumed %d bytes\n", consumed);
 	return consumed;
 }
 
@@ -276,18 +276,18 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 
 	msg->err = false;
 	if(len < LA_ACARS_PREAMBLE_LEN) {
-		la_debug_print("Preamble too short: %u < %u\n", len, LA_ACARS_PREAMBLE_LEN);
+		la_debug_print(D_ERROR, "Preamble too short: %u < %u\n", len, LA_ACARS_PREAMBLE_LEN);
 		goto fail;
 	}
 
 	if(buf[len-1] != DEL) {
-		la_debug_print("%02x: no DEL byte at end\n", buf[len-1]);
+		la_debug_print(D_ERROR, "%02x: no DEL byte at end\n", buf[len-1]);
 		goto fail;
 	}
 	len--;
 
 	uint16_t crc = la_crc16_ccitt(buf, len, 0);
-	la_debug_print("CRC check result: %04x\n", crc);
+	la_debug_print(D_INFO, "CRC check result: %04x\n", crc);
 	len -= 2;
 	msg->crc_ok = (crc == 0);
 
@@ -295,15 +295,15 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 	for(i = 0; i < len; i++) {
 		buf2[i] = buf[i] & 0x7f;
 	}
-	la_debug_print_buf_hex(buf2, len, "After CRC and parity bit removal:\n");
-	la_debug_print("Length: %d\n", len);
+	la_debug_print_buf_hex(D_VERBOSE, buf2, len, "After CRC and parity bit removal:\n");
+	la_debug_print(D_INFO, "Length: %d\n", len);
 
 	if(buf2[len-1] == ETX) {
 		msg->final_block = true;
 	} else if(buf2[len-1] == ETB) {
 		msg->final_block = false;
 	} else {
-		la_debug_print("%02x: no ETX/ETB byte at end of text\n", buf2[len-1]);
+		la_debug_print(D_ERROR, "%02x: no ETX/ETB byte at end of text\n", buf2[len-1]);
 		goto fail;
 	}
 	len--;
@@ -352,7 +352,7 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 		} else {
 			msg_dir = LA_MSG_DIR_GND2AIR;
 		}
-		la_debug_print("Assuming msg_dir=%d\n", msg_dir);
+		la_debug_print(D_ERROR, "Assuming msg_dir=%d\n", msg_dir);
 	}
 	if(remaining < 1) {
 // ACARS preamble has been consumed up to this point.
@@ -366,13 +366,13 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 			msg->reasm_status = LA_REASM_SKIPPED;
 			goto end;
 		} else {
-			la_debug_print("No text field in downlink message\n");
+			la_debug_print(D_ERROR, "No text field in downlink message\n");
 			goto fail;
 		}
 	}
 // Otherwise we expect STX here.
 	if(*ptr != STX) {
-		la_debug_print("%02x: No STX byte after preamble\n", *ptr);
+		la_debug_print(D_ERROR, "%02x: No STX byte after preamble\n", *ptr);
 		goto fail;
 	}
 	ptr++; remaining--;
@@ -387,7 +387,7 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 // Extract downlink-specific fields from message text
 	if (IS_DOWNLINK_BLK(msg->block_id)) {
 		if(remaining < 10) {
-			la_debug_print("Downlink text field too short: %d < 10\n", remaining);
+			la_debug_print(D_ERROR, "Downlink text field too short: %d < 10\n", remaining);
 			goto fail;
 		}
 		memcpy(msg->msg_num, ptr, 3);
@@ -422,7 +422,7 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 			acars_bearer = LA_ACARS_BEARER_INVALID;
 		}
 		la_acars_timeout_profile const *timeout_profile = timeout_profiles + acars_bearer;
-		la_debug_print("Using timeout profile for bearer %ld (up: %lu dn: %lu)\n",
+		la_debug_print(D_VERBOSE, "Using timeout profile for bearer %ld (up: %lu dn: %lu)\n",
 			acars_bearer,
 			timeout_profile->uplink.tv_sec,
 			timeout_profile->downlink.tv_sec);

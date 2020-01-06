@@ -9,7 +9,7 @@
 #include <string.h>			// strchr(), strcpy(), strncpy(), strlen()
 #include <libacars/libacars.h>		// la_proto_node, la_proto_tree_find_protocol()
 #include <libacars/media-adv.h>		// la_arinc_msg, LA_ARINC_IMI_CNT
-#include <libacars/macros.h>		// la_debug_print()
+#include <libacars/macros.h>		// la_assert()
 #include <libacars/vstring.h>		// la_vstring, la_vstring_append_sprintf(),
 					// LA_ISPRINTF()
 #include <libacars/json.h>		// la_json_*()

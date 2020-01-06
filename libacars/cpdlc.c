@@ -16,7 +16,7 @@
 #include <libacars/asn1-format-cpdlc.h>			// la_asn1_output_cpdlc_as_*()
 #include <libacars/cpdlc.h>				// la_cpdlc_msg
 #include <libacars/libacars.h>				// la_proto_node, la_config_get_bool, la_proto_tree_find_protocol
-#include <libacars/util.h>				// la_debug_print(), LA_CAST_PTR
+#include <libacars/util.h>				// la_debug_print, LA_CAST_PTR
 #include <libacars/vstring.h>				// la_vstring, la_vstring_append_sprintf()
 #include <libacars/json.h>				// la_json_append_bool()
 
@@ -37,11 +37,11 @@ la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	la_assert(msg->asn_type != NULL);
 	if(len == 0) {
 // empty payload is not an error
-		la_debug_print("Empty CPDLC message, decoding skipped\n");
+		la_debug_print(D_INFO, "Empty CPDLC message, decoding skipped\n");
 		return node;
 	}
 
-	la_debug_print("Decoding as %s, len: %d\n", msg->asn_type->name, len);
+	la_debug_print(D_INFO, "Decoding as %s, len: %d\n", msg->asn_type->name, len);
 	if(la_asn1_decode_as(msg->asn_type, &msg->data, buf, len) != 0) {
 		msg->err = true;
 	} else {

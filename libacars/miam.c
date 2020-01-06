@@ -140,7 +140,7 @@ static la_proto_node *la_miam_file_transfer_request_parse(char const *txt) {
 	msg->file_size = (size_t)i;
 	txt += 6;
 
-	la_debug_print("file_id: %u file_size: %zu\n", msg->file_id, msg->file_size);
+	la_debug_print(D_INFO, "file_id: %u file_size: %zu\n", msg->file_id, msg->file_size);
 	char const *ptr = la_simple_strptime(txt, &msg->validity_time);
 	if(ptr == NULL) {
 		goto hdr_error;
@@ -152,7 +152,7 @@ static la_proto_node *la_miam_file_transfer_request_parse(char const *txt) {
 	node->next = NULL;
 	return node;
 hdr_error:
-	la_debug_print("Not a file_transfer_request header\n");
+	la_debug_print(D_VERBOSE, "Not a file_transfer_request header\n");
 	LA_XFREE(msg);
 	return NULL;
 }
@@ -194,7 +194,7 @@ static la_proto_node *la_miam_file_transfer_accept_parse(char const *txt) {
 	msg->inflight_segment_tempo = (uint16_t)i;
 	txt += 3;
 
-	la_debug_print("file_id: %u seg_size: %u onground_tempo: %u inflight_tempo: %u\n",
+	la_debug_print(D_INFO, "file_id: %u seg_size: %u onground_tempo: %u inflight_tempo: %u\n",
 		msg->file_id, msg->segment_size, msg->onground_segment_tempo, msg->inflight_segment_tempo);
 
 	la_proto_node *node = la_proto_node_new();
@@ -203,7 +203,7 @@ static la_proto_node *la_miam_file_transfer_accept_parse(char const *txt) {
 	node->next = NULL;
 	return node;
 hdr_error:
-	la_debug_print("Not a file_transfer_accept header\n");
+	la_debug_print(D_VERBOSE, "Not a file_transfer_accept header\n");
 	LA_XFREE(msg);
 	return NULL;
 }
@@ -225,7 +225,7 @@ static la_proto_node *la_miam_file_segment_parse(char const *txt) {
 	msg->segment_id = (uint16_t)i;
 	txt += 3;
 
-	la_debug_print("file_id: %u segment_id: %u\n", msg->file_id, msg->segment_id);
+	la_debug_print(D_INFO, "file_id: %u segment_id: %u\n", msg->file_id, msg->segment_id);
 
 // MIAM File Segment headers have very simple structure and can easily be confused with
 // various non-MIAM messages, especially when sent with H1 label. la_miam_core_pdu_parse()
@@ -242,7 +242,7 @@ static la_proto_node *la_miam_file_segment_parse(char const *txt) {
 	node->next = next;
 	return node;
 hdr_error:
-	la_debug_print("Not a file_segment header\n");
+	la_debug_print(D_VERBOSE, "Not a file_segment header\n");
 	LA_XFREE(msg);
 	return NULL;
 }
@@ -270,7 +270,7 @@ static la_proto_node *la_miam_file_transfer_abort_parse(char const *txt) {
 	}
 	txt++;
 
-	la_debug_print("file_id: %u reason: %u\n", msg->file_id, msg->reason);
+	la_debug_print(D_INFO, "file_id: %u reason: %u\n", msg->file_id, msg->reason);
 
 	la_proto_node *node = la_proto_node_new();
 	node->td = &la_DEF_miam_file_transfer_abort_message;
@@ -278,7 +278,7 @@ static la_proto_node *la_miam_file_transfer_abort_parse(char const *txt) {
 	node->next = NULL;
 	return node;
 hdr_error:
-	la_debug_print("Not a file_transfer_abort header\n");
+	la_debug_print(D_VERBOSE, "Not a file_transfer_abort header\n");
 	LA_XFREE(msg);
 	return NULL;
 }
@@ -302,7 +302,7 @@ static la_proto_node *la_miam_xoff_ind_parse(char const *txt) {
 	}
 	msg->file_id = (uint16_t)i;
 	txt += 3;
-	la_debug_print("file_id: %u\n", msg->file_id);
+	la_debug_print(D_INFO, "file_id: %u\n", msg->file_id);
 
 	la_proto_node *node = la_proto_node_new();
 	node->td = &la_DEF_miam_xoff_ind_message;
@@ -310,7 +310,7 @@ static la_proto_node *la_miam_xoff_ind_parse(char const *txt) {
 	node->next = NULL;
 	return node;
 hdr_error:
-	la_debug_print("Not a xoff_ind header\n");
+	la_debug_print(D_VERBOSE, "Not a xoff_ind header\n");
 	LA_XFREE(msg);
 	return NULL;
 }
@@ -347,7 +347,7 @@ static la_proto_node *la_miam_xon_ind_parse(char const *txt) {
 	msg->inflight_segment_tempo = (uint16_t)i;
 	txt += 3;
 
-	la_debug_print("file_id: %u onground_tempo: %u inflight_tempo: %u\n",
+	la_debug_print(D_INFO, "file_id: %u onground_tempo: %u inflight_tempo: %u\n",
 		msg->file_id, msg->onground_segment_tempo, msg->inflight_segment_tempo);
 
 	la_proto_node *node = la_proto_node_new();
@@ -356,7 +356,7 @@ static la_proto_node *la_miam_xon_ind_parse(char const *txt) {
 	node->next = NULL;
 	return node;
 hdr_error:
-	la_debug_print("Not a xon_ind header\n");
+	la_debug_print(D_VERBOSE, "Not a xon_ind header\n");
 	LA_XFREE(msg);
 	return NULL;
 }
@@ -375,17 +375,17 @@ la_proto_node *la_miam_parse(char const *txt) {
 	for(int i = 0; i < LA_MIAM_FRAME_ID_CNT; i++) {
 		if(txt[0] == frame_id_map[i].fid_char) {
 			fid = frame_id_map[i].frame_id;
-			la_debug_print("txt[0]: %c frame_id: %d\n", txt[0], fid);
+			la_debug_print(D_INFO, "txt[0]: %c frame_id: %d\n", txt[0], fid);
 			break;
 		}
 	}
 	if(fid == LA_MIAM_FID_UNKNOWN) {
-		la_debug_print("not a MIAM message (unknown ACARS CF frame)\n");
+		la_debug_print(D_VERBOSE, "not a MIAM message (unknown ACARS CF frame)\n");
 		return NULL;
 	}
 	la_miam_frame_id_descriptor *fid_descriptor = la_dict_search(la_miam_frame_id_descriptor_table, fid);
 	if(fid_descriptor == NULL) {
-		la_debug_print("Warning: no type descriptor defined for ACARS CF frame '%c' (%d)\n", txt[0], fid);
+		la_debug_print(D_ERROR, "Warning: no type descriptor defined for ACARS CF frame '%c' (%d)\n", txt[0], fid);
 		return NULL;
 	}
 	txt++; len--;

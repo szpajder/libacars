@@ -46,22 +46,38 @@
 #define LA_MIN(a, b) ((a) < (b) ? (a) : (b))
 
 #ifdef DEBUG
-#define la_debug_print(fmt, ...) \
-	do { fprintf(stderr, "%s(): " fmt, __func__, ##__VA_ARGS__); } while (0)
+#include <stdint.h>
 
-#define la_debug_print_buf_hex(buf, len, fmt, ...) \
+extern uint32_t Debug;
+
+// debug levels
+#define D_NONE 0
+#define D_ERROR 1
+#define D_INFO 2
+#define D_VERBOSE 3
+
+#define la_debug_print(level, fmt, ...) \
 	do { \
-		fprintf(stderr, "%s(): " fmt, __func__, ##__VA_ARGS__); \
-		fprintf(stderr, "%s(): ", __func__); \
-		for(int zz = 0; zz < (len); zz++) { \
-			fprintf(stderr, "%02x ", buf[zz]); \
-			if(zz && (zz+1) % 32 == 0) fprintf(stderr, "\n%s(): ", __func__); \
+		if(Debug >= (level)) { \
+			fprintf(stderr, "%s(): " fmt, __func__, ##__VA_ARGS__); \
 		} \
-		fprintf(stderr, "\n"); \
+	} while (0)
+
+#define la_debug_print_buf_hex(level, buf, len, fmt, ...) \
+	do { \
+		if(Debug >= (level)) { \
+			fprintf(stderr, "%s(): " fmt, __func__, ##__VA_ARGS__); \
+			fprintf(stderr, "%s(): ", __func__); \
+			for(int zz = 0; zz < (len); zz++) { \
+				fprintf(stderr, "%02x ", buf[zz]); \
+				if(zz && (zz+1) % 32 == 0) fprintf(stderr, "\n%s(): ", __func__); \
+			} \
+			fprintf(stderr, "\n"); \
+		} \
 	} while(0)
 #else
-#define la_debug_print(fmt, ...) la_nop()
-#define la_debug_print_buf_hex(buf, len, fmt, ...) la_nop()
+#define la_debug_print(level, fmt, ...) la_nop()
+#define la_debug_print_buf_hex(level, buf, len, fmt, ...) la_nop()
 #endif
 
 #define LA_CAST_PTR(x, t, y) t x = (t)(y)

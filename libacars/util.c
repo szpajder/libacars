@@ -64,7 +64,7 @@ size_t la_slurp_hexstring(char* string, uint8_t **buf) {
 		} else if (c >= 'a' && c <= 'f') {
 			 value = (10 + (c - 'a'));
 		} else {
-			la_debug_print("stopped at invalid char %u at pos %zu\n", c, i);
+			la_debug_print(D_ERROR, "stopped at invalid char %u at pos %zu\n", c, i);
 			return i/2;
 		}
 		(*buf)[(i/2)] |= value << (((i + 1) % 2) * 4);

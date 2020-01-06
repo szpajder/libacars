@@ -91,7 +91,7 @@ static la_inflate_result la_inflate(uint8_t const *buf, int const in_len) {
 
 	int ret = inflateInit2(&stream, -15);	// raw deflate with max window size
 	if(ret != Z_OK) {
-		la_debug_print("inflateInit failed: %d\n", ret);
+		la_debug_print(D_ERROR, "inflateInit failed: %d\n", ret);
 		goto end;
 	}
 	stream.avail_in = (uInt)in_len;
@@ -103,14 +103,14 @@ static la_inflate_result la_inflate(uint8_t const *buf, int const in_len) {
 	stream.avail_out = out_len;
 
 	while((ret = inflate(&stream, Z_FINISH)) == Z_BUF_ERROR) {
-		la_debug_print("Z_BUF_ERROR, avail_in=%u avail_out=%u\n", stream.avail_in, stream.avail_out);
+		la_debug_print(D_INFO, "Z_BUF_ERROR, avail_in=%u avail_out=%u\n", stream.avail_in, stream.avail_out);
 		if(stream.avail_out == 0) {
 // Not enough output space
 			int new_len = out_len + chunk_len;
-			la_debug_print("outbuf grow: %d -> %d\n", out_len, new_len);
+			la_debug_print(D_INFO, "outbuf grow: %d -> %d\n", out_len, new_len);
 			if(new_len > MAX_INFLATED_LEN) {
 // Do not go overboard with memory usage
-				la_debug_print("new_len too large: %d > %d\n", new_len, MAX_INFLATED_LEN);
+				la_debug_print(D_ERROR, "new_len too large: %d > %d\n", new_len, MAX_INFLATED_LEN);
 				break;
 			}
 			outbuf = LA_XREALLOC(outbuf, new_len * sizeof(uint8_t));
@@ -122,7 +122,7 @@ static la_inflate_result la_inflate(uint8_t const *buf, int const in_len) {
 			break;
 		}
 	}
-	la_debug_print("zlib ret=%d avail_out=%u total_out=%lu\n", ret, stream.avail_out, stream.total_out);
+	la_debug_print(D_INFO, "zlib ret=%d avail_out=%u total_out=%lu\n", ret, stream.avail_out, stream.total_out);
 // Make sure the buffer is larger than the result.
 // We need space to append NULL terminator later for printing it.
 	if(stream.avail_out == 0) {
@@ -153,7 +153,7 @@ static la_base85_decode_result la_base85_decode(char const *str, char const *end
 // Allow four extra words for potential 'z' occurrences
 // (all-zero word encoded with a single character)
 	size_t outsize = ((end - str) / 5 + 4) * 4;
-	la_debug_print("approx outsize: %zu\n", outsize);
+	la_debug_print(D_INFO, "approx outsize: %zu\n", outsize);
 	uint8_t *out = LA_XCALLOC(outsize, sizeof(uint8_t));
 
 	char const *ptr = str;
@@ -184,7 +184,7 @@ static la_base85_decode_result la_base85_decode(char const *str, char const *end
 // grow the buffer by 25 percent, but not less than 5 elements
 			outsize += 5;
 			outsize += outsize / 4;
-			la_debug_print("outbuf too small; resizing to %zu elements\n", outsize);
+			la_debug_print(D_INFO, "outbuf too small; resizing to %zu elements\n", outsize);
 			out = LA_XREALLOC(out, outsize * sizeof(uint8_t));
 		}
 		out[outpos++] = v.b.b3;
@@ -193,7 +193,7 @@ static la_base85_decode_result la_base85_decode(char const *str, char const *end
 		out[outpos++] = v.b.b0;
 	}
 	if(ptr != end) {
-		la_debug_print("Input truncated, %td bytes left\n", end - ptr);
+		la_debug_print(D_ERROR, "Input truncated, %td bytes left\n", end - ptr);
 	}
 	return (la_base85_decode_result){
 		.buf = out,
@@ -210,11 +210,11 @@ static bool is_printable(uint8_t const *buf, uint32_t data_len) {
 		   (buf[i] >= 32 && buf[i] <= 126)) {
 			// noop
 		} else {
-			la_debug_print("false due to character %u at position %u\n", buf[i], i);
+			la_debug_print(D_VERBOSE, "false due to character %u at position %u\n", buf[i], i);
 			return false;
 		}
 	}
-	la_debug_print("true\n");
+	la_debug_print(D_VERBOSE, "true\n");
 	return true;
 }
 
@@ -239,7 +239,7 @@ int bodylen, la_miam_core_pdu_type const pdu_type) {
 	node->next = NULL;
 
 	if(hdrlen < 13) {	// should be 16, but let's not be overly pedantic on unused octets
-		la_debug_print("Header too short: %d < 16\n", hdrlen);
+		la_debug_print(D_ERROR, "Header too short: %d < 16\n", hdrlen);
 		pdu->err |= LA_MIAM_ERR_HDR_TRUNCATED;
 		goto end;
 	}
@@ -249,12 +249,12 @@ int bodylen, la_miam_core_pdu_type const pdu_type) {
 
 	memcpy(&pdu->aircraft_id, hdrbuf, 7);
 	pdu->aircraft_id[7] = '\0';
-	la_debug_print("len: %u aircraft_id: %s\n", pdu->pdu_len, pdu->aircraft_id);
+	la_debug_print(D_INFO, "len: %u aircraft_id: %s\n", pdu->pdu_len, pdu->aircraft_id);
 	hdrbuf += 7; hdrlen -= 7;
 
 	pdu->compression = hdrbuf[0];
 	pdu->networks = hdrbuf[1];
-	la_debug_print("compression: 0x%02x networks: 0x%02x\n",
+	la_debug_print(D_INFO, "compression: 0x%02x networks: 0x%02x\n",
 		pdu->compression, pdu->networks);
 end:
 	return node;
@@ -281,21 +281,21 @@ la_proto_node *la_miam_core_pdu_parse(char const *txt) {
 	char hpad = txt[1];	// valid values: 0, 1, 2, 3
 	txt += 2;
 	if(!((bpad >= '0' && bpad <= '3') || bpad == '-' || bpad == '.')) {
-		la_debug_print("Invalid body padding: %c\n", bpad);
+		la_debug_print(D_INFO, "Invalid body padding: %c\n", bpad);
 		return NULL;
 	}
 	if(!(hpad >= '0' && hpad <= '3')) {
-		la_debug_print("Invalid header padding: %c\n", hpad);
+		la_debug_print(D_INFO, "Invalid header padding: %c\n", hpad);
 		return NULL;
 	}
 	hpad -= 0x30;	// get digit value: '1' -> 1
 	char *delim = strchr(txt, '|');
 	if(delim == NULL) {
-		la_debug_print("Header/body delimiter not found\n");
+		la_debug_print(D_ERROR, "Header/body delimiter not found\n");
 		return NULL;
 	}
 	if(delim == txt) {
-		la_debug_print("Empty header\n");
+		la_debug_print(D_ERROR, "Empty header\n");
 		return NULL;
 	}
 // Assume the initial part is the Header - try to decode it
@@ -303,7 +303,7 @@ la_proto_node *la_miam_core_pdu_parse(char const *txt) {
 	if(header.buf == NULL || header.len < hpad) { // BASE85 decoder failed or result too short
 		return NULL;
 	}
-	la_debug_print_buf_hex(header.buf, header.len, "Decoded header:\n");
+	la_debug_print_buf_hex(D_VERBOSE, header.buf, header.len, "Decoded header:\n");
 
 // Decode message body, if exists and if it's encoded
 	uint8_t *bodybuf = NULL;
@@ -333,7 +333,7 @@ la_proto_node *la_miam_core_pdu_parse(char const *txt) {
 
 	uint8_t version = b[0] & 0xf;
 	uint8_t pdu_type = (b[0] >> 4) & 0xf;
-	la_debug_print("ver: %u pdu_type: %u\n", version, pdu_type);
+	la_debug_print(D_INFO, "ver: %u pdu_type: %u\n", version, pdu_type);
 
 	pdu = LA_XCALLOC(1, sizeof(la_miam_core_pdu));
 	pdu->pdu_type = LA_MIAM_CORE_PDU_UNKNOWN;
@@ -350,14 +350,14 @@ la_proto_node *la_miam_core_pdu_parse(char const *txt) {
 	} else if(version == 2) {
 		pdu_parse_dict = la_miam_core_v2_pdu_parser_table;
 	} else {
-		la_debug_print("Unknown version %u\n", version);
+		la_debug_print(D_ERROR, "Unknown version %u\n", version);
 		pdu->err |= LA_MIAM_ERR_HDR_PDU_VERSION_UNKNOWN;
 		goto end;
 	}
 
 	la_miam_core_pdu_parse_f *pdu_parse = la_dict_search(pdu_parse_dict, pdu_type);
 	if(pdu_parse == NULL) {
-		la_debug_print("No parser for PDU type %u\n", pdu_type);
+		la_debug_print(D_ERROR, "No parser for PDU type %u\n", pdu_type);
 		pdu->err |= LA_MIAM_ERR_HDR_PDU_TYPE_UNKNOWN;
 		goto end;
 	}
@@ -601,14 +601,14 @@ static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrl
 	node->next = NULL;
 
 	if(hdrlen < 20) {
-		la_debug_print("Header too short: %d < 20\n", hdrlen);
+		la_debug_print(D_ERROR, "Header too short: %d < 20\n", hdrlen);
 		pdu->err |= LA_MIAM_ERR_HDR_TRUNCATED;
 		goto end;
 	}
 
 	pdu->pdu_len = (hdrbuf[1] << 16) | (hdrbuf[2] << 8) | hdrbuf[3];
 	if(pdu->pdu_len > (uint32_t)(hdrlen + bodylen)) {
-		la_debug_print("PDU truncated: length from header: %d > pdu_len %d (%d+%d)\n",
+		la_debug_print(D_ERROR, "PDU truncated: length from header: %d > pdu_len %d (%d+%d)\n",
 			pdu->pdu_len, hdrlen + bodylen, hdrlen, bodylen);
 		pdu->err |= LA_MIAM_ERR_BODY_TRUNCATED;
 	}
@@ -616,19 +616,19 @@ static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrl
 
 	memcpy(&pdu->aircraft_id, hdrbuf, 7);
 	pdu->aircraft_id[7] = '\0';
-	la_debug_print("len: %u aircraft_id: %s\n", pdu->pdu_len, pdu->aircraft_id);
+	la_debug_print(D_INFO, "len: %u aircraft_id: %s\n", pdu->pdu_len, pdu->aircraft_id);
 	hdrbuf += 7; hdrlen -= 7;
 
 	uint8_t bytes_needed = 0;
 	pdu->msg_num = (hdrbuf[0] >> 1) & 0x7f;
 	pdu->ack_option = hdrbuf[0] & 0x1;
-	la_debug_print("msg_num: %u ack_option: %u\n", pdu->msg_num, pdu->ack_option);
+	la_debug_print(D_INFO, "msg_num: %u ack_option: %u\n", pdu->msg_num, pdu->ack_option);
 	hdrbuf++; hdrlen--;
 
 	pdu->compression = ((hdrbuf[0] << 2) | ((hdrbuf[1] >> 6) & 0x3)) & 0x7;
 	pdu->encoding = (hdrbuf[1] >> 4) & 0x3;
 	pdu->app_type = hdrbuf[1] & 0xf;
-	la_debug_print("compression: 0x%x encoding: 0x%x app_type: 0x%x\n",
+	la_debug_print(D_INFO, "compression: 0x%x encoding: 0x%x app_type: 0x%x\n",
 		pdu->compression, pdu->encoding, pdu->app_type);
 	hdrbuf += 2; hdrlen -= 2;
 
@@ -641,13 +641,13 @@ static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrl
 		  pdu->app_type == LA_MIAM_CORE_V1_APP_NONACARS_6CHAR) {
 		app_id_len = 6;
 	} else {
-		la_debug_print("Unknown app type 0x%u\n", pdu->app_type);
+		la_debug_print(D_ERROR, "Unknown app type 0x%u\n", pdu->app_type);
 		pdu->err |= LA_MIAM_ERR_HDR_APP_TYPE_UNKNOWN;
 		goto end;
 	}
 	bytes_needed = app_id_len + LA_MIAM_CORE_V1_CRC_LEN;
 	if(hdrlen < bytes_needed) {
-		la_debug_print("Header too short for app_type 0x%x: "
+		la_debug_print(D_ERROR, "Header too short for app_type 0x%x: "
 			"need %u more bytes but only %u available\n",
 			pdu->app_type, bytes_needed, hdrlen);
 		pdu->err |= LA_MIAM_ERR_HDR_TRUNCATED;
@@ -655,19 +655,20 @@ static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrl
 	}
 	memcpy(pdu->app_id, hdrbuf, app_id_len);
 	pdu->app_id[6] = '\0';
-	la_debug_print("app_id: '%s'\n", pdu->app_id);
+	la_debug_print(D_INFO, "app_id: '%s'\n", pdu->app_id);
 	hdrbuf += app_id_len; hdrlen -= app_id_len;
 
 	pdu->crc = (hdrbuf[0] << 24) | (hdrbuf[1] << 16) | (hdrbuf[2] << 8) | hdrbuf[3];
 	hdrbuf += LA_MIAM_CORE_V1_CRC_LEN; hdrlen -= LA_MIAM_CORE_V1_CRC_LEN;
 	if(hdrlen > 0) {
-		la_debug_print("Warning: %u bytes left after MIAM header\n", hdrlen);
+		la_debug_print(D_ERROR, "Warning: %u bytes left after MIAM header\n", hdrlen);
 	}
 	if(bodybuf != NULL && bodylen > 0) {
 #ifdef WITH_ZLIB
 		if(pdu->compression == LA_MIAM_CORE_V1_COMP_DEFLATE) {
 			la_inflate_result inflated = la_inflate(bodybuf, bodylen);
-			la_debug_print_buf_hex(inflated.buf, (int)inflated.buflen, "Decompressed content:\n");
+			la_debug_print_buf_hex(D_VERBOSE, inflated.buf, (int)inflated.buflen,
+				"Decompressed content:\n");
 // If it's text, it needs a NULL terminator.
 // If it's not text, it doesn't hurt either. The buffer is larger than len anyway.
 			inflated.buf[inflated.buflen] = '\0';
@@ -689,7 +690,7 @@ static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrl
 		}
 		uint32_t crc_check = la_crc32_arinc665(pdu->data, pdu->data_len, 0xFFFFFFFFu);
 		crc_check = ~crc_check;
-		la_debug_print("crc: %08x crc_check: %08x\n", pdu->crc, crc_check);
+		la_debug_print(D_INFO, "crc: %08x crc_check: %08x\n", pdu->crc, crc_check);
 		if(crc_check != pdu->crc) {
 			pdu->err |= LA_MIAM_ERR_BODY_CRC_FAILED;
 		}
@@ -710,7 +711,7 @@ static la_proto_node *la_miam_core_v1_ack_parse(uint8_t const *hdrbuf, int hdrle
 	node->next = NULL;
 
 	if(hdrlen < 20) {
-		la_debug_print("Header too short: %d < 20\n", hdrlen);
+		la_debug_print(D_ERROR, "Header too short: %d < 20\n", hdrlen);
 		pdu->err |= LA_MIAM_ERR_HDR_TRUNCATED;
 		goto end;
 	}
@@ -720,20 +721,20 @@ static la_proto_node *la_miam_core_v1_ack_parse(uint8_t const *hdrbuf, int hdrle
 
 	memcpy(&pdu->aircraft_id, hdrbuf, 7);
 	pdu->aircraft_id[7] = '\0';
-	la_debug_print("len: %u aircraft_id: %s\n", pdu->pdu_len, pdu->aircraft_id);
+	la_debug_print(D_INFO, "len: %u aircraft_id: %s\n", pdu->pdu_len, pdu->aircraft_id);
 	hdrbuf += 7; hdrlen -= 7;
 
 	pdu->msg_ack_num = (hdrbuf[0] >> 1) & 0x7f;
 	hdrbuf++; hdrlen--;
 
 	pdu->ack_xfer_result = (hdrbuf[0] >> 4) & 0xf;
-	la_debug_print("msg_ack_num: %u ack_xfer_result: 0x%x\n", pdu->msg_ack_num, pdu->ack_xfer_result);
+	la_debug_print(D_INFO, "msg_ack_num: %u ack_xfer_result: 0x%x\n", pdu->msg_ack_num, pdu->ack_xfer_result);
 	hdrbuf += 4; hdrlen -= 4;
 
 	memcpy(pdu->crc, hdrbuf, LA_MIAM_CORE_V1_CRC_LEN);
 	hdrbuf += LA_MIAM_CORE_V1_CRC_LEN; hdrlen -= LA_MIAM_CORE_V1_CRC_LEN;
 	if(hdrlen > 0) {
-		la_debug_print("Warning: %u bytes left after MIAM header\n", hdrlen);
+		la_debug_print(D_ERROR, "Warning: %u bytes left after MIAM header\n", hdrlen);
 	}
 end:
 	return node;
@@ -998,7 +999,7 @@ static la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrl
 	node->next = NULL;
 
 	if(hdrlen < 7) {
-		la_debug_print("Header too short: %d < 7\n", hdrlen);
+		la_debug_print(D_ERROR, "Header too short: %d < 7\n", hdrlen);
 		pdu->err |= LA_MIAM_ERR_HDR_TRUNCATED;
 		goto end;
 	}
@@ -1007,13 +1008,13 @@ static la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrl
 	uint8_t bytes_needed = 0;
 	pdu->msg_num = (hdrbuf[0] >> 1) & 0x7f;
 	pdu->ack_option = hdrbuf[0] & 0x1;
-	la_debug_print("msg_num: %u ack_option: %u\n", pdu->msg_num, pdu->ack_option);
+	la_debug_print(D_INFO, "msg_num: %u ack_option: %u\n", pdu->msg_num, pdu->ack_option);
 	hdrbuf++; hdrlen--;
 
 	pdu->compression = ((hdrbuf[0] << 2) | ((hdrbuf[1] >> 6) & 0x3)) & 0x7;
 	pdu->encoding = (hdrbuf[1] >> 4) & 0x3;
 	pdu->app_type = hdrbuf[1] & 0xf;
-	la_debug_print("compression: 0x%x encoding: 0x%x app_type: 0x%x\n",
+	la_debug_print(D_INFO, "compression: 0x%x encoding: 0x%x app_type: 0x%x\n",
 		pdu->compression, pdu->encoding, pdu->app_type);
 	hdrbuf += 2; hdrlen -= 2;
 
@@ -1028,13 +1029,13 @@ static la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrl
 	} else if((pdu->app_type & 0x8) != 0 && pdu->app_type != 0xd /* reserved value */) {
 		app_id_len = (pdu->app_type & 0x7) + 1;
 	} else {
-		la_debug_print("Unknown app type 0x%u\n", pdu->app_type);
+		la_debug_print(D_ERROR, "Unknown app type 0x%u\n", pdu->app_type);
 		pdu->err |= LA_MIAM_ERR_HDR_APP_TYPE_UNKNOWN;
 		goto end;
 	}
 	bytes_needed = app_id_len + LA_MIAM_CORE_V2_CRC_LEN;
 	if(hdrlen < bytes_needed) {
-		la_debug_print("Header too short for app_type 0x%x: "
+		la_debug_print(D_ERROR, "Header too short for app_type 0x%x: "
 			"need %u more bytes but only %u available\n",
 			pdu->app_type, bytes_needed, hdrlen);
 		pdu->err |= LA_MIAM_ERR_HDR_TRUNCATED;
@@ -1042,19 +1043,20 @@ static la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrl
 	}
 	memcpy(pdu->app_id, hdrbuf, app_id_len);
 	pdu->app_id[6] = '\0';
-	la_debug_print("app_id: '%s'\n", pdu->app_id);
+	la_debug_print(D_INFO, "app_id: '%s'\n", pdu->app_id);
 	hdrbuf += app_id_len; hdrlen -= app_id_len;
 
 	pdu->crc = (hdrbuf[0] << 8) | hdrbuf[1];
 	hdrbuf += LA_MIAM_CORE_V2_CRC_LEN; hdrlen -= LA_MIAM_CORE_V2_CRC_LEN;
 	if(hdrlen > 0) {
-		la_debug_print("Warning: %u bytes left after MIAM header\n", hdrlen);
+		la_debug_print(D_ERROR, "Warning: %u bytes left after MIAM header\n", hdrlen);
 	}
 	if(bodybuf != NULL && bodylen > 0) {
 #ifdef WITH_ZLIB
 		if(pdu->compression == LA_MIAM_CORE_V2_COMP_DEFLATE) {
 			la_inflate_result inflated = la_inflate(bodybuf, bodylen);
-			la_debug_print_buf_hex(inflated.buf, (int)inflated.buflen, "Decompressed content:\n");
+			la_debug_print_buf_hex(D_VERBOSE, inflated.buf, (int)inflated.buflen,
+				"Decompressed content:\n");
 // If it's text, it needs a NULL terminator.
 // If it's not text, it doesn't hurt either. The buffer is larger than len anyway.
 			inflated.buf[inflated.buflen] = '\0';
@@ -1075,7 +1077,7 @@ static la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrl
 			pdu->err |= LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED;
 		}
 		uint16_t crc_check = la_crc16_arinc(pdu->data, pdu->data_len, 0xFFFFu);
-		la_debug_print("crc: %04x crc_check: %04x\n", pdu->crc, crc_check);
+		la_debug_print(D_INFO, "crc: %04x crc_check: %04x\n", pdu->crc, crc_check);
 		if(crc_check != pdu->crc) {
 			pdu->err |= LA_MIAM_ERR_BODY_CRC_FAILED;
 		}
@@ -1096,7 +1098,7 @@ static la_proto_node *la_miam_core_v2_ack_parse(uint8_t const *hdrbuf, int hdrle
 	node->next = NULL;
 
 	if(hdrlen < 8) {
-		la_debug_print("Header too short: %d < 8\n", hdrlen);
+		la_debug_print(D_ERROR, "Header too short: %d < 8\n", hdrlen);
 		pdu->err |= LA_MIAM_ERR_HDR_TRUNCATED;
 		goto end;
 	}
@@ -1105,7 +1107,7 @@ static la_proto_node *la_miam_core_v2_ack_parse(uint8_t const *hdrbuf, int hdrle
 
 	pdu->msg_ack_num = (hdrbuf[0] >> 1) & 0x7f;
 	pdu->ack_xfer_result = ((hdrbuf[0] << 3) | (hdrbuf[1] >> 5)) & 0xf;
-	la_debug_print("msg_ack_num: %u ack_xfer_result: 0x%x\n", pdu->msg_ack_num, pdu->ack_xfer_result);
+	la_debug_print(D_INFO, "msg_ack_num: %u ack_xfer_result: 0x%x\n", pdu->msg_ack_num, pdu->ack_xfer_result);
 	hdrbuf += 3; hdrlen -= 3;
 
 	memcpy(pdu->crc, hdrbuf, LA_MIAM_CORE_V2_CRC_LEN);
@@ -1113,7 +1115,7 @@ static la_proto_node *la_miam_core_v2_ack_parse(uint8_t const *hdrbuf, int hdrle
 
 	hdrbuf += 2; hdrlen -= 2;	// jump over 2 spare octets
 	if(hdrlen > 0) {
-		la_debug_print("Warning: %u bytes left after MIAM header\n", hdrlen);
+		la_debug_print(D_INFO, "Warning: %u bytes left after MIAM header\n", hdrlen);
 	}
 end:
 	return node;

@@ -21,7 +21,7 @@ static double la_adsc_coordinate_parse(uint32_t c) {
 // extend the 21-bit signed field to 32-bit signed int
 	struct { signed int coord:21; } s;
 	int r = s.coord = (int)c;
-	la_debug_print("r=%d\n", r);
+	la_debug_print(D_INFO, "r=%d\n", r);
 // Field range is -180 to 180 degrees.
 // MSB weight is defined to have a weight of 90 degrees.
 // LSB weight is therefore 90/(2^19).
@@ -30,7 +30,7 @@ static double la_adsc_coordinate_parse(uint32_t c) {
 // Then multiply it by r/max_r
 	result *= (double)r;
 	result /= (double)0xfffff;
-	la_debug_print("result: %f\n", result);
+	la_debug_print(D_INFO, "result: %f\n", result);
 	return result;
 }
 
@@ -38,19 +38,19 @@ static int la_adsc_altitude_parse(uint32_t a) {
 	struct { signed int alt:16; } s;
 	int result = s.alt = (int)a;
 	result *= 4;
-	la_debug_print("result: %d\n", result);
+	la_debug_print(D_INFO, "result: %d\n", result);
 	return result;
 }
 
 static double la_adsc_timestamp_parse(uint32_t t) {
 	double result = (double)t * 0.125;
-	la_debug_print("result: %f\n", result);
+	la_debug_print(D_INFO, "result: %f\n", result);
 	return result;
 }
 
 static double la_adsc_speed_parse(uint32_t s) {
 	double result = (double)s / 2.0;
-	la_debug_print("result: %f\n", result);
+	la_debug_print(D_INFO, "result: %f\n", result);
 	return result;
 }
 
@@ -58,13 +58,13 @@ static int la_adsc_vert_speed_parse(uint32_t vs) {
 	struct { signed int vs:12; } s;
 	int result = s.vs = (int)vs;
 	result *= 16;
-	la_debug_print("result: %d\n", result);
+	la_debug_print(D_INFO, "result: %d\n", result);
 	return result;
 }
 
 static double la_adsc_distance_parse(uint32_t d) {
 	double result = (double)d / 8.0;
-	la_debug_print("result: %f\n", result);
+	la_debug_print(D_INFO, "result: %f\n", result);
 	return result;
 }
 
@@ -76,13 +76,13 @@ static double la_adsc_heading_parse(uint32_t h) {
 // FIXME: reduce this to a common function
 	struct { signed int hdg:12; } s;
 	int r = s.hdg = (int)h;
-	la_debug_print("r=%d\n", r);
+	la_debug_print(D_INFO, "r=%d\n", r);
 	double result = (180.0-90.0/pow(2, 10));
 	result *= (double)r;
 	result /= (double)0x7ff;
 	if(result < 0.0)
 		result += 360.0;
-	la_debug_print("result: %f\n", result);
+	la_debug_print(D_INFO, "result: %f\n", result);
 	return result;
 }
 
@@ -93,29 +93,29 @@ static double la_adsc_wind_dir_parse(uint32_t w) {
 // - LSB weight is 90/(2^7).
 	struct { signed int dir:9; } s;
 	int r = s.dir = (int)w;
-	la_debug_print("r=%d\n", r);
+	la_debug_print(D_INFO, "r=%d\n", r);
 	double result = (180.0-90.0/pow(2, 7));
 	result *= (double)r;
 	result /= (double)0xff;
 	if(result < 0.0)
 		result += 360.0;
-	la_debug_print("result: %f\n", result);
+	la_debug_print(D_INFO, "result: %f\n", result);
 	return result;
 }
 
 static double la_adsc_temperature_parse(uint32_t t) {
 	struct { signed int temp:12; } s;
 	int r = s.temp = (int)t;
-	la_debug_print("r=%d\n", r);
+	la_debug_print(D_INFO, "r=%d\n", r);
 	double result = (512.0-256.0/pow(2, 10));
 	result *= (double)r;
 	result /= (double)0x7ff;
-	la_debug_print("result: %f\n", result);
+	la_debug_print(D_INFO, "result: %f\n", result);
 	return result;
 }
 
 #define LA_ADSC_CHECK_LEN(t, l, m) if((l) < (m)) { \
-	la_debug_print("Truncated tag %u: len: %u < %u\n", (t), (l), (m)); \
+	la_debug_print(D_ERROR, "Truncated tag %u: len: %u < %u\n", (t), (l), (m)); \
 		return -1; \
 	}
 #define LA_ADSC_PARSER_PROTOTYPE(x) static int x(void *dest, uint8_t *buf, uint32_t len)
@@ -440,21 +440,21 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_nack_parse) {
 
 	n->contract_req_num = buf[0];
 	if(buf[1] > LA_ADSC_NACK_MAX_REASON_CODE) {
-		la_debug_print("Invalid reason code: %u\n", buf[1]);
+		la_debug_print(D_ERROR, "Invalid reason code: %u\n", buf[1]);
 		goto fail;
 	}
 	n->reason = buf[1];
-	la_debug_print("reason: %u\n", n->reason);
+	la_debug_print(D_INFO, "reason: %u\n", n->reason);
 
 // these reason codes have extended data byte
 	if(buf[1] == 1 || buf[1] == 2 || buf[1] == 7) {
 		tag_len++;
 		if(len < tag_len) {
-			la_debug_print("Truncated tag %u: len: %u < %u\n", t->tag, len, tag_len);
+			la_debug_print(D_ERROR, "Truncated tag %u: len: %u < %u\n", t->tag, len, tag_len);
 			goto fail;
 		}
 		n->ext_data = buf[2];
-		la_debug_print("ext_data: %u\n", n->ext_data);
+		la_debug_print(D_INFO, "ext_data: %u\n", n->ext_data);
 	}
 	t->data = n;
 	return tag_len;
@@ -467,30 +467,30 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_noncomp_group_parse) {
 	uint32_t tag_len = 2;
 	LA_CAST_PTR(g, la_adsc_noncomp_group_t *, dest);
 	if(len < tag_len) {
-		la_debug_print("too short: %u < %u\n", len, tag_len);
+		la_debug_print(D_ERROR, "too short: %u < %u\n", len, tag_len);
 		return -1;
 	}
 
 	g->noncomp_tag = buf[0];
 	g->is_unrecognized = (buf[1] & 0x80) ? 1 : 0;
 	g->is_whole_group_unavail = (buf[1] & 0x40) ? 1 : 0;
-	la_debug_print("tag: %u unrecognized: %u whole_group: %u\n",
+	la_debug_print(D_INFO, "tag: %u unrecognized: %u whole_group: %u\n",
 		g->noncomp_tag, g->is_unrecognized, g->is_whole_group_unavail);
 
 	if(g->is_unrecognized || g->is_whole_group_unavail) {
 		return tag_len;
 	}
 	g->param_cnt = buf[1] & 0xf;
-	la_debug_print("param_cnt: %u\n", g->param_cnt);
+	la_debug_print(D_INFO, "param_cnt: %u\n", g->param_cnt);
 	if(g->param_cnt == 0) {
 		return tag_len;
 	}
 
 // following octets contain 4-bit numbers of non-compliant parameters (up to 15)
 	tag_len += g->param_cnt / 2 + g->param_cnt % 2;
-	la_debug_print("new tag_len: %u\n", tag_len);
+	la_debug_print(D_INFO, "new tag_len: %u\n", tag_len);
 	if(len < tag_len) {
-		la_debug_print("too short: %u < %u\n", len, tag_len);
+		la_debug_print(D_ERROR, "too short: %u < %u\n", len, tag_len);
 		return -1;
 	}
 	buf += 2; len -= 2;
@@ -514,12 +514,12 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_noncomp_notify_parse) {
 	if(n->group_cnt == 0) {
 		return tag_len;
 	}
-	la_debug_print("group_cnt: %u\n", n->group_cnt);
+	la_debug_print(D_INFO, "group_cnt: %u\n", n->group_cnt);
 	n->groups = LA_XCALLOC(n->group_cnt, sizeof(la_adsc_noncomp_group_t));
 	buf += 2; len -= 2;
 	int consumed_bytes = 0;
 	for(uint8_t i = 0; i < n->group_cnt; i++) {
-		la_debug_print("Remaining length: %u\n", len);
+		la_debug_print(D_INFO, "Remaining length: %u\n", len);
 		if((consumed_bytes = la_adsc_noncomp_group_parse(n->groups + i, buf, len)) < 0) {
 			return -1;
 		}
@@ -527,7 +527,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_noncomp_notify_parse) {
 		tag_len += consumed_bytes;
 		if(len == 0) {
 			if(i < n->group_cnt - 1) {
-				la_debug_print("truncated: read %u/%u groups\n", i + 1, n->group_cnt);
+				la_debug_print(D_ERROR, "truncated: read %u/%u groups\n", i + 1, n->group_cnt);
 				return -1;
 			} else {
 				break;	// parsing completed
@@ -562,7 +562,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_basic_report_parse) {
 	r->redundancy = (uint8_t)(tmp & 1);
 	r->accuracy = (uint8_t)((tmp >> 1) & 0x7);
 	r->tcas_health = (uint8_t)((tmp >> 4) & 1);
-	la_debug_print("redundancy: %u accuracy: %u TCAS: %u\n",
+	la_debug_print(D_INFO, "redundancy: %u accuracy: %u TCAS: %u\n",
 		r->redundancy, r->accuracy, r->tcas_health);
 
 	la_bitstream_destroy(bs);
@@ -592,7 +592,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_flight_id_parse) {
 		f->id[i] = (uint8_t)tmp;
 	}
 	f->id[sizeof(f->id) - 1] = '\0';
-	la_debug_print("%s\n", f->id);
+	la_debug_print(D_INFO, "%s\n", f->id);
 	la_bitstream_destroy(bs);
 	return tag_len;
 }
@@ -618,7 +618,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_predicted_route_parse) {
 	r->alt_next = la_adsc_altitude_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 14, -1);
 	r->eta_next = tmp;
-	la_debug_print("eta: %d\n", r->eta_next);
+	la_debug_print(D_INFO, "eta: %d\n", r->eta_next);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
 	r->lat_next_next = la_adsc_coordinate_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 21, -1);
@@ -679,7 +679,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_intermediate_projection_parse) {
 	p->alt = la_adsc_altitude_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 14, -1);
 	p->eta = tmp;
-	la_debug_print("eta: %d\n", p->eta);
+	la_debug_print(D_INFO, "eta: %d\n", p->eta);
 
 	la_bitstream_destroy(bs);
 	return tag_len;
@@ -706,7 +706,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_fixed_projection_parse) {
 	p->alt = la_adsc_altitude_parse(tmp);
 	LA_BS_READ_OR_RETURN(bs, &tmp, 14, -1);
 	p->eta = tmp;
-	la_debug_print("eta: %d\n", p->eta);
+	la_debug_print(D_INFO, "eta: %d\n", p->eta);
 
 	la_bitstream_destroy(bs);
 	return tag_len;
@@ -1532,7 +1532,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_uint8_t_parse) {
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
 	LA_NEW(uint8_t, ptr);
 	*ptr = buf[0];
-	la_debug_print("val=%u\n", *ptr);
+	la_debug_print(D_INFO, "val=%u\n", *ptr);
 	t->data = ptr;
 	return tag_len;
 }
@@ -1551,7 +1551,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_reporting_interval_parse) {
 		sf = 64;
 	ri->scaling_factor = sf;
 	ri->rate = buf[0] & 0x3f;
-	la_debug_print("SF=%u rate=%u\n", ri->scaling_factor, ri->rate);
+	la_debug_print(D_INFO, "SF=%u rate=%u\n", ri->scaling_factor, ri->rate);
 	return tag_len;
 }
 
@@ -1600,7 +1600,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_acft_intent_group_parse) {
 	t->data = aig;
 	aig->modulus = buf[0];
 	aig->acft_intent_projection_time = buf[1];
-	la_debug_print("modulus=%u projection_time=%u\n", aig->modulus, aig->acft_intent_projection_time);
+	la_debug_print(D_INFO, "modulus=%u projection_time=%u\n", aig->modulus, aig->acft_intent_projection_time);
 	return tag_len;
 }
 
@@ -1617,12 +1617,12 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_contract_request_parse) {
 	buf++; len--;
 
 	while(len > 0) {
-		la_debug_print("Remaining length: %u\n", len);
+		la_debug_print(D_INFO, "Remaining length: %u\n", len);
 // First lookup the tag value - if it's unknown, then it's probably a next request
 // in a multi-request ADS message. We don't want la_adsc_tag_parse() to parse it,
 // because we would get a nasty "-- Unparseable tag" error message in the output.
 		if(la_dict_search(la_adsc_request_tag_descriptor_table, (int)buf[0]) == NULL) {
-			la_debug_print("Tag %d unknown - assuming end-of-request\n", (int)buf[0]);
+			la_debug_print(D_INFO, "Tag %d unknown - assuming end-of-request\n", (int)buf[0]);
 			break;
 		}
 		LA_NEW(la_adsc_tag_t, req_tag);
@@ -1639,7 +1639,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_contract_request_parse) {
 static int la_adsc_tag_parse(la_adsc_tag_t *t, la_dict const *tag_descriptor_table, uint8_t *buf, uint32_t len) {
 	uint32_t tag_len = 1;
 	if(len < tag_len) {
-		la_debug_print("Buffer len is 0\n");
+		la_debug_print(D_INFO, "Buffer len is 0\n");
 		return -1;
 	}
 
@@ -1647,10 +1647,10 @@ static int la_adsc_tag_parse(la_adsc_tag_t *t, la_dict const *tag_descriptor_tab
 	buf++; len--;
 	LA_CAST_PTR(type, la_adsc_type_descriptor_t *, la_dict_search(tag_descriptor_table, (int)t->tag));
 	if(type == NULL) {
-		la_debug_print("Unknown tag %u\n", t->tag);
+		la_debug_print(D_ERROR, "Unknown tag %u\n", t->tag);
 		return -1;
 	}
-	la_debug_print("Found tag %u (%s)\n", t->tag, type->label);
+	la_debug_print(D_INFO, "Found tag %u (%s)\n", t->tag, type->label);
 	int consumed_bytes = 0;
 	if(type->parse == NULL) {	// tag is empty, no parsing required - return with success
 		goto end;
@@ -1688,7 +1688,7 @@ la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc
 	switch(imi) {
 	case ARINC_MSG_ADS:
 		while(len > 0) {
-			la_debug_print("Remaining length: %u\n", len);
+			la_debug_print(D_INFO, "Remaining length: %u\n", len);
 			tag = LA_XCALLOC(1, sizeof(la_adsc_tag_t));
 			msg->tag_list = la_list_append(msg->tag_list, tag);
 			if((consumed_bytes = la_adsc_tag_parse(tag, tag_table, buf, len)) < 0) {
@@ -1702,7 +1702,7 @@ la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc
 // DIS payload consists of an error code only, without any tag.
 // Let's insert a fake tag value of 255.
 		if(len < 1) {
-			la_debug_print("DIS message too short\n");
+			la_debug_print(D_ERROR, "DIS message too short\n");
 			msg->err = true;
 			break;
 		}

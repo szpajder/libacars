@@ -8,7 +8,7 @@
 #include <search.h>				// lfind()
 #include <libacars/asn1/asn_application.h>	// asn_TYPE_descriptor_t
 #include <libacars/asn1-util.h>			// la_asn_formatter
-#include <libacars/macros.h>			// LA_CAST_PTR, LA_ISPRINTF, la_debug_print()
+#include <libacars/macros.h>			// LA_CAST_PTR, LA_ISPRINTF, la_debug_print
 #include <libacars/vstring.h>			// la_vstring
 #include "config.h"				// LFIND_NMEMB_SIZE_SIZE_T, LFIND_NMEMB_SIZE_UINT
 
@@ -21,11 +21,11 @@ int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t *buf
 	asn_dec_rval_t rval;
 	rval = uper_decode_complete(0, td, struct_ptr, buf, size);
 	if(rval.code != RC_OK) {
-		la_debug_print("uper_decode_complete failed: %d\n", rval.code);
+		la_debug_print(D_ERROR, "uper_decode_complete failed: %d\n", rval.code);
 		return -1;
 	}
 	if(rval.consumed < (size_t)size) {
-		la_debug_print("uper_decode_complete left %zd unparsed octets\n", (size_t)size - rval.consumed);
+		la_debug_print(D_ERROR, "uper_decode_complete left %zd unparsed octets\n", (size_t)size - rval.consumed);
 		return (int)((size_t)size - rval.consumed);
 	}
 #ifdef DEBUG
