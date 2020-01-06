@@ -7,15 +7,20 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>		// calloc()
-#include <string.h>		// strchr(), strlen(), strncmp()
+#include <string.h>		// strchr(), strlen(), strncmp(), strcmp()
+#include <sys/time.h>		// struct timeval
 #include <libacars/macros.h>	// la_assert()
 #include <libacars/libacars.h>	// la_proto_node, la_type_descriptor
 #include <libacars/vstring.h>	// la_vstring
 #include <libacars/json.h>	// la_json_append_*()
 #include <libacars/util.h>	// la_dict, la_dict_search(),
 				// la_strntouint16_t(), la_simple_strptime()
+#include <libacars/reassembly.h>
 #include <libacars/miam-core.h> // la_miam_core_pdu_parse(), la_miam_core_format_*()
 #include <libacars/miam.h>
+
+// Clean up stale reassembly entries every 20 File Segment frames.
+#define LA_MIAM_FILE_REASM_TABLE_CLEANUP_INTERVAL 20
 
 typedef struct {
 	char fid_char;
@@ -33,77 +38,99 @@ static la_miam_frame_id_map const frame_id_map[LA_MIAM_FRAME_ID_CNT] = {
 	{ .fid_char= '\0', .frame_id = LA_MIAM_FID_UNKNOWN },
 };
 
-typedef la_proto_node* (la_miam_frame_parse_f)(char const *txt);
-typedef struct {
-	char *description;
-	la_miam_frame_parse_f *parse;
-} la_miam_frame_id_descriptor;
-
-// Forward declarations
-
-static la_proto_node *la_miam_single_transfer_parse(char const *txt);
-static la_proto_node *la_miam_file_transfer_request_parse(char const *txt);
-static la_proto_node *la_miam_file_transfer_accept_parse(char const *txt);
-static la_proto_node *la_miam_file_segment_parse(char const *txt);
-static la_proto_node *la_miam_file_transfer_abort_parse(char const *txt);
-static la_proto_node *la_miam_xoff_ind_parse(char const *txt);
-static la_proto_node *la_miam_xon_ind_parse(char const *txt);
-
-static la_dict const la_miam_frame_id_descriptor_table[] = {
-	{
-		.id = LA_MIAM_FID_SINGLE_TRANSFER,
-		.val = &(la_miam_frame_id_descriptor){
-			.description = "Single Transfer",
-			.parse = &la_miam_single_transfer_parse
-		}
-	},
-	{
-		.id = LA_MIAM_FID_FILE_TRANSFER_REQ,
-		.val = &(la_miam_frame_id_descriptor){
-			.description = "File Transfer Request",
-			.parse = &la_miam_file_transfer_request_parse
-		}
-	},
-	{
-		.id = LA_MIAM_FID_FILE_TRANSFER_ACCEPT,
-		.val = &(la_miam_frame_id_descriptor){
-			.description = "File Transfer Accept",
-			.parse = &la_miam_file_transfer_accept_parse
-		}
-	},
-	{
-		.id = LA_MIAM_FID_FILE_SEGMENT,
-		.val = &(la_miam_frame_id_descriptor){
-			.description = "File Segment",
-			.parse = &la_miam_file_segment_parse
-		}
-	},
-	{
-		.id = LA_MIAM_FID_FILE_TRANSFER_ABORT,
-		.val = &(la_miam_frame_id_descriptor){
-			.description = "File Transfer Abort",
-			.parse = &la_miam_file_transfer_abort_parse
-		}
-	},
-	{
-		.id = LA_MIAM_FID_XOFF_IND,
-		.val = &(la_miam_frame_id_descriptor){
-			.description = "File Transfer Pause",
-			.parse = &la_miam_xoff_ind_parse
-		}
-	},
-	{
-		.id = LA_MIAM_FID_XON_IND,
-		.val = &(la_miam_frame_id_descriptor){
-			.description = "File Transfer Resume",
-			.parse = &la_miam_xon_ind_parse
-		}
-	},
-	{
-		.id = 0,
-		.val = NULL
-	}
+static la_dict const la_miam_frame_names[] = {
+	{ .id = LA_MIAM_FID_SINGLE_TRANSFER, .val = "Single Transfer" },
+	{ .id = LA_MIAM_FID_FILE_TRANSFER_REQ, .val = "File Transfer Request" },
+	{ .id = LA_MIAM_FID_FILE_TRANSFER_ACCEPT, .val = "File Transfer Accept" },
+	{ .id = LA_MIAM_FID_FILE_SEGMENT, .val = "File Segment" },
+	{ .id = LA_MIAM_FID_FILE_TRANSFER_ABORT, .val = "File Transfer Abort" },
+	{ .id = LA_MIAM_FID_XOFF_IND, .val = "File Transfer Pause" },
+	{ .id = LA_MIAM_FID_XON_IND, .val = "File Transfer Resume" },
+	{ .id = 0, .val = NULL }
 };
+
+/********************************************************************************
+ * MIAM File Transfer reassembly constants and callbacks
+ ********************************************************************************/
+
+// MIAM File Transfer reassembly timeout.
+// XXX: shall we respect message validity field from File Transfer Request frames,
+// which often sets this timeout to many hours?
+static struct timeval const la_miam_file_reasm_timeout = {
+	.tv_sec = 900,
+	.tv_usec = 0
+};
+
+typedef struct {
+	char *reg;
+	uint16_t file_id;
+} la_miam_file_key;
+
+// XXX: deduplicate with hash_string from acars.c
+#define HASH_INIT 5381
+#define HASH_MULT 17
+uint32_t la_miam_hash_string(char const *str, uint32_t h) {
+	int h_work = (int)h;
+	for(char const *p = str; *p != '\0'; p++) {
+		h_work = h_work * HASH_MULT + (int)(*p);
+	}
+	return (uint32_t)h_work;
+}
+
+uint32_t la_miam_file_key_hash(void const *key) {
+	LA_CAST_PTR(k, la_miam_file_key *, key);
+	uint32_t h = la_miam_hash_string(k->reg, HASH_INIT);
+	h += k->file_id;
+	return h;
+}
+
+bool la_miam_file_key_compare(void const *key1, void const *key2) {
+	LA_CAST_PTR(k1, la_miam_file_key *, key1);
+	LA_CAST_PTR(k2, la_miam_file_key *, key2);
+	return (!strcmp(k1->reg, k2->reg) &&
+		(k1->file_id == k2->file_id));
+}
+
+void *la_miam_file_key_get(void const *msg_info) {
+	la_assert(msg_info != NULL);
+	LA_CAST_PTR(msg, la_miam_file_key *, msg_info);
+	LA_NEW(la_miam_file_key, key);
+	key->reg = strdup(msg->reg);
+	key->file_id = msg->file_id;
+	la_debug_print(D_INFO, "ALLOC KEY %s %d\n", key->reg, key->file_id);
+	return (void *)key;
+}
+
+void *la_miam_file_tmp_key_get(void const *msg_info) {
+	la_assert(msg_info != NULL);
+	LA_CAST_PTR(msg, la_miam_file_key *, msg_info);
+	LA_NEW(la_miam_file_key, key);
+	key->reg = (char *)msg->reg;
+	key->file_id = msg->file_id;
+	return (void *)key;
+}
+
+void la_miam_file_key_destroy(void *ptr) {
+	if(ptr == NULL) {
+		return;
+	}
+	LA_CAST_PTR(key, la_miam_file_key *, ptr);
+	la_debug_print(D_INFO, "DESTROY KEY %s %d\n", key->reg, key->file_id);
+	LA_XFREE(key->reg);
+	LA_XFREE(key);
+}
+
+static la_reasm_table_funcs miam_file_reasm_funcs = {
+	.get_key = la_miam_file_key_get,
+	.get_tmp_key = la_miam_file_tmp_key_get,
+	.hash_key = la_miam_file_key_hash,
+	.compare_keys = la_miam_file_key_compare,
+	.destroy_key = la_miam_file_key_destroy
+};
+
+/********************************************************************************
+ * MIAM frame parsers
+ ********************************************************************************/
 
 static la_proto_node *la_miam_single_transfer_parse(char const *txt) {
 	void *next = la_miam_core_pdu_parse(txt);
@@ -117,7 +144,8 @@ static la_proto_node *la_miam_single_transfer_parse(char const *txt) {
 	return node;
 }
 
-static la_proto_node *la_miam_file_transfer_request_parse(char const *txt) {
+static la_proto_node *la_miam_file_transfer_request_parse(char const *reg, char const *txt,
+la_reasm_ctx *rtables, struct timeval const rx_time) {
 	la_assert(txt != NULL);
 
 	la_miam_file_transfer_request_msg *msg = NULL;
@@ -150,6 +178,39 @@ static la_proto_node *la_miam_file_transfer_request_parse(char const *txt) {
 	node->td = &la_DEF_miam_file_transfer_request_message;
 	node->data = msg;
 	node->next = NULL;
+
+// If reassembly engine is enabled, then we have to create a reassembly table
+// entry for this transfer now, because File Segment frames do not contain
+// all necessary state information (file size, in particular).
+	if(rtables != NULL && reg != NULL) {
+		la_reasm_table *miam_file_table = la_reasm_table_lookup(rtables,
+			&la_DEF_miam_file_segment_message);
+		if(miam_file_table == NULL) {
+			miam_file_table = la_reasm_table_new(rtables,
+				&la_DEF_miam_file_segment_message, miam_file_reasm_funcs,
+				LA_MIAM_FILE_REASM_TABLE_CLEANUP_INTERVAL);
+		}
+// Add the initial empty fragment to the table.
+// Can't use msg as msg_info directly, because we will be adding subsequent
+// fragments from la_miam_file_segment_parse(), where the type of msg is
+// different.
+		msg->reasm_status = la_reasm_fragment_add(miam_file_table,
+		&(la_reasm_fragment_info){
+			.msg_info = &(la_miam_file_key){
+				.reg = (char *)reg,
+				.file_id = msg->file_id
+			},
+			.msg_data = NULL,	// payload will start in the next segment
+			.msg_data_len = 0,
+			.total_pdu_len = msg->file_size,
+			.seq_num = 0,		// in sequence with file segment numbers, which go from 1
+			.seq_num_first = 0,
+			.seq_num_wrap = SEQ_WRAP_NONE,
+			.is_final_fragment = false,
+			.rx_time = rx_time,
+			.reasm_timeout = la_miam_file_reasm_timeout
+		});
+	}
 	return node;
 hdr_error:
 	la_debug_print(D_VERBOSE, "Not a file_transfer_request header\n");
@@ -208,7 +269,8 @@ hdr_error:
 	return NULL;
 }
 
-static la_proto_node *la_miam_file_segment_parse(char const *txt) {
+static la_proto_node *la_miam_file_segment_parse(char const *reg, char const *txt,
+la_reasm_ctx *rtables, struct timeval const rx_time) {
 	la_assert(txt != NULL);
 	LA_NEW(la_miam_file_segment_msg, msg);
 	int i;
@@ -227,24 +289,79 @@ static la_proto_node *la_miam_file_segment_parse(char const *txt) {
 
 	la_debug_print(D_INFO, "file_id: %u segment_id: %u\n", msg->file_id, msg->segment_id);
 
-// MIAM File Segment headers have very simple structure and can easily be confused with
-// various non-MIAM messages, especially when sent with H1 label. la_miam_core_pdu_parse()
-// performs more thorough checks - if it fails to identify its input as a MIAM CORE PDU,
-// then we declare that this message is not MIAM.
-	void *next = la_miam_core_pdu_parse(txt);
-	if(next == NULL) {
-		goto hdr_error;
-	}
-
 	la_proto_node *node = la_proto_node_new();
 	node->td = &la_DEF_miam_file_segment_message;
 	node->data = msg;
-	node->next = next;
+	node->next = NULL;
+
+// Can't use msg as msg_info directly in la_reasm_fragment_info, because the
+// initial fragment is added by la_miam_file_transfer_request_parse(), where
+// the type of msg is different.
+	la_miam_file_key msg_key = {
+		.reg = (char *)reg,
+		.file_id = msg->file_id
+	};
+	la_reasm_table *miam_file_table = NULL;
+
+	if(rtables != NULL && reg != NULL) {
+		miam_file_table = la_reasm_table_lookup(rtables, &la_DEF_miam_file_segment_message);
+		if(miam_file_table == NULL) {
+			miam_file_table = la_reasm_table_new(rtables,
+				&la_DEF_miam_file_segment_message, miam_file_reasm_funcs,
+				LA_MIAM_FILE_REASM_TABLE_CLEANUP_INTERVAL);
+		}
+// Add the fragment to the table.
+		msg->reasm_status = la_reasm_fragment_add(miam_file_table,
+		&(la_reasm_fragment_info){
+			.msg_info = &msg_key,
+			.msg_data = (uint8_t *)txt,
+			.msg_data_len = strlen(txt),
+			.total_pdu_len = 0,		// already set in 1st fragment
+			.seq_num = msg->segment_id,
+			.seq_num_first = 0,
+			.seq_num_wrap = SEQ_WRAP_NONE,
+			.is_final_fragment = false,	// not used here
+			.rx_time = rx_time,
+			.reasm_timeout = la_miam_file_reasm_timeout
+		});
+	}
+
+	uint8_t *reassembled_msg = NULL;
+	if(msg->reasm_status == LA_REASM_COMPLETE &&
+		la_reasm_payload_get(miam_file_table, &msg_key, &reassembled_msg) > 0) {
+// reassembled_msg is a newly allocated byte buffer, which is guaranteed to
+// be NULL-terminated, so we can cast it to char * directly.
+// Store the pointer to it in msg struct for freeing it later.
+		txt = msg->txt = (char *)reassembled_msg;
+
+	}
+
+	bool decode_payload = true;
+// If reassembly is enabled and is now in progress (ie. the message is not yet complete),
+// then decode_fragments config flag decides whether to decode apps in this message
+// or not.
+	if(rtables != NULL && (msg->reasm_status == LA_REASM_IN_PROGRESS ||
+		msg->reasm_status == LA_REASM_DUPLICATE)) {
+		(void)la_config_get_bool("decode_fragments", &decode_payload);
+	}
+	if(decode_payload) {
+		node->next = la_miam_core_pdu_parse(txt);
+	}
+
 	return node;
 hdr_error:
 	la_debug_print(D_VERBOSE, "Not a file_segment header\n");
 	LA_XFREE(msg);
 	return NULL;
+}
+
+static void la_miam_file_segment_destroy(void *data) {
+	if(data == NULL) {
+		return;
+	}
+	LA_CAST_PTR(msg, la_miam_file_segment_msg *, data);
+	LA_XFREE(msg->txt);
+	LA_XFREE(msg);
 }
 
 static la_proto_node *la_miam_file_transfer_abort_parse(char const *txt) {
@@ -361,7 +478,8 @@ hdr_error:
 	return NULL;
 }
 
-la_proto_node *la_miam_parse(char const *txt) {
+la_proto_node *la_miam_parse_and_reassemble(char const *reg, char const *txt,
+la_reasm_ctx *rtables, struct timeval const rx_time) {
 	if(txt == NULL) {
 		return NULL;
 	}
@@ -383,13 +501,33 @@ la_proto_node *la_miam_parse(char const *txt) {
 		la_debug_print(D_VERBOSE, "not a MIAM message (unknown ACARS CF frame)\n");
 		return NULL;
 	}
-	la_miam_frame_id_descriptor *fid_descriptor = la_dict_search(la_miam_frame_id_descriptor_table, fid);
-	if(fid_descriptor == NULL) {
-		la_debug_print(D_ERROR, "Warning: no type descriptor defined for ACARS CF frame '%c' (%d)\n", txt[0], fid);
-		return NULL;
-	}
 	txt++; len--;
-	la_proto_node *next_node = fid_descriptor->parse(txt);
+	la_proto_node *next_node = NULL;
+	switch(fid) {
+	case LA_MIAM_FID_SINGLE_TRANSFER:
+		next_node = la_miam_single_transfer_parse(txt);
+		break;
+	case LA_MIAM_FID_FILE_TRANSFER_REQ:
+		next_node = la_miam_file_transfer_request_parse(reg, txt, rtables, rx_time);
+		break;
+	case LA_MIAM_FID_FILE_TRANSFER_ACCEPT:
+		next_node = la_miam_file_transfer_accept_parse(txt);
+		break;
+	case LA_MIAM_FID_FILE_SEGMENT:
+		next_node = la_miam_file_segment_parse(reg, txt, rtables, rx_time);
+		break;
+	case LA_MIAM_FID_FILE_TRANSFER_ABORT:
+		next_node = la_miam_file_transfer_abort_parse(txt);
+		break;
+	case LA_MIAM_FID_XOFF_IND:
+		next_node = la_miam_xoff_ind_parse(txt);
+		break;
+	case LA_MIAM_FID_XON_IND:
+		next_node = la_miam_xon_ind_parse(txt);
+		break;
+	default:
+		break;
+	}
 	if(next_node == NULL) {
 		return NULL;
 	}
@@ -400,6 +538,11 @@ la_proto_node *la_miam_parse(char const *txt) {
 	node->td = &la_DEF_miam_message;
 	node->next = next_node;
 	return node;
+}
+
+la_proto_node *la_miam_parse(char const *txt) {
+	return la_miam_parse_and_reassemble(NULL, txt, NULL,
+		(struct timeval){ .tv_sec = 0, .tv_usec = 0});
 }
 
 static void la_miam_single_transfer_format_text(la_vstring * const vstr, void const * const data, int indent) {
@@ -424,6 +567,7 @@ static void la_miam_file_transfer_request_format_text(la_vstring * const vstr, v
 		t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
 		t->tm_hour, t->tm_min, t->tm_sec
 	);
+	LA_ISPRINTF(vstr, indent, "Reassembly: %d\n", msg->reasm_status);	// FIXME: description?
 }
 
 static void la_miam_file_transfer_request_format_json(la_vstring * const vstr, void const * const data) {
@@ -481,6 +625,7 @@ static void la_miam_file_segment_format_text(la_vstring * const vstr, void const
 	indent++;
 	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	LA_ISPRINTF(vstr, indent, "Segment ID: %u\n", msg->segment_id);
+	LA_ISPRINTF(vstr, indent, "Reassembly: %d\n", msg->reasm_status);	// FIXME: description?
 }
 
 static void la_miam_file_segment_format_json(la_vstring * const vstr, void const * const data) {
@@ -582,10 +727,10 @@ void la_miam_format_text(la_vstring * const vstr, void const * const data, int i
 	la_assert(indent >= 0);
 
 	LA_CAST_PTR(msg, la_miam_msg *, data);
-	la_miam_frame_id_descriptor *fid_descriptor = la_dict_search(la_miam_frame_id_descriptor_table, msg->frame_id);
-	la_assert(fid_descriptor != NULL);
+	char *frame_name = la_dict_search(la_miam_frame_names, msg->frame_id);
+	la_assert(frame_name != NULL);
 	LA_ISPRINTF(vstr, indent, "MIAM:\n");
-	LA_ISPRINTF(vstr, indent+1, "%s:\n", fid_descriptor->description);
+	LA_ISPRINTF(vstr, indent+1, "%s:\n", frame_name);
 }
 
 void la_miam_format_json(la_vstring * const vstr, void const * const data) {
@@ -626,7 +771,7 @@ la_type_descriptor const la_DEF_miam_file_segment_message = {
 	.format_text = la_miam_file_segment_format_text,
 	.format_json = la_miam_file_segment_format_json,
 	.json_key = "file_segment",
-	.destroy = NULL
+	.destroy = la_miam_file_segment_destroy
 };
 
 la_type_descriptor const la_DEF_miam_file_transfer_abort_message = {

@@ -11,6 +11,7 @@
 #include <time.h>			// struct tm
 #include <libacars/libacars.h>		// la_type_descriptor, la_proto_node
 #include <libacars/vstring.h>		// la_vstring
+#include <libacars/reassembly.h>	// la_reasm_ctx, la_reasm_status reasm_status
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,6 +45,7 @@ typedef struct {
 	size_t file_size;
 	uint16_t file_id;
 	struct tm validity_time;
+	la_reasm_status reasm_status;
 // reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
@@ -66,8 +68,10 @@ typedef struct {
 
 // MIAM File Segment
 typedef struct {
+	char *txt;
 	uint16_t file_id;
 	uint16_t segment_id;
+	la_reasm_status reasm_status;
 // reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
@@ -109,6 +113,8 @@ typedef struct {
 } la_miam_xon_ind_msg;
 
 la_proto_node *la_miam_parse(char const *txt);
+la_proto_node *la_miam_parse_and_reassemble(char const *reg, char const *txt,
+	la_reasm_ctx *rtables, struct timeval const rx_time);
 void la_miam_format_text(la_vstring * const vstr, void const * const data, int indent);
 void la_miam_format_json(la_vstring * const vstr, void const * const data);
 

@@ -10,7 +10,7 @@
 #include <stdbool.h>
 #include <libacars/libacars.h>			// la_proto_node, la_type_descriptor
 #include <libacars/vstring.h>			// la_vstring
-#include <libacars/reassembly.h>		// la_reasm_status
+#include <libacars/reassembly.h>		// la_reasm_ctx, la_reasm_status
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,6 +60,9 @@ typedef struct {
 extern la_type_descriptor const la_DEF_acars_message;
 la_proto_node *la_acars_decode_apps(char const * const label,
 	char const * const txt, la_msg_dir const msg_dir);
+la_proto_node *la_acars_apps_parse_and_reassemble(char const * const reg,
+	char const * const label, char const * const txt, la_msg_dir const msg_dir,
+	la_reasm_ctx *rtables, struct timeval const rx_time);
 la_proto_node *la_acars_parse_and_reassemble(uint8_t *buf, int len, la_msg_dir msg_dir,
 	la_reasm_ctx *rtables, struct timeval rx_time);
 la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir);

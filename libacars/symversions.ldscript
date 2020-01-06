@@ -1,5 +1,6 @@
 ACARS_2.0 {
   global:
+    la_acars_apps_parse_and_reassemble;
     la_acars_decode_apps;
     la_acars_extract_sublabel_and_mfi;
     la_acars_format_json;
@@ -86,6 +87,7 @@ ACARS_2.0 {
     la_miam_format_json;
     la_miam_format_text;
     la_miam_parse;
+    la_miam_parse_and_reassemble;
     la_proto_node_new;
     la_proto_tree_destroy;
     la_proto_tree_find_acars;

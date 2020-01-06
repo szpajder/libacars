@@ -10,7 +10,7 @@
 #include <libacars/macros.h>			// la_assert()
 #include <libacars/arinc.h>			// la_arinc_parse()
 #include <libacars/media-adv.h>			// la_media_adv_parse()
-#include <libacars/miam.h>			// la_miam_parse()
+#include <libacars/miam.h>			// la_miam_parse_and_reassemble()
 #include <libacars/crc.h>			// la_crc16_ccitt()
 #include <libacars/vstring.h>			// la_vstring, LA_ISPRINTF()
 #include <libacars/json.h>			// la_json_append_*()
@@ -130,8 +130,9 @@ static la_reasm_table_funcs acars_reasm_funcs = {
 	.destroy_key = la_acars_key_destroy
 };
 
-la_proto_node *la_acars_decode_apps(char const * const label,
-char const * const txt, la_msg_dir const msg_dir) {
+la_proto_node *la_acars_apps_parse_and_reassemble(char const * const reg,
+char const * const label, char const * const txt, la_msg_dir const msg_dir,
+la_reasm_ctx *rtables,struct timeval const rx_time) {
 	la_proto_node *ret = NULL;
 	if(label == NULL || txt == NULL) {
 		goto end;
@@ -163,7 +164,7 @@ char const * const txt, la_msg_dir const msg_dir) {
 			if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
 				goto end;
 			}
-			if((ret = la_miam_parse(txt)) != NULL) {
+			if((ret = la_miam_parse_and_reassemble(reg, txt, rtables, rx_time)) != NULL) {
 				goto end;
 			}
 			break;
@@ -172,7 +173,7 @@ char const * const txt, la_msg_dir const msg_dir) {
 	case 'M':
 		switch(label[1]) {
 		case 'A':
-			if((ret = la_miam_parse(txt)) != NULL) {
+			if((ret = la_miam_parse_and_reassemble(reg, txt, rtables, rx_time)) != NULL) {
 				goto end;
 			}
 			break;
@@ -190,6 +191,12 @@ char const * const txt, la_msg_dir const msg_dir) {
 	}
 end:
 	return ret;
+}
+
+la_proto_node *la_acars_decode_apps(char const * const label,
+	char const * const txt, la_msg_dir const msg_dir) {
+	return la_acars_apps_parse_and_reassemble(NULL, label, txt, msg_dir,
+		NULL, (struct timeval){ .tv_sec = 0, .tv_usec = 0 });
 }
 
 #define COPY_IF_NOT_NULL(d, s, l) do { \
@@ -432,6 +439,7 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 			.msg_info = msg,
 			.msg_data = (uint8_t *)ptr,
 			.msg_data_len = remaining,
+			.total_pdu_len = 0,		// not used here
 			.seq_num = down ? msg->msg_num_seq - 'A' : msg->block_id - 'A',
 			.seq_num_first = down ? 0 : SEQ_FIRST_NONE,
 			.seq_num_wrap = down ? SEQ_WRAP_NONE : 'X' - 'A',
@@ -464,7 +472,8 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 			(void)la_config_get_bool("decode_fragments", &decode_apps);
 		}
 		if(decode_apps) {
-			node->next = la_acars_decode_apps(msg->label, msg->txt, msg_dir);
+			node->next = la_acars_apps_parse_and_reassemble(msg->reg, msg->label,
+				msg->txt, msg_dir, rtables, rx_time);
 		}
 	}
 	goto end;
