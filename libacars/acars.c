@@ -459,7 +459,8 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 // If reassembly is enabled and is now in progress (ie. the message is not yet complete),
 // then decode_fragments config flag decides whether to decode apps in this message
 // or not.
-		if(rtables != NULL && msg->reasm_status == LA_REASM_IN_PROGRESS) {
+		if(rtables != NULL && (msg->reasm_status == LA_REASM_IN_PROGRESS ||
+			msg->reasm_status == LA_REASM_DUPLICATE)) {
 			(void)la_config_get_bool("decode_fragments", &decode_apps);
 		}
 		if(decode_apps) {
