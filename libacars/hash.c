@@ -13,8 +13,6 @@
 #include <libacars/util.h>	// LA_XCALLOC, LA_XFREE
 
 #define LA_HASH_SIZE 173
-#define LA_HASH_MULTIPLIER 17
-#define LA_HASH_INIT 5381
 
 struct la_hash_s {
 	la_hash_func *compute_hash;
@@ -29,14 +27,18 @@ typedef struct {
 	void *value;
 } la_hash_element;
 
+uint32_t la_hash_string(char const *str, uint32_t h) {
+	int h_work = (int)h;
+	for(char const *p = str; *p != '\0'; p++) {
+		h_work = h_work * LA_HASH_MULTIPLIER + (int)(*p);
+	}
+	return (uint32_t)h_work;
+}
+
 uint32_t la_hash_key_str(void const *k) {
 	la_assert(k != NULL);
-	LA_CAST_PTR(str, char *, k);
-	int h = LA_HASH_INIT;
-	for(char *p = str; *p != '\0'; p++) {
-		h = h * LA_HASH_MULTIPLIER + (int)(*p);
-	}
-	return (uint32_t)h;
+	LA_CAST_PTR(str, char const *, k);
+	return la_hash_string(str, LA_HASH_INIT);
 }
 
 void la_simple_free(void *data) {

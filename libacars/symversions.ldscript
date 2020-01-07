@@ -71,6 +71,7 @@ ACARS_2.0 {
     la_hash_key_str;
     la_hash_lookup;
     la_hash_new;
+    la_hash_string;
     la_list_append;
     la_list_foreach;
     la_list_free;

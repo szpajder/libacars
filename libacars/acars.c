@@ -15,6 +15,7 @@
 #include <libacars/vstring.h>			// la_vstring, LA_ISPRINTF()
 #include <libacars/json.h>			// la_json_append_*()
 #include <libacars/util.h>			// la_debug_print(), LA_CAST_PTR()
+#include <libacars/hash.h>			// LA_HASH_INIT, la_hash_string()
 #include <libacars/reassembly.h>
 #include <libacars/acars.h>
 
@@ -26,9 +27,6 @@
 #define ACK 0x06
 #define NAK 0x15
 #define IS_DOWNLINK_BLK(bid) ((bid) >= '0' && (bid) <= '9')
-
-#define HASH_INIT 5381
-#define HASH_MULT 17
 
 #define LA_ACARS_REASM_TABLE_CLEANUP_INTERVAL 1000
 
@@ -65,19 +63,11 @@ typedef struct {
 	char *reg, *label, *msg_num;
 } la_acars_key;
 
-uint32_t hash_string(char const *str, uint32_t h) {
-	int h_work = (int)h;
-	for(char const *p = str; *p != '\0'; p++) {
-		h_work = h_work * HASH_MULT + (int)(*p);
-	}
-	return (uint32_t)h_work;
-}
-
 uint32_t la_acars_key_hash(void const *key) {
 	la_acars_key *k = (la_acars_key *)key;
-	uint32_t h = hash_string(k->reg, HASH_INIT);
-	h = hash_string(k->label, h);
-	h = hash_string(k->msg_num, h);
+	uint32_t h = la_hash_string(k->reg, LA_HASH_INIT);
+	h = la_hash_string(k->label, h);
+	h = la_hash_string(k->msg_num, h);
 	return h;
 }
 

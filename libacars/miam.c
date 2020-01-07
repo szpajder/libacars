@@ -66,20 +66,9 @@ typedef struct {
 	uint16_t file_id;
 } la_miam_file_key;
 
-// XXX: deduplicate with hash_string from acars.c
-#define HASH_INIT 5381
-#define HASH_MULT 17
-uint32_t la_miam_hash_string(char const *str, uint32_t h) {
-	int h_work = (int)h;
-	for(char const *p = str; *p != '\0'; p++) {
-		h_work = h_work * HASH_MULT + (int)(*p);
-	}
-	return (uint32_t)h_work;
-}
-
 uint32_t la_miam_file_key_hash(void const *key) {
 	LA_CAST_PTR(k, la_miam_file_key *, key);
-	uint32_t h = la_miam_hash_string(k->reg, HASH_INIT);
+	uint32_t h = la_hash_string(k->reg, LA_HASH_INIT);
 	h += k->file_id;
 	return h;
 }
