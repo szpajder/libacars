@@ -66,21 +66,21 @@ typedef struct {
 	uint16_t file_id;
 } la_miam_file_key;
 
-uint32_t la_miam_file_key_hash(void const *key) {
+static uint32_t la_miam_file_key_hash(void const *key) {
 	LA_CAST_PTR(k, la_miam_file_key *, key);
 	uint32_t h = la_hash_string(k->reg, LA_HASH_INIT);
 	h += k->file_id;
 	return h;
 }
 
-bool la_miam_file_key_compare(void const *key1, void const *key2) {
+static bool la_miam_file_key_compare(void const *key1, void const *key2) {
 	LA_CAST_PTR(k1, la_miam_file_key *, key1);
 	LA_CAST_PTR(k2, la_miam_file_key *, key2);
 	return (!strcmp(k1->reg, k2->reg) &&
 		(k1->file_id == k2->file_id));
 }
 
-void *la_miam_file_key_get(void const *msg_info) {
+static void *la_miam_file_key_get(void const *msg_info) {
 	la_assert(msg_info != NULL);
 	LA_CAST_PTR(msg, la_miam_file_key *, msg_info);
 	LA_NEW(la_miam_file_key, key);
@@ -90,7 +90,7 @@ void *la_miam_file_key_get(void const *msg_info) {
 	return (void *)key;
 }
 
-void *la_miam_file_tmp_key_get(void const *msg_info) {
+static void *la_miam_file_tmp_key_get(void const *msg_info) {
 	la_assert(msg_info != NULL);
 	LA_CAST_PTR(msg, la_miam_file_key *, msg_info);
 	LA_NEW(la_miam_file_key, key);
@@ -99,7 +99,7 @@ void *la_miam_file_tmp_key_get(void const *msg_info) {
 	return (void *)key;
 }
 
-void la_miam_file_key_destroy(void *ptr) {
+static void la_miam_file_key_destroy(void *ptr) {
 	if(ptr == NULL) {
 		return;
 	}

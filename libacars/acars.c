@@ -63,7 +63,7 @@ typedef struct {
 	char *reg, *label, *msg_num;
 } la_acars_key;
 
-uint32_t la_acars_key_hash(void const *key) {
+static uint32_t la_acars_key_hash(void const *key) {
 	la_acars_key *k = (la_acars_key *)key;
 	uint32_t h = la_hash_string(k->reg, LA_HASH_INIT);
 	h = la_hash_string(k->label, h);
@@ -71,7 +71,7 @@ uint32_t la_acars_key_hash(void const *key) {
 	return h;
 }
 
-bool la_acars_key_compare(void const *key1, void const *key2) {
+static bool la_acars_key_compare(void const *key1, void const *key2) {
 	LA_CAST_PTR(k1, la_acars_key *, key1);
 	LA_CAST_PTR(k2, la_acars_key *, key2);
 	return (!strcmp(k1->reg, k2->reg) &&
@@ -79,7 +79,7 @@ bool la_acars_key_compare(void const *key1, void const *key2) {
 		!strcmp(k1->msg_num, k2->msg_num));
 }
 
-void la_acars_key_destroy(void *ptr) {
+static void la_acars_key_destroy(void *ptr) {
 	if(ptr == NULL) {
 		return;
 	}
@@ -91,7 +91,7 @@ void la_acars_key_destroy(void *ptr) {
 	LA_XFREE(key);
 }
 
-void *la_acars_tmp_key_get(void const *msg) {
+static void *la_acars_tmp_key_get(void const *msg) {
 	la_assert(msg != NULL);
 	LA_CAST_PTR(amsg, la_acars_msg *, msg);
 	LA_NEW(la_acars_key, key);
@@ -101,7 +101,7 @@ void *la_acars_tmp_key_get(void const *msg) {
 	return (void *)key;
 }
 
-void *la_acars_key_get(void const *msg) {
+static void *la_acars_key_get(void const *msg) {
 	la_assert(msg != NULL);
 	LA_CAST_PTR(amsg, la_acars_msg *, msg);
 	LA_NEW(la_acars_key, key);
