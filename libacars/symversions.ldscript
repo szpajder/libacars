@@ -105,6 +105,7 @@ ACARS_2.0 {
     la_reasm_ctx_destroy;
     la_reasm_fragment_add;
     la_reasm_payload_get;
+    la_reasm_status_name_get;
     la_reasm_table_new;
     la_reasm_table_lookup;
     la_simple_free;

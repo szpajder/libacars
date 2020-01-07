@@ -556,7 +556,7 @@ static void la_miam_file_transfer_request_format_text(la_vstring * const vstr, v
 		t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
 		t->tm_hour, t->tm_min, t->tm_sec
 	);
-	LA_ISPRINTF(vstr, indent, "Reassembly: %d\n", msg->reasm_status);	// FIXME: description?
+	LA_ISPRINTF(vstr, indent, "Reassembly: %s\n", la_reasm_status_name_get(msg->reasm_status));
 }
 
 static void la_miam_file_transfer_request_format_json(la_vstring * const vstr, void const * const data) {
@@ -614,7 +614,7 @@ static void la_miam_file_segment_format_text(la_vstring * const vstr, void const
 	indent++;
 	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	LA_ISPRINTF(vstr, indent, "Segment ID: %u\n", msg->segment_id);
-	LA_ISPRINTF(vstr, indent, "Reassembly: %d\n", msg->reasm_status);	// FIXME: description?
+	LA_ISPRINTF(vstr, indent, "Reassembly: %s\n", la_reasm_status_name_get(msg->reasm_status));
 }
 
 static void la_miam_file_segment_format_json(la_vstring * const vstr, void const * const data) {

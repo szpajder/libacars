@@ -76,6 +76,7 @@ typedef enum {
 	LA_REASM_FRAG_OUT_OF_SEQUENCE,
 	LA_REASM_ARGS_INVALID
 } la_reasm_status;
+#define LA_REASM_STATUS_MAX LA_REASM_ARGS_INVALID
 
 // reassembly.c
 la_reasm_ctx *la_reasm_ctx_new();
@@ -85,6 +86,7 @@ la_reasm_table *la_reasm_table_new(la_reasm_ctx *rctx, void const *table_id,
 la_reasm_table *la_reasm_table_lookup(la_reasm_ctx *rctx, void const *table_id);
 la_reasm_status la_reasm_fragment_add(la_reasm_table *rtable, la_reasm_fragment_info const *finfo);
 int la_reasm_payload_get(la_reasm_table *rtable, void const *msg_info, uint8_t **result);
+char const *la_reasm_status_name_get(la_reasm_status const status);
 
 #ifdef __cplusplus
 }

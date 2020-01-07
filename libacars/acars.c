@@ -479,16 +479,6 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 		(struct timeval){ .tv_sec = 0, .tv_usec = 0 });
 }
 
-static char *reasm_status_descr[] = {
-	[LA_REASM_UNKNOWN] = "unknown",
-	[LA_REASM_COMPLETE] = "complete",
-	[LA_REASM_IN_PROGRESS] = "in progress",
-	[LA_REASM_SKIPPED] = "skipped",
-	[LA_REASM_DUPLICATE] = "duplicate",
-	[LA_REASM_FRAG_OUT_OF_SEQUENCE] = "out of sequence",
-	[LA_REASM_ARGS_INVALID] = "invalid args"
-};
-
 void la_acars_format_text(la_vstring *vstr, void const * const data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
@@ -502,7 +492,7 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 	LA_ISPRINTF(vstr, indent, "ACARS%s:\n", msg->crc_ok ? "" : " (warning: CRC error)");
 	indent++;
 
-	LA_ISPRINTF(vstr, indent, "Reassembly: %s\n", reasm_status_descr[msg->reasm_status]);
+	LA_ISPRINTF(vstr, indent, "Reassembly: %s\n", la_reasm_status_name_get(msg->reasm_status));
 	LA_ISPRINTF(vstr, indent, "Reg: %s", msg->reg);
 	if(IS_DOWNLINK_BLK(msg->block_id)) {
 		la_vstring_append_sprintf(vstr, " Flight: %s\n", msg->flight_id);

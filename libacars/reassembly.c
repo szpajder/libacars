@@ -363,3 +363,18 @@ end:
 	return result_len;
 }
 
+char const *la_reasm_status_name_get(la_reasm_status const status) {
+	static char const *reasm_status_names[] = {
+		[LA_REASM_UNKNOWN] = "unknown",
+		[LA_REASM_COMPLETE] = "complete",
+		[LA_REASM_IN_PROGRESS] = "in progress",
+		[LA_REASM_SKIPPED] = "skipped",
+		[LA_REASM_DUPLICATE] = "duplicate",
+		[LA_REASM_FRAG_OUT_OF_SEQUENCE] = "out of sequence",
+		[LA_REASM_ARGS_INVALID] = "invalid args"
+	};
+	if(status < 0 || status > LA_REASM_STATUS_MAX) {
+		return NULL;
+	}
+	return reasm_status_names[status];
+}
