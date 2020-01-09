@@ -16,6 +16,15 @@ matrix:
     - os: osx
       compiler: clang
 
+addons:
+  apt:
+    update: true
+    packages:
+    - libxml2-dev
+  homebrew:
+    packages:
+    - libxml2
+
 script:
   - mkdir build
   - cd build
