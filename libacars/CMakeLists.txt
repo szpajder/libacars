@@ -99,7 +99,7 @@ if(LIBXML2)
 	if(LibXml2_FOUND)
 		set(WITH_LIBXML2 TRUE)
 		list(APPEND acars_extra_libs ${LIBXML2_LIBRARIES})
-		list(APPEND acars_include_dirs ${LIBXML2_INCLUDE_DIRS})
+		list(APPEND acars_include_dirs ${LIBXML2_INCLUDE_DIR})
 	endif()
 endif()
 
