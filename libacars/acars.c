@@ -6,15 +6,19 @@
 
 #include <string.h>				// memcpy(), strdup()
 #include <sys/time.h>				// struct timeval
+#include "config.h"				// WITH_LIBXML2
+#ifdef WITH_LIBXML2
+#include <libxml/tree.h>			// xmlBufferPtr, xmlBufferFree()
+#endif
 #include <libacars/libacars.h>			// la_proto_node, la_proto_tree_find_protocol
-#include <libacars/macros.h>			// la_assert()
+#include <libacars/macros.h>			// la_assert, la_debug_print, LA_CAST_PTR
 #include <libacars/arinc.h>			// la_arinc_parse()
 #include <libacars/media-adv.h>			// la_media_adv_parse()
 #include <libacars/miam.h>			// la_miam_parse_and_reassemble()
 #include <libacars/crc.h>			// la_crc16_ccitt()
 #include <libacars/vstring.h>			// la_vstring, LA_ISPRINTF()
 #include <libacars/json.h>			// la_json_append_*()
-#include <libacars/util.h>			// la_debug_print(), LA_CAST_PTR()
+#include <libacars/util.h>			// LA_XCALLOC, LA_XFREE, la_prettify_xml
 #include <libacars/hash.h>			// LA_HASH_INIT, la_hash_string()
 #include <libacars/reassembly.h>
 #include <libacars/acars.h>
@@ -515,8 +519,25 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 		la_vstring_append_sprintf(vstr, "%s", "\n");
 	}
 	if(msg->txt[0] != '\0') {
-		LA_ISPRINTF(vstr, indent, "Message:\n");
-		la_isprintf_multiline_text(vstr, indent+1, msg->txt);
+		bool prettify_xml = false;
+#ifdef WITH_LIBXML2
+		(void)la_config_get_bool("prettify_xml", &prettify_xml);
+		if(prettify_xml == true) {
+			xmlBufferPtr xmlbufptr = NULL;
+			if((xmlbufptr = la_prettify_xml(msg->txt)) != NULL) {
+				LA_ISPRINTF(vstr, indent, "Message (reformatted):\n");
+				la_isprintf_multiline_text(vstr, indent + 1, (char *)xmlbufptr->content);
+				xmlBufferFree(xmlbufptr);
+			} else {
+// Doesn't look like XML - print it as normal
+				prettify_xml = false;
+			}
+		}
+#endif
+		if(prettify_xml == false) {
+			LA_ISPRINTF(vstr, indent, "Message:\n");
+			la_isprintf_multiline_text(vstr, indent+1, msg->txt);
+		}
 	}
 }
 

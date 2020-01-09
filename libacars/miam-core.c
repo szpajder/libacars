@@ -11,6 +11,9 @@
 #ifdef WITH_ZLIB
 #include <zlib.h>			// z_stream, inflateInit2(), inflate(), inflateEnd()
 #endif
+#ifdef WITH_LIBXML2
+#include <libxml/tree.h>			// xmlBufferPtr, xmlBufferFree()
+#endif
 #include <libacars/macros.h>		// la_assert(), LA_UNLIKELY()
 #include <libacars/libacars.h>		// la_proto_node
 #include <libacars/vstring.h>		// la_vstring, LA_ISPRINTF, la_isprintf_multiline_text()
@@ -816,23 +819,40 @@ static void la_miam_core_v1_data_format_text(la_vstring * const vstr, void const
 		break;
 	}
 
-	LA_ISPRINTF(vstr, indent, "Message:\n");
-	indent++;
 	if(pdu->data != NULL) {
-// Don't trust pdu->encoding - if the payload is printable, then print it as text.
-// Otherwise print a hexdump.
+		// Don't trust pdu->encoding - if the payload is printable, then print it as text.
+		// Otherwise print a hexdump.
 		if(is_printable(pdu->data, pdu->data_len)) {
-// Parser has appended '\0' at the end, so it's safe to print it directly
-			la_isprintf_multiline_text(vstr, indent, (char *)pdu->data);
+			// Parser has appended '\0' at the end, so it's safe to print it directly
+			bool prettify_xml = false;
+#ifdef WITH_LIBXML2
+			(void)la_config_get_bool("prettify_xml", &prettify_xml);
+			if(prettify_xml == true) {
+				xmlBufferPtr xmlbufptr = NULL;
+				if((xmlbufptr = la_prettify_xml((char *)pdu->data)) != NULL) {
+					LA_ISPRINTF(vstr, indent, "Message (reformatted):\n");
+					la_isprintf_multiline_text(vstr, indent + 1, (char *)xmlbufptr->content);
+					xmlBufferFree(xmlbufptr);
+				} else {
+					// Doesn't look like XML - print it as normal
+					prettify_xml = false;
+				}
+			}
+#endif
+			if(prettify_xml == false) {
+				LA_ISPRINTF(vstr, indent, "Message:\n");
+				la_isprintf_multiline_text(vstr, indent + 1, (char *)pdu->data);
+			}
 		} else {
 			char *hexdump = la_hexdump((uint8_t *)pdu->data, pdu->data_len);
-			la_isprintf_multiline_text(vstr, indent, hexdump);
+			LA_ISPRINTF(vstr, indent, "Message:\n");
+			la_isprintf_multiline_text(vstr, indent + 1, hexdump);
 			LA_XFREE(hexdump);
 		}
 	}
 
 	if(pdu->err & LA_MIAM_ERR_BODY) {
-		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_BODY, indent);
+		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_BODY, indent + 1);
 		return;
 	}
 }
@@ -1200,23 +1220,40 @@ static void la_miam_core_v2_data_format_text(la_vstring * const vstr, void const
 		break;
 	}
 
-	LA_ISPRINTF(vstr, indent, "Message:\n");
-	indent++;
 	if(pdu->data != NULL) {
-// Don't trust pdu->encoding - if the payload is printable, then print it as text.
-// Otherwise print a hexdump.
+		// Don't trust pdu->encoding - if the payload is printable, then print it as text.
+		// Otherwise print a hexdump.
 		if(is_printable(pdu->data, pdu->data_len)) {
-// Parser has appended '\0' at the end, so it's safe to print it directly
-			la_isprintf_multiline_text(vstr, indent, (char *)pdu->data);
+			// Parser has appended '\0' at the end, so it's safe to print it directly
+			bool prettify_xml = false;
+#ifdef WITH_LIBXML2
+			(void)la_config_get_bool("prettify_xml", &prettify_xml);
+			if(prettify_xml == true) {
+				xmlBufferPtr xmlbufptr = NULL;
+				if((xmlbufptr = la_prettify_xml((char *)pdu->data)) != NULL) {
+					LA_ISPRINTF(vstr, indent, "Message (reformatted):\n");
+					la_isprintf_multiline_text(vstr, indent + 1, (char *)xmlbufptr->content);
+					xmlBufferFree(xmlbufptr);
+				} else {
+					// Doesn't look like XML - print it as normal
+					prettify_xml = false;
+				}
+			}
+#endif
+			if(prettify_xml == false) {
+				LA_ISPRINTF(vstr, indent, "Message:\n");
+				la_isprintf_multiline_text(vstr, indent + 1, (char *)pdu->data);
+			}
 		} else {
 			char *hexdump = la_hexdump((uint8_t *)pdu->data, pdu->data_len);
-			la_isprintf_multiline_text(vstr, indent, hexdump);
+			LA_ISPRINTF(vstr, indent, "Message:\n");
+			la_isprintf_multiline_text(vstr, indent + 1, hexdump);
 			LA_XFREE(hexdump);
 		}
 	}
 
 	if(pdu->err & LA_MIAM_ERR_BODY) {
-		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_BODY, indent);
+		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_BODY, indent + 1);
 		return;
 	}
 }
