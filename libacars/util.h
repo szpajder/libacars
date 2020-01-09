@@ -9,7 +9,10 @@
 #include <stddef.h>		// size_t
 #include <stdlib.h>		// free()
 #include <time.h>		// struct tm
-#include "config.h"		// HAVE_STRSEP
+#include "config.h"		// HAVE_STRSEP, WITH_LIBXML2
+#ifdef WITH_LIBXML2
+#include <libxml/tree.h>	// xmlBufferPtr
+#endif
 
 typedef struct {
 	int id;
@@ -46,5 +49,8 @@ size_t chomped_strlen(char const *s);
 char *la_simple_strptime(char const *s, struct tm *t);
 la_octet_string *la_octet_string_new(void *buf, size_t len);
 void la_octet_string_destroy(void *ostring_ptr);
+#ifdef WITH_LIBXML2
+xmlBufferPtr la_prettify_xml(char *buf);
+#endif
 
 #endif // !LA_UTIL_H

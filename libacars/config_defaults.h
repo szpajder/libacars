@@ -23,5 +23,9 @@
 // determines timer values for the reassembly process). Default is 1 (VHF).
 // See acars.h for full list of supported values.
 
-	LA_CONFIG_SETTING_INTEGER("acars_bearer", 1)
+	LA_CONFIG_SETTING_INTEGER("acars_bearer", 1),
+
+// Pretty-print XML in ACARS and MIAM Core payloads?
+
+	LA_CONFIG_SETTING_BOOLEAN("prettify_xml", false)
 };

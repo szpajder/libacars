@@ -7,6 +7,7 @@
 #define _CONFIG_H
 
 #cmakedefine WITH_ZLIB
+#cmakedefine WITH_LIBXML2
 #cmakedefine IS_BIG_ENDIAN
 #cmakedefine HAVE_STRSEP
 #cmakedefine LFIND_NMEMB_SIZE_SIZE_T

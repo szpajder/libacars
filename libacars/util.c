@@ -10,7 +10,11 @@
 #include <time.h>		// struct tm
 #include <errno.h>		// errno
 #include <unistd.h>		// _exit
-#include "config.h"		// HAVE_STRSEP
+#include "config.h"		// HAVE_STRSEP, WITH_LIBXML2
+#ifdef WITH_LIBXML2
+#include <libxml/parser.h>	// xmlParseDoc
+#include <libxml/tree.h>	// xmlBuffer.*, xmlNodeDump, xmlDocGetRootElement, xmlFreeDoc
+#endif
 #include <libacars/macros.h>	// la_debug_print()
 #include <libacars/util.h>
 
@@ -212,5 +216,25 @@ char *la_strsep(char **stringp, char const *delim) {
 		*stringp = p + 1;
 	}
 	return start;
+}
+#endif
+
+#ifdef WITH_LIBXML2
+xmlBufferPtr la_prettify_xml(char *buf) {
+	if(buf == NULL) {
+		return NULL;
+	}
+	xmlDocPtr doc = xmlParseDoc((uint8_t *)buf);
+	if(doc == NULL) {
+		return NULL;
+	}
+	xmlBufferPtr outbufptr = xmlBufferCreate();
+	int result_len = xmlNodeDump(outbufptr, doc, xmlDocGetRootElement(doc), 0, 1);
+	xmlFreeDoc(doc);
+	if(result_len > 0) {
+		return outbufptr;
+	}
+	xmlBufferFree(outbufptr);
+	return NULL;
 }
 #endif

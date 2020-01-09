@@ -91,6 +91,18 @@ if(ZLIB)
 	endif()
 endif()
 
+option(LIBXML2 "Enable libxml2 support for pretty-printing XML messages" ON)
+set(WITH_LIBXML2 FALSE)
+
+if(LIBXML2)
+	find_package(LibXml2)
+	if(LibXml2_FOUND)
+		set(WITH_LIBXML2 TRUE)
+		list(APPEND acars_extra_libs ${LIBXML2_LIBRARIES})
+		list(APPEND acars_include_dirs ${LIBXML2_INCLUDE_DIRS})
+	endif()
+endif()
+
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/version.c
 		${CMAKE_CURRENT_BINARY_DIR}/_version.c
@@ -98,7 +110,8 @@ add_custom_command(
 )
 
 message(STATUS "libacars configuration summary:")
-message(STATUS "- ZLIB:\trequested: ${ZLIB}\tenabled: ${WITH_ZLIB}")
+message(STATUS "- zlib:\t\trequested: ${ZLIB}, enabled: ${WITH_ZLIB}")
+message(STATUS "- libxml2:\t\trequested: ${LIBXML2}, enabled: ${WITH_LIBXML2}")
 
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
