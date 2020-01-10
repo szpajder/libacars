@@ -8,7 +8,7 @@
 #include <stdlib.h>			// getenv, strtoul
 #endif
 #include "config.h"			// WITH_LIBXML2
-#ifdef LIBXML2
+#ifdef WITH_LIBXML2
 #include <libxml/xmlerror.h>		// xmlGenericErrorFunc, initGenericErrorDefaultFunc
 #endif
 #include <libacars/macros.h>		// la_assert
