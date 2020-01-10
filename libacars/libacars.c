@@ -7,10 +7,6 @@
 #ifdef DEBUG
 #include <stdlib.h>			// getenv, strtoul
 #endif
-#include "config.h"			// WITH_LIBXML2
-#ifdef WITH_LIBXML2
-#include <libxml/xmlerror.h>		// xmlGenericErrorFunc, initGenericErrorDefaultFunc
-#endif
 #include <libacars/macros.h>		// la_assert
 #include <libacars/libacars.h>		// la_proto_node
 #include <libacars/vstring.h>
@@ -111,17 +107,4 @@ void __attribute__ ((constructor)) la_debug_init() {
 	}
 }
 
-#endif
-
-#ifdef WITH_LIBXML2
-void la_xml_errfunc_noop(void * ctx, const char * msg, ...) {
-	(void)ctx;
-	(void)msg;
-}
-
-// Disables printing libxml2 errors to stderr by setting error handler to noop
-void __attribute__ ((constructor)) la_libxml2_errfunc_init() {
-	xmlGenericErrorFunc errfuncptr = la_xml_errfunc_noop;
-	initGenericErrorDefaultFunc(&errfuncptr);
-}
 #endif

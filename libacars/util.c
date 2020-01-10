@@ -14,6 +14,7 @@
 #ifdef WITH_LIBXML2
 #include <libxml/parser.h>	// xmlParseDoc
 #include <libxml/tree.h>	// xmlBuffer.*, xmlNodeDump, xmlDocGetRootElement, xmlFreeDoc
+#include <libxml/xmlerror.h>	// initGenericErrorDefaultFunc, xmlGenericError
 #endif
 #include <libacars/macros.h>	// la_debug_print()
 #include <libacars/util.h>
@@ -220,9 +221,20 @@ char *la_strsep(char **stringp, char const *delim) {
 #endif
 
 #ifdef WITH_LIBXML2
+void la_xml_errfunc_noop(void * ctx, const char * msg, ...) {
+	(void)ctx;
+	(void)msg;
+}
+
 xmlBufferPtr la_prettify_xml(char *buf) {
 	if(buf == NULL) {
 		return NULL;
+	}
+// Disables printing XML parser errors to stderr by setting error handler to noop.
+// Can't do this once in library constructor, because this is a per-thread setting.
+	if(xmlGenericError != la_xml_errfunc_noop) {
+		xmlGenericErrorFunc errfuncptr = la_xml_errfunc_noop;
+		initGenericErrorDefaultFunc(&errfuncptr);
 	}
 	xmlDocPtr doc = xmlParseDoc((uint8_t *)buf);
 	if(doc == NULL) {
