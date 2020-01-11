@@ -65,11 +65,10 @@ void la_cpdlc_format_text(la_vstring *vstr, void const * const data, int indent)
 			bool dump_asn1 = false;
 			(void)la_config_get_bool("dump_asn1", &dump_asn1);
 			if(dump_asn1 == true) {
+				LA_ISPRINTF(vstr, indent, "ASN.1 dump:\n");
 				// asn_fprint does not indent the first line
-				if(indent > 0) {
-					LA_ISPRINTF(vstr, indent * 4, "");
-				}
-				asn_sprintf(vstr, msg->asn_type, msg->data, indent+1);
+				LA_ISPRINTF(vstr, indent + 1, "");
+				asn_sprintf(vstr, msg->asn_type, msg->data, indent + 2);
 			}
 			la_asn1_output_cpdlc_as_text(vstr, msg->asn_type, msg->data, indent);
 		} else {
