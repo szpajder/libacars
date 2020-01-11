@@ -29,7 +29,9 @@ int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t *buf
 		return (int)((size_t)size - rval.consumed);
 	}
 #ifdef DEBUG
-	asn_fprint(stderr, td, *struct_ptr, 1);
+	if(Debug >= D_VERBOSE) {
+		asn_fprint(stderr, td, *struct_ptr, 1);
+	}
 #endif
 	return 0;
 }
