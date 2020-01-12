@@ -24,7 +24,7 @@ typedef struct {
 	uint8_t minute;
 	uint8_t second;
 	char state;
-	char current_link[2];
+	char current_link;
 	char available_links[10];
 	char text[255];
 // reserved for future use
