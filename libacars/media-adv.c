@@ -83,8 +83,7 @@ la_proto_node *la_media_adv_parse(char const *txt) {
 		// First is version
 		msg->version = txt[0] - '0';
 		// link status Established or Lost
-		msg->state[0] = txt[1];
-		msg->state[1] = '\0';
+		msg->state = txt[1];
 		// link type
 		msg->current_link[0] = txt[2];
 		msg->current_link[1] = '\0';
@@ -155,7 +154,7 @@ void la_media_adv_format_text(la_vstring * const vstr, void const * const data, 
 	// Prepare time
 	LA_ISPRINTF(vstr, indent, "Link %s %s at %02d:%02d:%02d UTC\n",
 		get_link_description(msg->current_link[0]),
-		(msg->state[0] == 'E') ? "established" : "lost",
+		(msg->state == 'E') ? "established" : "lost",
 		msg->hour, msg->minute, msg->second
 	);
 
@@ -191,7 +190,7 @@ void la_media_adv_format_json(la_vstring * const vstr, void const * const data) 
 	la_json_object_start(vstr, "current_link");
 	la_json_append_char(vstr, "code", msg->current_link[0]);
 	la_json_append_string(vstr, "descr", get_link_description(msg->current_link[0]));
-	la_json_append_bool(vstr, "established", (msg->state[0] == 'E') ? true : false);
+	la_json_append_bool(vstr, "established", (msg->state == 'E') ? true : false);
 	la_json_object_start(vstr, "time");
 	la_json_append_long(vstr, "hour", msg->hour);
 	la_json_append_long(vstr, "min", msg->minute);

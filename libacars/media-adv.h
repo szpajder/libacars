@@ -23,7 +23,7 @@ typedef struct {
 	uint8_t hour;
 	uint8_t minute;
 	uint8_t second;
-	char state[2];
+	char state;
 	char current_link[2];
 	char available_links[10];
 	char text[255];
