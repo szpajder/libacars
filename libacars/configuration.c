@@ -182,7 +182,14 @@ static void la_config_item_destroy(void *data) {
 	LA_XFREE(item);
 }
 
+void la_config_destroy() {
+	la_hash_destroy(config);
+}
+
 void la_config_init() {
+	if(config != NULL) {
+		la_config_destroy();
+	}
 	config = la_hash_new(la_hash_key_str, la_hash_compare_keys_str,
 		la_simple_free, la_config_item_destroy);
 	la_assert(config != NULL);
@@ -194,8 +201,4 @@ void la_config_init() {
 			(void)la_config_option_set(opt->name, opt->value);
 		}
 	}
-}
-
-void la_config_destroy() {
-	la_hash_destroy(config);
 }
