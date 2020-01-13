@@ -78,6 +78,7 @@ int main(int argc, char **argv) {
 	if(getenv("LA_JSON") != NULL) {
 		json = true;
 	}
+	la_config_set_bool("prettify_xml", true);
 	if(argc > 1 && !strcmp(argv[1], "-h")) {
 		usage();
 		exit(0);
