@@ -1,8 +1,8 @@
 # libacars API Reference
 
-API version: 1.3
+API version: 2.0
 
-Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
+Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
 
 ## Basic data types
 
@@ -40,6 +40,7 @@ typedef struct {
         la_destroy_type_f *destroy;
         la_json_type_f *format_json;
         char *json_key;
+// ... (placeholder fields for future use)
 } la_type_descriptor;
 ```
 
@@ -70,6 +71,7 @@ struct la_proto_node {
         la_type_descriptor const *td;
         void *data;
         la_proto_node *next;
+// ... (placeholder fields for future use)
 };
 ```
 
@@ -157,16 +159,22 @@ node has been found.
 #include <libacars/acars.h>
 
 typedef struct {
-        bool crc_ok;
-        bool err;
-        char mode;
-        char reg[8];
-        char ack;
-        char label[3];
-        char block_id;
-        char no[5];
-        char flight_id[7];
-        char *txt;
+	bool crc_ok;
+	bool err;
+	bool final_block;
+	char mode;
+	char reg[8];
+	char ack;
+	char label[3];
+	char sublabel[3];
+	char mfi[3];
+	char block_id;
+	char msg_num[4];
+	char msg_num_seq;
+	char flight_id[7];
+	la_reasm_status reasm_status;
+	char *txt;
+// ... (placeholder fields for future use)
 } la_acars_msg;
 ```
 
@@ -175,22 +183,34 @@ A structure representing a decoded ACARS message.
 - `crc_ok` - `true` if ACARS CRC verification succeeded, `false` otherwise.
 - `err` - `true` if the decoder failed to decode the message. Values of other
   fields are left uninitialized.
+- `final_block` - `true` if the message text is terminated with ETX character
+  (meaning it's the final block of a multiblock ACARS message), `false` if
+  it has been terminated with ETB character (meaning there are more blocks
+  left in this message)
 - `mode` - mode character
 - `reg` - aircraft registration number (NULL-terminated)
-- `ack` - acknowledgment character
+- `ack` - acknowledgement character
 - `label` - message label (NULL-terminated)
-- `block_id` - block ID
-- `no` - message number (NULL-terminated)
+- `sublabel` - message sublabel (NULL-terminated, empty string, if absent)
+- `mfi` - message function identifier (NULL-terminated, empty string, if absent)
+- `block_id` - block ID character
+- `msg_num` - first three characters of downlink message number (NULL-terminated)
+- `msg_num_seq` - fourth character of downlink message number (sequence number
+  indicator)
 - `flight_id` - flight number (NULL-terminated)
 - `txt` - message text (NULL-terminated)
+- `reasm_status` - reassembly status, returned by the reassembly engine after
+  it has processed this message
 
-### la_acars_parse()
+### la_acars_parse_and_reassemble()
 
 ```C
 #include <libacars/libacars.h>
 #include <libacars/acars.h>
 
-la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir);
+la_proto_node *la_acars_parse_and_reassemble(uint8_t *buf, int len, la_msg_dir msg_dir,
+	la_reasm_ctx *rtables, struct timeval rx_time);
+
 ```
 
 Takes a buffer of `len` bytes pointed to by `buf` and attempts to decode it as
@@ -204,9 +224,96 @@ function will determine it using block ID field in the ACARS header.
 
 The function returns a pointer to a newly allocated `la_proto_node` structure
 which is the root of the decoded protocol tree. The `data` pointer of the top
-`la_proto_node` will point at a `la_acars_msg` structure. The function performs
+`la_proto_node` will point to a `la_acars_msg` structure. The function performs
 ACARS CRC verification and stores the result in the `crc_ok` field. If the
 message could not be decoded, the `err` flag will be set to true.
+
+If `rtables` points to a valid reassembly engine context, the function also
+performs message reassembly in case the message is fragmented. In this case,
+`rx_time` must be set to the time when the message has been received (this is
+required for proper handling of reassembly timeouts). If `reasm_ctx` is NULL,
+then no reassembly is done.
+
+### la_acars_parse()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/acars.h>
+
+la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir);
+```
+
+This function is provided for backward compatbility with libacars version 1. It
+is equivalent to `la_acars_parse_and_reassemble()` with a NULL `reasm_ctx`,
+ie. it parses the given buffer as an ACARS message, without reassembly.
+
+### la_acars_extract_sublabel_and_mfi()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/acars.h>
+
+int la_acars_extract_sublabel_and_mfi(char const * const label, la_msg_dir const msg_dir,
+	char const * const txt, int const len, char *sublabel, char *mfi);
+```
+
+Extracts sublabel and MFI (Message Function Identifier) fields from the given
+ACARS message text `txt` and stores (copies) their values into buffers pointed
+to by `sublabel` and `mfi`. Returns the offset (number of bytes) from the
+beginning of the message text right after these fields. Returns 0 if sublabel
+and MFI are not present. If supplied parameters are incorrect, the function
+returns -1.
+
+- `label` - ACARS label of the message in question. The function searches for
+  label and MFI only if the label is set to `H1`.
+
+- `msg_dir` - message direction of the message in question. Must be set either
+  to `LA_MSG_DIR_GND2AIR` or `LA_MSG_DIR_AIR2GND`.
+
+- `txt` - ACARS message text.
+
+- `len` - length of the ACARS message text. This allows `txt` not to be
+  NULL-terminated.
+
+- `sublabel` - must be either set to NULL or point to a preallocated character
+  buffer of at least 3 characters in length. If sublabel field is present, its
+  value is copied into this buffer. If `sublabel` is NULL, the field is just
+  skipped, without copying.
+
+- `mfi` - must be either set to NULL or point to a preallocated character buffer
+  of at least 3 characters in length. If MFI field is present, its value is
+  copied into this buffer. If `mfi` is NULL, the field is skipped, without
+  copying.
+
+**Example 1**: the following call:
+
+```C
+char sublabel[3], mfi[3];
+char *txt = "#T2BT-3![[mS0L8ZeIK0?J|EDDF";
+int ret = la_acars_extract_sublabel_and_mfi("H1", LA_MSG_DIR_AIR2GND,
+	txt, strlen(txt), sublabel, mfi);
+```
+
+sets `sublabel` to "T2", sets `mfi` to an empty string (because MFI is not
+present), and returns 4, which is the position of the first character after the
+sublabel field, ie 'T' (because the sublabel field is "#T2B" in this case).
+
+**Example 2**: the following call:
+
+```C
+char sublabel[3], mfi[3];
+char *txt = "- #MD/AA ATLTWXA.CR1.N856DN203A3AA8E5C1A9323EDD";
+int ret = la_acars_extract_sublabel_and_mfi("H1", LA_MSG_DIR_GND2AIR,
+	txt, strlen(txt), sublabel, mfi);
+```
+
+sets `sublabel` to "MD", sets `mfi` to "AA" and returns 9, which is the position
+of the initial character 'A' in "ATLTWXA".
+
+The offset returned by `la_acars_extract_sublabel_and_mfi()` might be used to
+skip sublabel and MFI and make the message text acceptable for processing by
+functions expecting the sublabel and MFI to be stripped. Refer to an example
+program in the [Programmer's Guide](PROGRAMMING_GUIDE.md).
 
 ### la_acars_format_text()
 
@@ -220,6 +327,12 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 Serializes a decoded ACARS message pointed to by `data` into a human-readable
 text indented by `indent` spaces and appends the result to `vstr` (which must be
 non-NULL).
+
+If libacars has been built with libxml2 support and `prettify_xml` configuration
+variable is set to `true`, then the function attempts to parse the message text
+as an XML document. If parsing succeeds (meaning the message indeed contains
+XML), the text is pretty-printed (reformatted into multi-line output with proper
+indentation).
 
 Use this function if you want to serialize only the ACARS protocol node and not
 its child nodes. In most cases `la_proto_tree_format_text()` should be used
@@ -241,14 +354,15 @@ Use this function if you want to serialize only the ACARS protocol node and not
 its child nodes. In most cases `la_proto_tree_format_json()` should be used
 instead.
 
-### la_acars_decode_apps()
+### la_acars_apps_parse_and_reassemble()
 
 ```C
 #include <libacars/libacars.h>
 #include <libacars/acars.h>
 
-la_proto_node *la_acars_decode_apps(char const * const label,
-        char const * const txt, la_msg_dir const msg_dir);
+la_proto_node *la_acars_apps_parse_and_reassemble(char const * const reg,
+	char const * const label, char const * const txt, la_msg_dir const msg_dir,
+	la_reasm_ctx *rtables, struct timeval const rx_time);
 ```
 
 Tries to determine the ACARS application using message label stored in `label`. If
@@ -259,6 +373,29 @@ must be set to a correct transmission direction for the decoding to succeed.
 The function returns a pointer to a newly allocated `la_proto_node` structure
 which is the root of the decoded protocol tree. If none of the application
 decoders recognized the message, the function returns NULL.
+
+If `rtables` points to a valid reassembly engine context, it is passed to the
+decoder of each application which may use message fragmentation at the
+application layer (currently the only such application is MIAM). In this case,
+`reg` must point to the registration of the aircraft which transmitted or
+received the message (this is used as a hash key) and `rx_time` must be set to
+the time when the message has been received (required for proper handling of
+reassembly timeouts). If `reasm_ctx` is NULL, then no reassembly is done.
+
+### la_acars_decode_apps()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/acars.h>
+
+la_proto_node *la_acars_decode_apps(char const * const label,
+        char const * const txt, la_msg_dir const msg_dir);
+```
+
+This function is provided for backward compatbility with libacars version 1. It
+is equivalent to `la_acars_apps_parse_and_reassemble()` with a NULL
+`reasm_ctx`, ie. it decodes ACARS application message `txt` without reassembly.
+
 
 ### la_proto_tree_find_acars()
 
@@ -291,6 +428,7 @@ typedef struct {
         char air_reg[8];
         la_arinc_imi imi;
         bool crc_ok;
+// ... (placeholder fields for future use)
 } la_arinc_msg;
 ```
 
@@ -328,7 +466,7 @@ ARINC-622 message. Performs the following tasks:
 
 The function returns a pointer to a newly allocated `la_proto_node` structure
 which is the root of the decoded protocol tree. The `data` pointer of the top
-`la_proto_node` will point at a `la_arinc_msg` structure. The result of ARINC
+`la_proto_node` will point to a `la_arinc_msg` structure. The result of ARINC
 CRC verification is stored in the `crc_ok` boolean field. If the message text
 does not represent an ARINC-622 application message or if the IMI field value is
 unknown, the function returns NULL.
@@ -393,6 +531,7 @@ found in the tree, the function returns NULL.
 typedef struct {
         bool err;
         la_list *tag_list;
+// ... (placeholder fields for future use)
 } la_adsc_msg_t;
 ```
 
@@ -441,7 +580,7 @@ have a value of either `ARINC_MSG_ADS` or `ARINC_MSG_DIS`.
 
 The function returns a pointer to a newly allocated `la_proto_node` structure
 which is the root of the decoded protocol tree. The `data` pointer of the top
-`la_proto_node` will point at a `la_adsc_msg_t` structure.  If the message could
+`la_proto_node` will point to a `la_adsc_msg_t` structure.  If the message could
 not be decoded, the `err` flag will be set to true.
 
 ### la_adsc_format_text()
@@ -519,6 +658,7 @@ typedef struct {
         asn_TYPE_descriptor_t *asn_type;
         void *data;
         bool err;
+// ... (placeholder fields for future use)
 } la_cpdlc_msg;
 ```
 
@@ -542,7 +682,7 @@ a FANS-1/A CPDLC message sent in the direction indicated by `msg_dir`.
 
 The function returns a pointer to a newly allocated `la_proto_node` structure
 which is the root of the decoded protocol tree. The `data` pointer of the top
-`la_proto_node` will point at a `la_cpdlc_msg` structure.  If the message could
+`la_proto_node` will point to a `la_cpdlc_msg` structure.  If the message could
 not be decoded, the `err` flag will be set to true.
 
 It is imperative to specify correct value for `msg_dir`. This is because CPDLC
@@ -599,6 +739,9 @@ node is always the leaf (terminating) node in the protocol tree, this function
 will have the same effect as `la_proto_tree_format_json()` which should be used
 instead of this function in most cases.
 
+If `dump_asn1` config variable is set to `true`, a raw ASN.1 structure dump will
+be prepended to the human-readable output.
+
 ### la_cpdlc_destroy()
 
 ```C
@@ -635,33 +778,32 @@ found in the tree, the function returns NULL.
 #include <libacars/media-adv.h>
 
 typedef struct {
-	char version[2];
-	char state[2];
+	bool err;
+	uint8_t version;
+	uint8_t hour;
+	uint8_t minute;
+	uint8_t second;
+	char state;
 	char current_link[2];
-	char hour[3];
-	char minute[3];
-	char second[3];
 	char available_links[10];
 	char text[255];
-	bool err;
+// ... (placeholder fields for future use)
 } la_media_adv_msg;
 ```
 
-- `version` - message version number (NULL-terminated string of length 1)
+- `err` - `true` if the decoder failed to decode the message, `false` otherwise.
+- `version` - message version number
   Currently only version 0 is supported (which is probably the only version
   in existence).
-- `state` - a NULL-terminated string of length 1 describing the event which
-  triggered this Media Advisory message. Possible values: "E" (link
-  established), "L" (link lost).
-- `current_link` - a NULL-terminated string of length 1 indicating the type
-  of the link which state change has triggered this Media Advisory message.
-  Refer to the structure `link_type_map` in `src/libacars/media-adv.c` for
-  a list of all types and their textual descriptions.
-- `hour`, `minute`, `second` - 2-digit NULL-terminated strings containing
-  the UTC time of the event
+- `hour`, `minute`, `second` - UTC time of the event
+- `state` - describes the event which triggered this Media Advisory message.
+  Possible values: 'E' (link established), 'L' (link lost).
+- `current_link` - indicates the type of the link which state change has
+  triggered this Media Advisory message.  Refer to the structure `link_type_map`
+  in `src/libacars/media-adv.c` for a list of all types and their textual
+  descriptions.
 - `available_links` - a NULL-terminated string with concatenated letter codes
   of links which are currently available.
-- `err` - `true` if the decoder failed to decode the message, `false` otherwise.
 
 ### la_media_adv_parse()
 
@@ -677,7 +819,7 @@ message.
 
 The function returns a pointer to a newly allocated `la_proto_node` structure
 which is the root of the decoded protocol tree. The `data` pointer of the top
-`la_proto_node` will point at a `la_media_adv_msg` structure.  If the message
+`la_proto_node` will point to a `la_media_adv_msg` structure.  If the message
 could not be decoded, the `err` flag will be set to true.
 
 ### la_media_adv_format_text()
@@ -761,33 +903,35 @@ la_DEF_miam_message (la_miam_msg)
 
 ## MIAM ACARS Convergence Function API
 
-### la_miam_parse()
+### la_miam_parse_and_reassemble()
 
 ```C
 #include <libacars/libacars.h>
 #include <libacars/miam.h>
 
-la_proto_node *la_miam_parse(char const * const label, char const *txt, la_msg_dir const msg_dir);
+la_proto_node *la_miam_parse_and_reassemble(char const *reg, char const *txt,
+	la_reasm_ctx *rtables, struct timeval const rx_time);
 
 ```
-Attempts to parse the NULL-terminated string pointed to by `txt` as a MIAM ACARS
-CF message.
+Attempts to parse NULL-terminated string pointed to by `txt` as a MIAM ACARS CF
+message. Optionally performs reassembly of the inner payload (this currently
+applies to MIAM File Segments only).
 
-- `char const * const label` - ACARS label
-- `char const *txt` - ACARS message text
-- `la_msg_dir const msg_dir` - message direction
-
-The parser will act differently depending on the value of the ACARS label. Some
-airlines transmit MIAM messages with a non-standard label of H1, which implies
-that additional sublabel prefix is prepended to the message text. The syntax of
-the prefix also depends on message direction and it must be stripped before
-decoding the message. It is therefore imperative to specify the label and
-direction correctly when the label is H1. In other cases (including MA, which is
-the standard label for MIAM) it's not that critical.
+- `reg` - registration of the aircraft which sent or received this message. Used
+  as a hash key during reassembly process. If reassembly is not desired (ie.
+  `rtables` argument is set to NULL), this parameter is not used and might be set
+  to NULL.
+- `txt` - ACARS message text (sublabel and MFI must be stripped beforehand)
+- `rtables` - if reassembly is desired, this should point to a valid reassembly
+  context. Setting it to NULL disables reassembly.
+- `rx_time` - if reassembly is desired, this should indicate the reception
+  timestamp of the message, which is required for proper handling of reassembly
+  timeouts. If reassembly is disabled, this parameter is not used and might be
+  set to any value, for example `{ 0, 0 }`.
 
 The parser returns a pointer to a newly allocated `la_proto_node` structure
 which is the root of the decoded protocol tree. The `data` pointer of the top
-`la_proto_node` will point at a `la_miam_msg` structure. `td` will point to
+`la_proto_node` will point to a `la_miam_msg` structure. `td` will point to
 `la_DEF_miam_message` type descriptor. If the message has not been identified as
 MIAM, the parser returns NULL. This informs the caller that the message possibly
 contains another ACARS application (not MIAM), hence the return value of NULL
@@ -826,7 +970,8 @@ typedef enum {
 // MIAM ACARS CF frame
 typedef struct {
         la_miam_frame_id frame_id;
-};
+// ... (placeholder fields for future use)
+} la_miam_msg;
 ```
 
 - `frame_id` - identifies the MIAM ACARS CF frame type.
@@ -861,6 +1006,8 @@ typedef struct {
 	size_t file_size;
 	uint16_t file_id;
 	struct tm validity_time;
+	la_reasm_status reasm_status;
+// ... (placeholder fields for future use)
 } la_miam_file_transfer_request_msg;
 
 // MIAM File Transfer Accept
@@ -869,23 +1016,27 @@ typedef struct {
 	uint16_t segment_size;
 	uint16_t onground_segment_tempo;
 	uint16_t inflight_segment_tempo;
+// ... (placeholder fields for future use)
 } la_miam_file_transfer_accept_msg;
 
 // MIAM File Segment
 typedef struct {
 	uint16_t file_id;
 	uint16_t segment_id;
+// ... (placeholder fields for future use)
 } la_miam_file_segment_msg;
 
 // MIAM File Transfer Abort
 typedef struct {
 	uint16_t file_id;
 	uint16_t reason;
+// ... (placeholder fields for future use)
 } la_miam_file_transfer_abort_msg;
 
 // MIAM XOFF IND
 typedef struct {
 	uint16_t file_id;	// 0-127 or 0xFFF = pause all transfers
+// ... (placeholder fields for future use)
 } la_miam_xoff_ind_msg;
 
 // MIAM XON IND
@@ -893,6 +1044,7 @@ typedef struct {
 	uint16_t file_id;	// 0-127 or 0xFFF = resume all transfers
 	uint16_t onground_segment_tempo;
 	uint16_t inflight_segment_tempo;
+// ... (placeholder fields for future use)
 } la_miam_xon_ind_msg;
 ```
 
@@ -900,6 +1052,20 @@ typedef struct {
 present. This is because MIAM Single Transfer message contains only MIAM CORE
 PDU, hence the data type for Single Transfer message is set to
 `la_miam_core_pdu` (refer to the MIAM CORE API section).
+
+### la_miam_parse()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/miam.h>
+
+la_proto_node *la_miam_parse(char const *txt);
+
+```
+
+This function is provided for backward compatbility with libacars version 1. It
+is equivalent to `la_miam_parse_and_reassemble()` with a NULL `reasm_ctx`,
+ie. it decodes MIAM message in the given buffer without reassembly.
 
 ### la_miam_format_text()
 
@@ -966,7 +1132,7 @@ la_proto_node *la_miam_core_pdu_parse(char const *txt);
 Attempts to parse the NULL-terminated string `txt` as a MIAM CORE protocol data
 unit. Returns a pointer to a newly allocated `la_proto_node` structure which is
 the root of the decoded protocol tree. The `data` pointer of the top
-`la_proto_node` will point at a `la_miam_core_pdu` structure. `td` will point to
+`la_proto_node` will point to a `la_miam_core_pdu` structure. `td` will point to
 `la_DEF_miam_core_pdu` type descriptor. If the message has not been identified
 as MIAM CORE PDU, the parser returns NULL. If this routine has been called from
 `la_miam_parse()`, then the NULL return value will propagate upwards to the
@@ -1001,6 +1167,7 @@ typedef struct {
 	uint32_t err;			// PDU decoding error code
 	uint8_t version;		// MIAM CORE PDU version
 	la_miam_core_pdu_type pdu_type;	// MIAM CORE PDU type
+// ... (placeholder fields for future use)
 } la_miam_core_pdu;
 ```
 
@@ -1025,8 +1192,8 @@ extern la_type_descriptor const la_DEF_miam_core_v2_ack_pdu;
 
 Each type descriptor describes a particular MIAM CORE PDU type:
 
-- ALO - Aloha (common format for MIAM CORE v1 and v2)
-- ALR - Aloha Response (common format for MIAM CORE v1 and v2)
+- ALO - Aloha (same format for MIAM CORE v1 and v2)
+- ALR - Aloha Response (same format for MIAM CORE v1 and v2)
 - DATA - Data Transfer (v1 or v2)
 - ACK - Acknowledgement (v1 or v2)
 
@@ -1045,6 +1212,12 @@ void la_miam_core_format_text(la_vstring * const vstr, void const * const data, 
 Serializes a decoded MIAM CORE PDU pointed to by `data` into a human-readable
 text indented by `indent` spaces and appends the result to `vstr` (which must be
 non-NULL).
+
+If libacars has been built with libxml2 support and `prettify_xml` configuration
+variable is set to `true`, then the function attempts to parse the message text
+as an XML document. If parsing succeeds (meaning the message indeed contains
+XML), the text is pretty-printed (reformatted into multi-line output with proper
+indentation).
 
 ### la_miam_core_format_json()
 
@@ -1084,7 +1257,7 @@ of interest, for example:
 la_proto_node *v2_data_pdu = la_proto_tree_find_protocol(tree_ptr, &la_DEF_miam_core_v2_data_pdu);
 ```
 
-## Error handling
+### Error handling
 
 Each MIAM CORE PDU structure contains an `err` field:
 
@@ -1102,6 +1275,286 @@ each encountered error. Header errors are fatal, ie. the actual PDU is not
 printed because its content is dubious. Body errors are not fatal - the header
 will still be printed and the body as well (at least partially). Diagnostic
 messages are printed after the message body.
+
+## Message reassembly API
+
+The purpose of reassembly API in libacars is to provide a generic engine for
+reassembling arbitrary portions of data, including various kinds of protocol
+data units (packets, messages, etc). In order for the API to be applicable, the
+protocol must satisfy certain prerequisites, in particular:
+
+- All fragments of a given message must be identifiable by a certain invariant
+  key to distinguish between fragments belonging to different messages.
+
+- All fragments must have sequence numbers to determine their order.
+
+- Sequence numbers of subsequent fragments must differ by one.
+
+- There must exist an end-of-message indication. This might be accomplished
+  either by a boolean flag indicating whether a particular fragment is the final
+  fragment of the message, or by specifying the total size of the reassembled
+  message in bytes (the reassembly process is deemed complete after receiving
+  that amount of data).
+
+- Fragments of each message must be passed to the reassembly engine in correct
+  order.  Duplicates (consecutive repetitions of a fragment with the same
+  sequence number) are allowed (they are skipped), but sequence number gaps and
+  reversals are not allowed (however see below for an exception).
+
+- Non-zero reassembly timeout must be specified for each message. This is
+  particularly important when sequence numbers wrap often. The engine must
+  expire old incomplete reassembly entries in a timely manner to prevent merging
+  fragments belonging to different messages and to limit memory consumption.
+
+- Receive timestamp of each fragment must be known, so that reassembly timeouts
+  could be handled properly.
+
+Additionally:
+
+- Sequence numbers may optionally wrap at a certain constant value.
+
+- If the sequence numbers of the fragments of each message start from a fixed
+  known value, the engine may ensure completeness of reassembled messages,
+  ie. that each message begins with a fragment with a sequence number of that
+  fixed value. This is also the only case when reversals of sequence numbers are
+  allowed - fragments with sequence numbers lower than the previously received
+  fragment are treated as duplicates (skipped).
+
+- Sequencing fragments using fragment offset (like in IP protocol) is not
+  supported.
+
+The engine is used internally by libacars to reassemble ACARS messages and MIAM
+file transfers. In addition, dumpvdl2 uses the engine to reassemble X.25.
+
+### la_reasm_ctx_new()
+
+```C
+#include <libacars/reassembly.h>
+
+la_reasm_ctx *la_reasm_ctx_new();
+```
+
+Initializes reassembly engine context which stores the reassembly state table
+for each protocol. A pointer to this context should then be passed to the
+decoding routine of each protocol which may contain fragmented messages - in
+particular, `la_acars_parse_and_reassemble()`,
+`la_acars_apps_parse_and_reassemble()` and `la_miam_parse_and_reassemble()`.
+
+### la_reasm_ctx_destroy()
+
+```C
+#include <libacars/reassembly.h>
+
+void la_reasm_ctx_destroy(void *ctx);
+```
+
+Deallocates memory used by the reassembly context and all protocol state tables.
+
+### la_reasm_table_new()
+
+```C
+#include <libacars/reassembly.h>
+
+la_reasm_table *la_reasm_table_new(la_reasm_ctx *rctx, void const *table_id,
+	la_reasm_table_funcs funcs, int const cleanup_interval);
+
+```
+Creates a reassembly table for the given protocol and returns a pointer to it.
+
+- `rctx` - reassembly context (initialized with `la_reasm_ctx_new()`)
+
+- `table_id` - an arbitrary pointer identifying the new table. For example
+  libacars uses pointers to la_type_descriptors to identify reassembly tables.
+
+- `funcs` - a set of callbacks implementing protocol-specific operations
+  performed during reassembly process.
+
+- `cleanup_interval` - a positive number indicating how often stale entries
+  (incomplete, timed out reassemblies) are removed from the reassembly table.
+  Cleanup is performed every `cleanup_interval` processed fragments of this
+  protocol (ie. every `cleanup_interval` executions of `la_reasm_fragment_add()`
+  function with the same value of `table_id`).
+
+`la_reasm_table_funcs` structure contains a set of pointers to user-supplied
+protocol-specific callbacks and is defined as follows:
+
+```C
+#include <libacars/reassembly.h>
+
+typedef void *(la_reasm_get_key_func)(void const *msg);
+typedef la_hash_func la_reasm_hash_func;
+typedef la_hash_compare_func la_reasm_compare_func;
+typedef la_hash_key_destroy_func la_reasm_key_destroy_func;
+
+typedef struct {
+	la_reasm_get_key_func *get_key;
+	la_reasm_get_key_func *get_tmp_key;
+	la_reasm_hash_func *hash_key;
+	la_reasm_compare_func *compare_keys;
+	la_reasm_key_destroy_func *destroy_key;
+} la_reasm_table_funcs;
+```
+
+- `get_key` - a callback which takes a pointer to the message metadata structure
+  (which might be the packet header, for example) as argument and returns a
+  pointer to a newly allocated value which will be used as the hash key.
+- `get_tmp_key` - same as `get_key`, but this callback should return a temporary
+  key, which will be used for hash lookups only and could be freed with a single
+  call to `free()`.
+- `hash_key`, `compare_keys`, `destroy_key` - callbacks used for hash
+  operations. Refer to the chapter about hash API for more information on how
+  these callbacks work.
+
+### la_reasm_table_lookup()
+
+```C
+#include <libacars/reassembly.h>
+
+la_reasm_table *la_reasm_table_lookup(la_reasm_ctx *rctx, void const *table_id);
+```
+
+Searches for the reassembly table `table_id` in the context pointed to by `rctx`
+and returns a pointer to it. Returns NULL if not found.
+
+### la_reasm_fragment_add()
+
+```C
+#include <libacars/reassembly.h>
+
+la_reasm_status la_reasm_fragment_add(la_reasm_table *rtable, la_reasm_fragment_info const *finfo);
+```
+
+Adds the fragment `finfo` to the reassembly table `rtable`. Fragment data
+is supplied in the `la_reasm_fragment_info` structure, defined as follows:
+
+```C
+#include <libacars/reassembly.h>
+
+typedef struct {
+	void const *msg_info;
+	uint8_t *msg_data;
+	int msg_data_len;
+	int total_pdu_len;
+	struct timeval rx_time;
+	struct timeval reasm_timeout;
+	int seq_num;
+	int seq_num_first;
+	int seq_num_wrap;
+	bool is_final_fragment;
+} la_reasm_fragment_info;
+```
+
+- `msg_info` - an opaque pointer to message metadata (eg. packet header). This
+  pointer is passed as an argument to `get_key` and `get_tmp_key` callbacks
+  supplied when creating the reassembly table with `la_reasm_table_new()`.
+- `msg_data`, `msg_data_len` - the data part of the fragment (ie. its payload).
+  The reassembly engine concatenates all these parts together.
+- `total_pdu_len` - total length of the reassembled message (if known). Setting
+  this field to a positive value indicates that the reassembly should be deemed
+  complete when the amount of data collected from fragments equals or exceeds
+  this value. If the total length is unknown, this field should be set to zero.
+  In this case, the final fragment of the message must be indicated by setting
+  `is_final_fragment` flag to true. Note that only `total_pdu_len` value from
+  the first fragment of the message is taken into account In subsequent fragments
+  of the same message this field may be set to any value (eq. zero).
+- `rx_time` - time when this fragment has been received. Used for handling
+  reassembly timeouts and expiration of old incomplete entries.
+- `reasm_timeout` - reassembly timeout. All fragments must be received before it
+  expires, otherwise the reassembly of the message will be aborted.
+- `seq_num` - sequence number of this fragment. Fragments of every message must
+  be numbered consecutively.
+- `seq_num_first` - if fragment sequence numbering of each message starts with a
+  known constant value, it should be given here. Reassembly will only succeed
+  when the first fragment of the message has this sequence number. If the sequence
+  number of first fragment is variable, this field must be set to a special value
+  `SEQ_FIRST_NONE`.
+- `seq_num_wrap` - if fragment sequence numbers wrap at a certain fixed value,
+  this value must be supplied here. For example, sequence numbers in X.25
+  protocols go from 0 to 7 and then back to 0. In this case `seq_num_wrap` must
+  be set to 8. If sequence numbers don't wrap, this field must be set to a
+  special value `SEQ_WRAP_NONE`.
+- `is_final_fragment` - if total length of the reassembled message is not known
+  (ie.`total_pdu_len` has been set to zero in the initial fragment of this
+  message) then this field must be set to `true` in the final fragment of the
+  message and to `false` in all fragments preceding it. This allows the algorithm
+  to determine whether the reassembly of the message in question has already
+  completed (ie. all fragments have been received).
+
+`la_reasm_fragment_add()` returns the message reassembly status an enumerated
+value defined as follows:
+
+```C
+#include <libacars/reassembly.h>
+
+typedef enum {
+	LA_REASM_UNKNOWN,
+	LA_REASM_COMPLETE,
+	LA_REASM_IN_PROGRESS,
+	LA_REASM_SKIPPED,
+	LA_REASM_DUPLICATE,
+	LA_REASM_FRAG_OUT_OF_SEQUENCE,
+	LA_REASM_ARGS_INVALID
+} la_reasm_status;
+```
+
+- `LA_REASM_UNKNOWN` - default value, never returned by the function. Might be
+  used as variable initializer.
+- `LA_REASM_COMPLETE` - submitted fragment has been successfully added to the
+  reassembly table. The algorithm considers the reassembly of this message as
+  complete. Reassembled payload is ready for retrieval with
+  `la_reasm_payload_get()`.
+- `LA_REASM_IN_PROGRESS` - submitted fragment has been successfully added to the
+  reassembly table. Reassembly of this message is not yet complete, the
+  algorithm expects more fragments to be submitted.
+- `LA_REASM_SKIPPED` - reassembly of this message has not been and will not be
+  performed. This value is returned when a non-fragmented message has been
+  submitted (ie. it does not exist in the hash table and it's the final
+  fragment).
+- `LA_REASM_DUPLICATE` - submitted fragment has not been added to the table
+  because it is a duplicate of a fragment submitted earlier. This condition is
+  not fatal. The reassembly will continue when subsequent fragments are submitted.
+- `LA_REASM_FRAG_OUT_OF_SEQUENCE` - submitted fragment has an incorrect sequence
+  number (ie. there was a gap or reversal). Reassembly of this message has been
+  aborted and its entry removed from the hash table. If any other fragment of this
+  messages is submitted, it will be treated as a new message, ie. the reassembly
+  will start from scratch.
+- `LA_REASM_ARGS_INVALID` - failure due to incorrect arguments. Either
+  `msg_info` is NULL or a zero timeout has been submitted.
+
+### la_reasm_payload_get()
+
+Retrieves the reasembled payload of the given message.
+
+```C
+#include <libacars/reassembly.h>
+
+int la_reasm_payload_get(la_reasm_table *rtable, void const *msg_info, uint8_t **result);
+```
+
+- `rtable` - pointer to the reassembly table.
+- `msg_info` - an opaque pointer identifying the requested message. Will be
+  passed to `get_tmp_key` to retrieve the hash key for reassembly table lookup.
+- `result` - the reassembled payload will be stored in a newly-allocated buffer
+  and the pointer to this buffer will be stored here.
+
+The function returns the length of the reassembled buffer. If the given message
+could not be found in the reassembly table, the function returns a negative
+value.
+
+The size of the allocated result buffer is in fact one byte larger than the
+value returned by the function. The final byte is set to 0. This allows the
+caller to cast the result to `char *` and treat is as a string, should the
+message contents be textual.
+
+### la_reasm_status_name_get()
+
+Returns a short textual description of the given reassembly status value.
+
+```C
+#include <libacars/reassembly.h>
+
+char const *la_reasm_status_name_get(la_reasm_status const status);
+```
 
 ## la_vstring API
 
@@ -1292,6 +1745,195 @@ node_free(l->data);
 This function should be used when data chunks are complex structures composed of
 multiple allocated memory chunks.
 
+### la_list_free_full_with_ctx()
+
+```C
+#include <libacars/list.h>
+
+void la_list_free_full_with_ctx(la_list *l, void (*node_free)(), void *ctx);
+```
+
+Deallocates memory used by all items in the list `l`. All data chunks stored in
+the list are freed by executing callback function `node_free`:
+
+```C
+node_free(l->data, ctx);
+```
+
+- `l->data` - a pointer to the data chunk stored in the current list item
+- `ctx` - a caller-provided context pointer
+
+This function should be used when data chunks are complex structures composed of
+multiple allocated memory chunks and the callback function requires some context
+to do its job.
+
+## la_hash API
+
+`la_hash` is a simple hash table implementation. Number of hash buckets is fixed
+at 173. libacars provides a function for hashing based on character strings,
+however basically any data type might be used as a hash key. It's just a matter
+of implementing appropriate callback functions - hash bucket calculator, key
+comparator, key destructor and value destructor.
+
+### la_hash_new()
+
+```C
+#include <libacars/hash.h>
+
+typedef uint32_t (la_hash_func)(void const *key);
+typedef bool (la_hash_compare_func)(void const *key1, void const *key2);
+typedef void (la_hash_key_destroy_func)(void *key);
+typedef void (la_hash_value_destroy_func)(void *value);
+
+la_hash *la_hash_new(la_hash_func *compute_hash, la_hash_compare_func *compare_keys,
+	la_hash_key_destroy_func *destroy_key, la_hash_value_destroy_func *destroy_value);
+```
+
+Creates a new hash table and returns a pointer to it.
+
+- `compute_hash` - a pointer to a user-supplied callback function which performs
+  the hashing, ie computes the hash bucket for the given key. Must be non-NULL.
+- `compare_keys` - a pointer to a user-supplied callback function which tests
+  two hash keys for equality. Must be non-NULL.
+- `destroy_key` - a pointer to a user-supplied callback function which
+  deallocates memory used by the given hash key. Might be NULL - in this case
+  keys are not freed when removing/replacing hash entries. The caller is then
+  responsible for deallocating the keys.
+- `destroy_value` - a pointer to a user-supplied callback function which
+  deallocates memory used by the given hash value. Might be NULL - in this case
+  values are not freed when removing/replacing hash entries. The caller is then
+  responsible for deallocating the values.
+
+libcars provides the following callbacks:
+
+```C
+uint32_t la_hash_key_str(void const *k);
+```
+
+Computes and returns hash bucket number for storing the given string key. `k`
+must be of type `char *`. To be used as `compute_hash`.
+
+```C
+bool la_hash_compare_keys_str(void const *key1, void const *key2);
+```
+
+Tests two string keys for equality by running `strcmp` on them. `k1` and `k2`
+must be of type `char *`. Returns true if given strings are equal, false
+otherwise. To be used as `compare_keys`.
+
+```C
+void la_simple_free(void *data);
+```
+
+Frees the memory area pointed to by `data`. To be used as `destroy_key` and/or
+`destroy_value` in case keys and/or values are simple scalar data types that can
+be freed by a single call to `free()`.
+
+### la_hash_string()
+
+A helper function to be used in custom `compute_hash` callbacks.
+
+```C
+uint32_t la_hash_string(char const *str, uint32_t h);
+```
+
+Computes the hash bucket for the given string `str` taking `h` as the initial
+hash bucket for computation. This allows hashing over several strings without
+the need of concatenating them beforehand. It's just a matter of calling
+`la_hash_string` several times, for each string in turn.  During the first call
+`h` should be set to `LA_HASH_INIT`. Subsequent calls should use `h` value
+returned by the previous call. Example:
+
+```C
+typedef struct {
+	char *str1, str2, str3;
+} three_strings_key;
+
+uint32_t hash_three_strings(void const *k) {
+	three_strings_key *key = (three_strings_key *)k;
+	uint32_t result = la_hash_string(key->str1, LA_HASH_INIT);
+	result = la_hash_string(key->str2, result);
+	result = la_hash_string(key->str3, result);
+	return result;
+}
+```
+
+### la_hash_insert()
+
+```C
+#include <libacars/hash.h>
+
+bool la_hash_insert(la_hash *h, void *key, void *value);
+```
+
+Inserts the key `key` into hash `h` and sets its value to `value`. `key` and
+`value` pointers are copied directly into the hash, which means that they must
+exist during the entire lifetime of the hash entry (no automatic / static
+variables allowed). If the key already exists in the hash, the old value is
+freed, and the key value is replaced with the new one. The key in the hash is
+not replaced, but the key given as argument is freed in this case. Returns
+`true` if the given key already existed in the hash, `false` otherwise.
+
+### la_hash_remove()
+
+```C
+#include <libacars/hash.h>
+
+bool la_hash_remove(la_hash *h, void *key);
+```
+
+Removes the key `key` from the hash `h`. Frees the key and the value stored in
+the hash. The key given as an argument is not freed, so a static value is
+allowed here. Returns `true` if the given key existed in the hash, `false`
+otherwise.
+
+### la_hash_lookup()
+
+```C
+#include <libacars/hash.h>
+
+void *la_hash_lookup(la_hash const *h, void const *key);
+```
+
+Searches for the key `key` in the hash `h`. Returns the pointer to its value if
+found, otherwise returns NULL. As `key` is used in read-only mode, it may point
+to a static or automatic variable.
+
+### la_hash_foreach_remove()
+
+```C
+#include <libacars/hash.h>
+
+typedef bool (la_hash_if_func)(void const *key, void const *value, void const *ctx);
+
+int la_hash_foreach_remove(la_hash *h, la_hash_if_func *if_func, void *if_func_ctx);
+```
+
+Removes all entries from hash `h` which satisfy a given condition. The condition
+is implemented as a user-provided `if_func` callback. `la_hash_foreach_remove`
+iterates over hash entries, and runs the callback for each entry. Callback
+arguments are:
+
+- `key` - the key of the currently evaluated hash entry
+- `value` - the value of the currently evaluated hash entry
+- `ctx` - a pointer to an arbitrary user data. `if_func_ctx` is passed here.
+
+All entries for which the `if_func` callback returns `true` are removed from the
+hash. The function returns number of removed entries.
+
+### la_hash_destroy()
+
+```C
+#include <libacars/hash.h>
+
+void la_hash_destroy(la_hash *h);
+```
+
+Deallocates memory used by the hash `h`.  If `destroy_key` callback has been
+provided, then all keys are freed using this callback.  The same applies to hash
+values, if `destroy_value` callback has been provided. If `h` is NULL, the call
+to the function is a harmless no-op.
+
 ## JSON API
 
 `<libacars/json.h>` provides a simple set of routines to construct a JSON
@@ -1424,33 +2066,101 @@ running.
 
 ## libacars configuration parameters
 
-libacars provides a global variable `la_config`. It is a structure containing
-configuration parameters affecting the operation of library components.
-Programs can directly set these parameters to modify libacars behaviour.
+libacars has several configuration variables affecting the operation of library
+components. It provides an API for reading and setting their values.
+
+Refer to `libacars/config_defaults.h` file in libacars source directory for a
+full list of all supported configuration variables, their types and default
+values.
+
+### la_config_init()
 
 ```C
 #include <libacars/libacars.h>
 
-typedef struct {
-        bool dump_asn1;
-} la_config_struct;
-
-extern la_config_struct la_config;
+void la_config_init();
 ```
 
-To change the value of a chosen parameter:
+Creates a new config and initializes it with default values. If the config was
+already initialized, it is destroyed first.
+
+Usually there is no need to call this function explicitly, because the config
+will be initialized automatically on first read or modification.
+
+### la_config_destroy()
 
 ```C
 #include <libacars/libacars.h>
-/* ... */
-la_config.dump_asn1 = true;
+
+void la_config_destroy();
 ```
 
-Available parameters:
+Destroys the current config and frees memory allocated for it.
 
-- `dump_asn1` - when set to `true`, the CPDLC message serializer will produce
-  raw dump of the whole ASN.1 structure in addition to its standard
-  human-readable text output. This might be useful for debugging the library or
-  just to increase output verbosity at user's discretion.
+### la_config_get_*()
+
+```C
+#include <libacars/libacars.h>
+
+bool la_config_get_bool(char const *name, bool *result);
+bool la_config_get_int(char const *name, long int *result);
+bool la_config_get_double(char const *name, double *result);
+bool la_config_get_str(char const *name, char **result);
+```
+
+These functions retrieve the value of the config variable `name` and store its
+value in `*result`. They return `true` if the given variable existed in the
+config, `false` otherwise. If the return value is `false`, the value of
+`*result` remains unchanged. If the given variable exists in the config, but is
+of a different type, it is treated as non-existent.
+
+In case of string variables, `la_config_get_str` returns a pointer to the value
+stored in the config, ie. the value is not copied and it should not be modified
+in place.
+
+### la_config_set_*()
+
+```C
+#include <libacars/libacars.h>
+
+bool la_config_set_bool(char const *name, bool const value);
+bool la_config_set_int(char const *name, long int const value);
+bool la_config_set_double(char const *name, double const value);
+bool la_config_set_str(char const *name, char const *value);
+```
+
+These functions set the value of the config variable `name` to the given value.
+If the variable does not exist in the config, it is first created. If the value
+exists in the config, but is of a different type, it is discarded and recreated
+with a new type. If `name` is NULL, `false` is returned, otherwise the result is
+always `true`.
+
+### la_config_unset()
+
+```C
+#include <libacars/libacars.h>
+
+bool la_config_unset(char *name);
+```
+
+Deletes config variable `name` from the current config. Returns `true` if the
+variable existed, `false` otherwise.
+
+## Debugging
+
+If libacars has been build with `-DCMAKE_BUILD_TYPE=Debug` option submitted to
+cmake, debugging output might be enabled by setting `LA_DEBUG` environment
+variable to a numer corresponding to the desired verbosity level:
+
+- 0 - disabled
+- 1 - errors
+- 2 - info
+- 3 - verbose
+
+Additionally, ASN.1 decoders (used to decode CPDLC) can produce their own
+debugging messages. To enable ASN.1 debugging, rebuild libacars with options:
+`-DCMAKE_BUILD_TYPE=Debug -DEMIT_ASN_DEBUG=ON`.
+
+Debug messages are printed to stderr.
 
 // vim: textwidth=80

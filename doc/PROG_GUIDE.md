@@ -1,5 +1,5 @@
-# libacars Programmer's Guide
-Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
+# libacars-2 Programmer's Guide
+Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
 
 ## Introduction
 
@@ -38,6 +38,15 @@ messages. The API allows access to all message fields and their values.
 Routines for producing human readable and JSON output for all supported payload
 types are provided as well.
 
+ACARS message text field length is limited to 220 characters. Longer messages
+must be split into multiple parts (called blocks) and sent separately.  libacars
+may reassemble multiblock ACARS messages and return the original message text in
+one piece. Reassembled text is also passed to ACARS application decoders, so
+that they can work on a complete message.  libacars reassembly API is generic
+and can be used to defragment other protocols too. Well, it's not capable enough
+to reassemble IP, but it's good enough eg.  for X.25. In fact, [dumpvdl2](https://github.com/szpajder/dumpvdl2)
+VDL-2 decoder uses libacars reassembly API to defragment X.25 packets.
+
 ### What libacars does not do
 
 It does not interface with the radio (neither via SDR API nor audio through sound
@@ -45,14 +54,14 @@ card or virtual audio cable). It's the programmer's job to provide this part.
 
 ## General API concepts
 
-The API revolves around a concept named protocol tree (aka proto_tree). It is a
-data structure used to represent a multi-layered ACARS message. Let's have a
-look at the following example:
+The API revolves around a concept named protocol tree (type name:
+`la_proto_tree`). It is a data structure used to represent a multi-layer ACARS
+message. Let's have a look at the following example:
 
 ```
 ACARS:
  Reg: .VQ-BPJ Flight: SU2549
- Mode: 2 Label: B6 Blk id: 8 Ack: ! Msg no.: J61A
+ Mode: 2 Label: B6 Blk id: 8 More: 0 Ack: ! Msg num: J61A
  Message:
   /LPAFAYA.ADS.VQ-BPJ1423CCA85D2D090886301D0D24C7D0704309088442255CC87CE2C90880DF97
  ADS-C message:
@@ -123,15 +132,15 @@ function call or start printing at an intermediate protocol node of your choice.
 ### Compiler and linker flags
 
 The preferred way to determine `CFLAGS` and `LDLIBS` required to compile your
-program with libacars is to use `pkg-config`. libacars installs a file
-named `libacars.pc` which contains include paths and library paths, so don't
-hardcode them in your Makefiles. Instead just do:
+program with libacars is to use `pkg-config`. libacars installs a file named
+`libacars-2.pc` which contains include paths and library paths, so don't hardcode
+them in your Makefiles. Instead just do:
 
 ```
-$ pkg-config --cflags libacars
--I/usr/local/include
-$ pkg-config --libs libacars
--L/usr/local/lib -lacars
+$ pkg-config --cflags libacars-2
+-I/usr/local/include/libacars-2
+$ pkg-config --libs libacars-2
+-L/usr/local/lib64 -lacars-2
 ```
 
 to get the correct values.
@@ -140,17 +149,18 @@ If `pkg-config` fails with this error message:
 
 ```
 Package libacars was not found in the pkg-config search path.
-Perhaps you should add the directory containing `libacars.pc'
+Perhaps you should add the directory containing `libacars-2.pc'
 to the PKG_CONFIG_PATH environment variable
-No package 'libacars' found
+No package 'libacars-2' found
 ```
 
-just do what it says. Assuming that you've installed libacars in the default
-location (which is `/usr/local` on Unix), the `libacars.pc` file has landed in
-the directory `/usr/local/lib/pkgconfig`. In this case do the following:
+just do what it says. Assuming that you've installed libacars on x86_64 platform
+in the default location (which is `/usr/local` on Linux), the `libacars-2.pc`
+file has been installed to `/usr/local/lib64/pkgconfig`. In this case do the
+following:
 
 ```
-export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkconfig
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib64/pkconfig
 ```
 
 and it should do its job. You may want to set the `PKG_CONFIG_PATH` variable in
@@ -171,6 +181,14 @@ cmake -DCMAKE_BUILD_TYPE=Debug ../
 make
 sudo make install
 ```
+
+Debug messages are disabled by default. To enable it, set `LA_DEBUG` environment
+variable to a decimal value to indicat desired verbosity level:
+
+- 0 - disabled
+- 1 - errors
+- 2 - info
+- 3 - verbose
 
 Additionally, ASN.1 decoders (which are used to decode CPDLC) can produce their
 own debugging messages. To enable ASN.1 debugging, enable "Debug" build and
@@ -206,27 +224,27 @@ of the work. Here is a simple program code:
 #include <libacars/vstring.h>	// la_vstring, la_vstring_destroy()
 
 int main() {
-// Message buffer (raw bytes)
+	// Message buffer (raw bytes)
 	uint8_t bytebuf[] =
-	"\x01\x32\xae\xd3\xd0\xad\x4c\xc4\x45\x15\x32\xb3\xb3\x02\xcd"
-	"\xb0\xb9\xc1\x4c\x4f\xb0\x32\xc4\xcd\x4f\xce\xce\xb0\x31\x4c"
-	"\x4f\xb0\x32\xc4\xcd\x2f\x2a\x2a\x32\xb9\x32\xb0\x34\x31\x45"
-	"\x4c\x4c\x58\x45\xd0\x57\xc1\x32\xb0\x34\x31\xb0\xb0\x32\x38"
-	"\x83\xdf\xcb\x7f";
-// Try to parse the buffer as an ACARS message
+		"\x01\x32\xae\xd3\xd0\xad\x4c\xc4\x45\x15\x32\xb3\xb3\x02\xcd"
+		"\xb0\xb9\xc1\x4c\x4f\xb0\x32\xc4\xcd\x4f\xce\xce\xb0\x31\x4c"
+		"\x4f\xb0\x32\xc4\xcd\x2f\x2a\x2a\x32\xb9\x32\xb0\x34\x31\x45"
+		"\x4c\x4c\x58\x45\xd0\x57\xc1\x32\xb0\x34\x31\xb0\xb0\x32\x38"
+		"\x83\xdf\xcb\x7f";
+	// Try to parse the buffer as an ACARS message
 	la_proto_node *node = la_acars_parse(bytebuf+1, strlen(bytebuf)-1,
 		LA_MSG_DIR_AIR2GND);
 	if(node != NULL) {
-// Format the result as a human-readable text
+		// Format the result as a human-readable text
 		la_vstring *vstr = la_proto_tree_format_text(NULL, node);
-// Print the result
+		// Print the result
 		printf("Decoded message:\n%s\n", vstr->str);
-// Free memory used by variable string
+		// Free memory used by variable string
 		la_vstring_destroy(vstr, true);
 	} else {
 		printf("Sorry, decoder has failed\n");
 	}
-// Free memory used by the entire protocol tree
+	// Free memory used by the entire protocol tree
 	la_proto_tree_destroy(node);
 }
 ```
@@ -234,7 +252,7 @@ int main() {
 Save the code in a file named `deacars.c` and compile:
 
 ```
-gcc `pkg-config --cflags libacars` `pkg-config --libs libacars` -o deacars deacars.c
+gcc `pkg-config --cflags libacars-2` `pkg-config --libs libacars-2` -o deacars deacars.c
 ```
 
 Run it:
@@ -243,8 +261,9 @@ Run it:
 $ ./deacars
 Decoded message:
 ACARS:
+ Reassembly: unknown
  Reg: .SP-LDE Flight: LO02DM
- Mode: 2 Label: 23 Blk id: 3 Ack: ! Msg no.: M09A
+ Mode: 2 Label: 23 Blk id: 3 More: 0 Ack: ! Msg num: M09A
  Message:
   ONN01LO02DM/**292041ELLXEPWA20410028
 ```
@@ -258,7 +277,7 @@ explanation on how it works:
   a parity bit). Two bytes following ETX are CRC.
 
 - `la_acars_parse()` is an ACARS message parser. It is declared in
-  `<libacars/acars.h>` with a following prototype:
+  `<libacars/acars.h>` with the following prototype:
 
 ```C
 la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir);
@@ -314,7 +333,7 @@ la_vstring *la_proto_tree_format_text(la_vstring *vstr, la_proto_node const * co
   or preserved (false).
 
 - It is safe to invoke `la_proto_tree_format_text()` on a protocol node of a
-  message which failed to decode. The result will then contain an error message.
+  message which failed to decode. The output will then contain an error message.
 
 ### Example 2: Decoding ACARS applications
 
@@ -329,20 +348,25 @@ you have some fields in char buffers - label, message text, possibly others. You
 want libacars to decode these fields. How to achieve this?
 
 ```C
-#include <stdbool.h>		// bool
-#include <stdio.h>		// printf(3)
-#include <libacars/libacars.h>	// la_proto_node, la_proto_tree_destroy(),
-				// la_proto_tree_format_text()
-#include <libacars/acars.h>	// la_acars_decode_apps()
-#include <libacars/vstring.h>	// la_vstring, la_vstring_destroy()
+#include <stdbool.h>            // bool
+#include <stdio.h>              // printf(3)
+#include <string.h>		// strlen(3)
+#include <libacars/libacars.h>  // la_proto_node, la_proto_tree_destroy(),
+                                // la_proto_tree_format_text()
+#include <libacars/acars.h>     // la_acars_decode_apps()
+#include <libacars/vstring.h>   // la_vstring, la_vstring_destroy()
 
 int main() {
 	char *label = "H1";
 	char *message = "#M1B/B6 LHWE1YA.ADS.N572UP07263B5872A048C9F21C1F0E5B88D700000239";
 	la_msg_dir direction = LA_MSG_DIR_AIR2GND;
 
-// Check if this is a supported ACARS application. If it is, decode it.
-	la_proto_node *node = la_acars_decode_apps(label, message, direction);
+	// The message text contains a sublabel (M1) and MFI (B6). They have to
+	// be skipped before further processing.
+	int offset = la_acars_extract_sublabel_and_mfi(label, LA_MSG_DIR_AIR2GND, message,
+		strlen(message), NULL, NULL);
+	// Check if this is a supported ACARS application. If it is, decode it.
+	la_proto_node *node = la_acars_decode_apps(label, message + offset, direction);
 	if(node != NULL) {
 		la_vstring *vstr = la_proto_tree_format_text(NULL, node);
 		printf("Decoded message:\n%s\n", vstr->str);
@@ -374,9 +398,19 @@ ADS-C message:
   Vertical speed: 0 ft/min
 ```
 
+The initial part of a message with ACARS label H1 contains additional fields.
+At least there is sublabel (in the above case it's M1), some messages also
+contain Message Function Identifier (MFI). In libacars version 1 it was the
+job of every ACARS application decoder to deal with these fields (read: skip
+them). In libacars-2 this has changed - now it's the job of the caller to strip
+them beforehand. `la_acars_extract_sublabel_and_mfi()` function does exactly this. It
+can optionally store values of these fields if given pointers to char buffers in
+the last two arguments. The function returns an offset into the message buffer,
+where application decoding should start.
+
 `la_acars_decode_apps()` tries to determine the application using message label
 and text. If it finds a supported one, it decodes it and returns a pointer to a
-`proto_node` containing decoded data.
+`la_proto_node` containing decoded data.
 
 What's important to note is that you invoke a different parser than before, but
 serializing the result is still done with `la_proto_tree_format_text()`. This
@@ -541,9 +575,9 @@ containing the data of interest. There is a tool for that:
 la_proto_node *la_proto_tree_find_protocol(la_proto_node *root, la_type_descriptor const * const td);
 ```
 
-Suppose you have a decoded protocol tree pointed to by `la_proto_node
-*my_tree_root` and you want to read some ADS-C fields from it.  You can find the
-ADS-C node in the tree with:
+Suppose you have a decoded protocol tree pointed to by `la_proto_node *my_tree_root`
+and you want to read some ADS-C fields from it.  You can find the ADS-C node in
+the tree with:
 
 ```C
 #include <libacars/libacars.h>
@@ -584,7 +618,8 @@ if(acars_node != NULL) {
 }
 ```
 
-Refer to the [API Reference](API_REFERENCE.md) for a full list of fields and their types.
+Refer to the [API Reference](API_REFERENCE.md) and to `<libacars/acars.h>` for a full list of fields
+and their types.
 
 #### Accessing ARINC-622 fields
 
@@ -602,7 +637,8 @@ if(arinc_node != NULL) {
 }
 ```
 
-Refer to the [API Reference](API_REFERENCE.md) for a full list of fields and their types.
+Refer to the [API Reference](API_REFERENCE.md) and to `<libacars/arinc.h>` for a full list of fields
+and their types.
 
 #### Accessing ADS-C fields
 
@@ -635,15 +671,13 @@ First you need to include `<libacars/cpdlc.h>` and cast the `data` pointer to
 Then the hard stuff begins.
 
 The syntax of CPDLC messages is described using Abstract Syntax Notation One
-(ASN.1). Refer to `src/libacars/fans-cpdlc.asn1` file for a complete formal
-specification. Most of the C code responsible for decoding these messages is
-generated automatically using ASN1-to-C compiler [asn1c](https://github.com/vlm/asn1c).
-The generated API may look daunting, but this comes from the fact that the ASN.1
-compiler is generic, ie. it should be able to deal with any ASN.1 module,
-provided that it is syntactically correct.
+(ASN.1). Most of the C code responsible for decoding these messages is generated
+automatically using ASN1-to-C compiler.  The generated API may look daunting,
+but this comes from the fact that the ASN.1 compiler is generic, ie. it should
+be able to deal with any ASN.1 module, provided that it is syntactically correct.
 
-Each and every data type described in fans-cpdlc.asn1 has it's own C header file
-in the subdirectory `<libacars/asn1/>`. Each type also has its own type
+Each and every data type described in the specification has it's own C header
+file in `<libacars/asn1/>` subdirectory. Each type also has its own type
 descriptor - a global variable of type `asn_TYPE_descriptor_t`.
 
 For a working example, refer to `src/examples/cpdlc_get_position.c`. This program
@@ -651,7 +685,7 @@ reads ARINC-622 messages from command line or standard input, decodes them and
 extracts aircraft positional data from DM48 Position Report messages (provided
 that the message is actually a CPDLC message of type DM48).
 
-A comprehensive introduction to the API generated by asn1c can be found in
+A comprehensive introduction to the API generated by asn1c compiler can be found in
 [asn1c documentation](https://github.com/vlm/asn1c/blob/master/doc/asn1c-usage.pdf).
 
 // vim: textwidth=80
