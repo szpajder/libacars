@@ -3,7 +3,7 @@
  *  aircraft position information from downlink CPDLC message with
  *  a position report.
  *
- *  Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
+ *  Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
  */
 #include <stdbool.h>
 #include <stdio.h>
@@ -24,7 +24,7 @@
 void usage() {
 	fprintf(stderr,
 	"cpdlc_get_position - extracts position information from CPDLC Position Report\n"
-	"(c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>\n\n"
+	"(c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>\n\n"
 	"Usage:\n\n"
 	"To decode a single message from command line:\n\n"
 	"\t./cpdlc_get_position <acars_message_text>\n\n"
