@@ -1,0 +1,15 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/include/@LA_SUBDIR@
+
+Name: @PROJECT_NAME@
+Description: ACARS message decoding library
+URL: https://github.com/szpajder/libacars
+Version: @LA_VERSION@
+Requires:
+Requires.private:
+Conflicts:
+Cflags: -I${includedir}
+Libs: -L${libdir} -lacars-@LA_VERSION_MAJOR@
+Libs.private:

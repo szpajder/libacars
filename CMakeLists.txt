@@ -1,11 +1,12 @@
 cmake_minimum_required (VERSION 3.1)
 project (libacars C)
 
-set (LA_VERSION_MAJOR 1)
-set (LA_VERSION_MINOR 3)
-set (LA_VERSION_PATCH 1)
-set (LA_VERSION "${LA_VERSION_MAJOR}.${LA_VERSION_MINOR}.${LA_VERSION_PATCH}"
-)
+set (LA_VERSION_MAJOR 2)
+set (LA_VERSION_MINOR 0)
+set (LA_VERSION_PATCH 0-git)
+set (LA_VERSION "${LA_VERSION_MAJOR}.${LA_VERSION_MINOR}.${LA_VERSION_PATCH}")
+set (LA_SUBDIR "${PROJECT_NAME}-${LA_VERSION_MAJOR}")
+
 set (CMAKE_C_STANDARD 11)
 set (C_STANDARD_REQUIRED ON)
 set (CMAKE_C_EXTENSIONS OFF)
@@ -29,10 +30,11 @@ if(MINGW)
 endif()
 
 include_directories (
-	${PROJECT_SOURCE_DIR}/src
+	${PROJECT_SOURCE_DIR}
 )
 
-add_subdirectory (src)
+add_subdirectory (libacars)
+add_subdirectory (examples)
 
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"

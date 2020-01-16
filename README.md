@@ -27,7 +27,8 @@ Requirements:
 
 - c11-capable C compiler
 - cmake 3.1 or later
-- zlib 1.2 (optional, but highly recommended)
+- zlib 1.2 (optional)
+- libxml2 (optional)
 
 The project should build and run correctly on the following platforms:
 
@@ -35,7 +36,7 @@ The project should build and run correctly on the following platforms:
 - MacOS (clang)
 - Windows (mingw)
 
-Build steps:
+#### Installing dependencies
 
 - libacars needs zlib for MIAM message decompression. If zlib is not present,
   decompression code will be disabled and many MIAM messages will be left
@@ -46,25 +47,37 @@ Build steps:
 apt-get install zlib1g-dev
 ```
 
-- To run a stable and tested version of libacars, download a release tarball from
-  [Releases](https://github.com/szpajder/libacars/releases) section and unpack it:
+- ACARS and MIAM CORE messages sometimes contain XML documents.  libacars may
+  optionally pretty-print these documents, ie. add  proper formatting and
+  indentation. To enable this feature, you need libxml2 library:
+
+```
+apt-get install libxml2-dev
+```
+
+#### Compiling libacars
+
+- **Option 1:** To run stable and tested code, download the latest stable
+  release tarball from [Releases](https://github.com/szpajder/libacars/releases)
+  section and unpack it:
 
 ```
 unzip libacars-x.y.z.zip
 cd libacars-x.y.z
 ```
 
-- To run the latest code which has not yet made it into a stable release, clone
-  the source repository instead:
+- **Option 2:** To run the latest development code which has not yet made it
+  into a stable release, clone the source repository and checkout the `unstable`
+  branch:
 
 ```
 git clone https://github.com/szpajder/libacars
 cd libacars
+git checkout unstable
 ```
 
 `master` branch is always in sync with the latest stable release. `unstable`
-branch is where the latest cutting-edge code goes first. Select your branch of
-choice with `git checkout <branch_name>`.
+branch is where the latest cutting-edge code goes first.
 
 - Configure the build:
 
@@ -74,12 +87,13 @@ cd build
 cmake ../
 ```
 
-- Inspect the configuration summary in the cmake output. It tells whether zlib
-  has been found and is going to be used or not:
+- Inspect the configuration summary in the cmake output and verify if all the
+  dependencies have been detected properly:
 
 ```
 -- libacars configuration summary:
--- - ZLIB:      requested: ON   enabled: TRUE
+-- - zlib:              requested: ON, enabled: TRUE
+-- - libxml2:           requested: ON, enabled: TRUE
 ```
 
 - Compile and install:
@@ -90,15 +104,15 @@ sudo make install
 sudo ldconfig
 ```
 
-On Unix the library will be installed to `/usr/local/lib` (or
-`/usr/local/lib64`). Header files will land in `/usr/local/include/libacars`.
+On Linux the library will be installed to `/usr/local/lib` (or
+`/usr/local/lib64`). Header files will land in
+`/usr/local/include/libacars-2/libacars`.
 
 ### Advanced compilation options
 
 The following options may be used when invoking cmake:
 
-- `-DCMAKE_BUILD_TYPE=Debug` - enables debugging support in the library.
-  Diagnostic messages will be printed to standard error.
+- `-DCMAKE_BUILD_TYPE=Debug` - enables debugging support.
 
 - `-DCMAKE_BUILD_TYPE=Release` - disables debugging support (the default).
 
@@ -109,9 +123,11 @@ The following options may be used when invoking cmake:
 - `-DZLIB=FALSE` - forcefully disables zlib support. It will not be used even
   if zlib is available.
 
+- `-DLIBXML2=FALSE` - disables libxml2 support.
+
 ## Example applications
 
-Example apps are provided in `src/examples` subdirectory:
+Example apps are provided in `examples` subdirectory:
 
 - `decode_acars_apps` - reads messages from command line or from a file and
   decodes all ACARS applications supported by the library.
@@ -121,9 +137,6 @@ Example apps are provided in `src/examples` subdirectory:
 
 - `cpdlc_get_position` - illustrates how to extract position-related
   fields from CPDLC position reports.
-
-- `media_advisory` - decodes Media Advisory messages (ACARS label SA
-  reports).
 
 Apps will be compiled together with the library. `make install` installs them
 to `/usr/local/bin`.  Run each program with `-h` option for usage instructions.
@@ -153,7 +166,7 @@ testing of dumpvdl2. Special thanks go to:
 
 ## Licenses
 
-libacars, Copyright (c) 2018-2019 Tomasz Lemiech <szpajder@gmail.com>
+libacars, Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
