@@ -5,10 +5,10 @@
  */
 
 #include <stdbool.h>
-#include <string.h>			// strdup
-#include <libacars/macros.h>		// la_assert
-#include <libacars/util.h>		// LA_XCALLOC, LA_XFREE
-#include <libacars/hash.h>		// la_hash
+#include <string.h>                 // strdup
+#include <libacars/macros.h>        // la_assert
+#include <libacars/util.h>          // LA_XCALLOC, LA_XFREE
+#include <libacars/hash.h>          // la_hash
 
 typedef enum {
 	LA_CONFVAR_UNKNOWN = 0,
@@ -37,17 +37,17 @@ typedef struct {
 } la_config_option;
 
 #define LA_CONFIG_ITEM_VALUE(_member, _value) \
-	{ ._member = (_value)}
+{ ._member = (_value)}
 #define LA_CONFIG_ITEM(_type, _member, _value) \
-	{ .type = _type, .value = LA_CONFIG_ITEM_VALUE(_member, _value) }
+{ .type = _type, .value = LA_CONFIG_ITEM_VALUE(_member, _value) }
 #define LA_CONFIG_SETTING_BOOLEAN(_name, _value) \
-	{ .name = _name, .value = LA_CONFIG_ITEM(LA_CONFVAR_BOOLEAN, _bool, _value) }
+{ .name = _name, .value = LA_CONFIG_ITEM(LA_CONFVAR_BOOLEAN, _bool, _value) }
 #define LA_CONFIG_SETTING_DOUBLE(_name, _value) \
-	{ .name = _name, .value = LA_CONFIG_ITEM(LA_CONFVAR_DOUBLE, _double, _value) }
+{ .name = _name, .value = LA_CONFIG_ITEM(LA_CONFVAR_DOUBLE, _double, _value) }
 #define LA_CONFIG_SETTING_INTEGER(_name, _value) \
-	{ .name = _name, .value = LA_CONFIG_ITEM(LA_CONFVAR_INTEGER, _int, _value) }
+{ .name = _name, .value = LA_CONFIG_ITEM(LA_CONFVAR_INTEGER, _int, _value) }
 #define LA_CONFIG_SETTING_STRING(_name, _value) \
-	{ .name = _name, .value = LA_CONFIG_ITEM(LA_CONFVAR_STRING, _str, _value) }
+{ .name = _name, .value = LA_CONFIG_ITEM(LA_CONFVAR_STRING, _str, _value) }
 
 static const la_config_option config_defaults[] =
 #include <libacars/config_defaults.h>
@@ -79,9 +79,9 @@ bool la_config_set_bool(char const *name, bool const value) {
 		return false;
 	}
 	(void)la_config_option_set(name, (la_config_item){
-		.type = LA_CONFVAR_BOOLEAN,
-		.value = { ._bool = value }
-	});
+			.type = LA_CONFVAR_BOOLEAN,
+			.value = { ._bool = value }
+			});
 	return true;
 }
 
@@ -90,9 +90,9 @@ bool la_config_set_int(char const *name, long int const value) {
 		return false;
 	}
 	(void)la_config_option_set(name, (la_config_item){
-		.type = LA_CONFVAR_INTEGER,
-		.value = { ._int = value }
-	});
+			.type = LA_CONFVAR_INTEGER,
+			.value = { ._int = value }
+			});
 	return true;
 }
 
@@ -101,9 +101,9 @@ bool la_config_set_double(char const *name, double const value) {
 		return false;
 	}
 	(void)la_config_option_set(name, (la_config_item){
-		.type = LA_CONFVAR_DOUBLE,
-		.value = { ._double = value }
-	});
+			.type = LA_CONFVAR_DOUBLE,
+			.value = { ._double = value }
+			});
 	return true;
 }
 
@@ -112,9 +112,9 @@ bool la_config_set_str(char const *name, char const *value) {
 		return false;
 	}
 	(void)la_config_option_set(name, (la_config_item){
-		.type = LA_CONFVAR_STRING,
-		.value = { ._str = value ? strdup(value) : NULL }
-	});
+			.type = LA_CONFVAR_STRING,
+			.value = { ._str = value ? strdup(value) : NULL }
+			});
 	return true;
 }
 
@@ -191,7 +191,7 @@ void la_config_init() {
 		la_config_destroy();
 	}
 	config = la_hash_new(la_hash_key_str, la_hash_compare_keys_str,
-		la_simple_free, la_config_item_destroy);
+			la_simple_free, la_config_item_destroy);
 	la_assert(config != NULL);
 	for(size_t i = 0; i < CONFIG_DEFAULTS_COUNT; i++) {
 		la_config_option const *opt = config_defaults + i;

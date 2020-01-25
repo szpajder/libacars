@@ -8,8 +8,8 @@
 #define LA_ARINC_H 1
 
 #include <stdint.h>
-#include <libacars/libacars.h>		// la_type_descriptor, la_proto_node
-#include <libacars/vstring.h>		// la_vstring
+#include <libacars/libacars.h>      // la_type_descriptor, la_proto_node
+#include <libacars/vstring.h>       // la_vstring
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,7 +31,7 @@ typedef struct {
 	char air_reg[8];
 	la_arinc_imi imi;
 	bool crc_ok;
-// reserved for future use
+	// reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
 	void (*reserved2)(void);

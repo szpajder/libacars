@@ -4,14 +4,14 @@
  *  Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
  */
 
-#include <libacars/asn1/FANSATCDownlinkMessage.h>	// FANSATCDownlinkMessage_t and dependencies
-#include <libacars/asn1/FANSATCUplinkMessage.h>		// FANSATCUplinkMessage_t and dependencies
-#include <libacars/asn1-util.h>				// la_asn_formatter, la_asn1_output()
-#include <libacars/asn1-format-common.h>		// common formatters and helper functions
-#include <libacars/asn1-format-cpdlc.h>			// la_asn1_output_cpdlc_as_text()
-#include <libacars/macros.h>				// LA_ISPRINTF
-#include <libacars/util.h>				// LA_XCALLOC, la_dict_search()
-#include <libacars/vstring.h>				// la_vstring
+#include <libacars/asn1/FANSATCDownlinkMessage.h>       // FANSATCDownlinkMessage_t and dependencies
+#include <libacars/asn1/FANSATCUplinkMessage.h>         // FANSATCUplinkMessage_t and dependencies
+#include <libacars/asn1-util.h>                         // la_asn_formatter, la_asn1_output()
+#include <libacars/asn1-format-common.h>                // common formatters and helper functions
+#include <libacars/asn1-format-cpdlc.h>                 // la_asn1_output_cpdlc_as_text()
+#include <libacars/macros.h>                            // LA_ISPRINTF
+#include <libacars/util.h>                              // LA_XCALLOC, la_dict_search()
+#include <libacars/vstring.h>                           // la_vstring
 
 la_dict const FANSATCUplinkMsgElementId_labels[] = {
 	{ FANSATCUplinkMsgElementId_PR_uM0NULL, "UNABLE" },
@@ -446,12 +446,12 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSBeaconCode) {
 	LA_CAST_PTR(code, FANSBeaconCode_t *, sptr);
 	long **cptr = code->list.array;
 	LA_ISPRINTF(vstr, indent, "%s: %ld%ld%ld%ld\n",
-		label,
-		*cptr[0],
-		*cptr[1],
-		*cptr[2],
-		*cptr[3]
-	);
+			label,
+			*cptr[0],
+			*cptr[1],
+			*cptr[2],
+			*cptr[3]
+			);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSTime) {
@@ -473,17 +473,17 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLatitude) {
 	char const *ldir_name = la_value2enum(&asn_DEF_FANSLatitudeDirection, ldir);
 	if(lat->minutesLatLon != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s:   %02ld %04.1f' %s\n",
-			label,
-			lat->latitudeDegrees,
-			*(long const *)(lat->minutesLatLon) / 10.0,
-			ldir_name
-		);
+				label,
+				lat->latitudeDegrees,
+				*(long const *)(lat->minutesLatLon) / 10.0,
+				ldir_name
+				);
 	} else {
 		LA_ISPRINTF(vstr, indent, "%s:   %02ld deg %s\n",
-			label,
-			lat->latitudeDegrees,
-			ldir_name
-		);
+				label,
+				lat->latitudeDegrees,
+				ldir_name
+				);
 	}
 }
 
@@ -494,17 +494,17 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLongitude) {
 	char const *ldir_name = la_value2enum(&asn_DEF_FANSLongitudeDirection, ldir);
 	if(lat->minutesLatLon != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s: %03ld %04.1f' %s\n",
-			label,
-			lat->longitudeDegrees,
-			*(long const *)(lat->minutesLatLon) / 10.0,
-			ldir_name
-		);
+				label,
+				lat->longitudeDegrees,
+				*(long const *)(lat->minutesLatLon) / 10.0,
+				ldir_name
+				);
 	} else {
 		LA_ISPRINTF(vstr, indent, "%s: %03ld deg %s\n",
-			label,
-			lat->longitudeDegrees,
-			ldir_name
-		);
+				label,
+				lat->longitudeDegrees,
+				ldir_name
+				);
 	}
 }
 
@@ -770,5 +770,5 @@ static size_t la_asn1_cpdlc_text_formatter_table_len = sizeof(la_asn1_cpdlc_text
 
 void la_asn1_output_cpdlc_as_text(la_vstring *vstr, asn_TYPE_descriptor_t *td, const void *sptr, int indent) {
 	la_asn1_output(vstr, la_asn1_cpdlc_text_formatter_table, la_asn1_cpdlc_text_formatter_table_len,
-		td, sptr, indent, true);
+			td, sptr, indent, true);
 }

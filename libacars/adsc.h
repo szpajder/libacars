@@ -9,10 +9,10 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <libacars/libacars.h>	// la_proto_node, la_type_descriptor
-#include <libacars/arinc.h>	// la_arinc_imi
-#include <libacars/list.h>	// la_list
-#include <libacars/vstring.h>	// la_vstring
+#include <libacars/libacars.h>      // la_proto_node, la_type_descriptor
+#include <libacars/arinc.h>         // la_arinc_imi
+#include <libacars/list.h>          // la_list
+#include <libacars/vstring.h>       // la_vstring
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,7 +34,7 @@ typedef struct {
 	la_adsc_format_type_f *format_text;
 	la_adsc_format_type_f *format_json;
 	la_adsc_destroy_type_f *destroy;
-// reserved for future use
+	// reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
 	void (*reserved2)(void);
@@ -45,7 +45,7 @@ typedef struct {
 typedef struct {
 	bool err;
 	la_list *tag_list;
-// reserved for future use
+	// reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
 	void (*reserved2)(void);
@@ -71,20 +71,20 @@ typedef struct {
 
 // description of a single non-compliant message group contained in the above notification
 typedef struct {
-	uint8_t noncomp_tag;			// non-compliant tag value
-	uint8_t is_unrecognized;		// 1 - group unrecognized, 0 - group unavailable
-	uint8_t is_whole_group_unavail;		// 1 - entire group is unavailable;
-						// 0 - one or more group params is unavailable
-	uint8_t param_cnt;			// number of unavailable params
-						// (used when is_whole_group_noncompliant==0)
-	uint8_t params[15];			// a table of non-compliant parameter numbers
+	uint8_t noncomp_tag;                /* non-compliant tag value */
+	uint8_t is_unrecognized;            /* 1 - group unrecognized, 0 - group unavailable */
+	uint8_t is_whole_group_unavail;     /* 1 - entire group is unavailable
+	                                       0 - one or more group params is unavailable */
+	uint8_t param_cnt;                  /* number of unavailable params
+	                                       (used when is_whole_group_noncompliant==0) */
+	uint8_t params[15];                 /* a table of non-compliant parameter numbers */
 } la_adsc_noncomp_group_t;
 
 // noncompliance notification (tag 5)
 typedef struct {
-	uint8_t contract_req_num;		// contract request number
-	uint8_t group_cnt;			// number of non-compliant groups
-	la_adsc_noncomp_group_t *groups;	// a table of non-compliant groups
+	uint8_t contract_req_num;           // contract request number
+	uint8_t group_cnt;                  // number of non-compliant groups
+	la_adsc_noncomp_group_t *groups;    // a table of non-compliant groups
 } la_adsc_noncomp_notify_t;
 
 // basic ADS group (downlink tags: 7, 9, 10, 18, 19, 20)
@@ -149,8 +149,8 @@ typedef struct {
 
 // periodic and event contract requests (tags: 7, 8, 9)
 typedef struct {
-	uint8_t contract_num;	// contract number
-	la_list *req_tag_list;	// list of la_adsc_tag_t's describing requested report groups
+	uint8_t contract_num;           // contract number
+	la_list *req_tag_list;          // list of la_adsc_tag_t's describing requested report groups
 } la_adsc_req_t;
 
 // lateral deviation change (uplink tag 10)

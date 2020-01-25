@@ -5,13 +5,13 @@
  */
 #include <stdbool.h>
 #ifdef DEBUG
-#include <stdlib.h>			// getenv, strtoul
+#include <stdlib.h>                 // getenv, strtoul
 #endif
-#include <libacars/macros.h>		// la_assert
-#include <libacars/libacars.h>		// la_proto_node
+#include <libacars/macros.h>        // la_assert
+#include <libacars/libacars.h>      // la_proto_node
 #include <libacars/vstring.h>
 #include <libacars/json.h>
-#include <libacars/util.h>		// LA_XCALLOC, LA_XFREE
+#include <libacars/util.h>          // LA_XCALLOC, LA_XFREE
 
 static void la_proto_node_format_text(la_vstring * const vstr, la_proto_node const * const node, int indent) {
 	la_assert(indent >= 0);
@@ -28,8 +28,8 @@ static void la_proto_node_format_json(la_vstring * const vstr, la_proto_node con
 	if(node->td != NULL) {
 		if(node->td->json_key != NULL) {
 			la_json_object_start(vstr, node->td->json_key);
-// Missing JSON handler for a node is not fatal.
-// In this case an empty JSON object is produced.
+			// Missing JSON handler for a node is not fatal.
+			// In this case an empty JSON object is produced.
 			if(node->data != NULL && node->td->format_json != NULL) {
 				node->td->format_json(vstr, node->data);
 			}
@@ -39,7 +39,7 @@ static void la_proto_node_format_json(la_vstring * const vstr, la_proto_node con
 		la_proto_node_format_json(vstr, node->next);
 	}
 	if(node->td != NULL && node->td->json_key != NULL) {
-// We've started a JSON object above, so it needs to be closed
+		// We've started a JSON object above, so it needs to be closed
 		la_json_object_end(vstr);
 	}
 }

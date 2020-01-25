@@ -5,21 +5,21 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>			// calloc
-#include <string.h>			// strchr(), strdup(), strtok_r(), strlen
+#include <stdlib.h>                 // calloc
+#include <string.h>                 // strchr(), strdup(), strtok_r(), strlen
 #include "config.h"
 #ifdef WITH_ZLIB
-#include <zlib.h>			// z_stream, inflateInit2(), inflate(), inflateEnd()
+#include <zlib.h>                   // z_stream, inflateInit2(), inflate(), inflateEnd()
 #endif
 #ifdef WITH_LIBXML2
-#include <libxml/tree.h>			// xmlBufferPtr, xmlBufferFree()
+#include <libxml/tree.h>            // xmlBufferPtr, xmlBufferFree()
 #endif
-#include <libacars/macros.h>		// la_assert(), LA_UNLIKELY()
-#include <libacars/libacars.h>		// la_proto_node
-#include <libacars/vstring.h>		// la_vstring, LA_ISPRINTF, la_isprintf_multiline_text()
-#include <libacars/json.h>		// la_json_append_*()
-#include <libacars/util.h>		// la_dict, la_dict_search(), XCALLOC(), la_hexdump()
-#include <libacars/crc.h>		// la_crc16_arinc(), la_crc32_arinc665()
+#include <libacars/macros.h>        // la_assert(), LA_UNLIKELY()
+#include <libacars/libacars.h>      // la_proto_node
+#include <libacars/vstring.h>       // la_vstring, LA_ISPRINTF, la_isprintf_multiline_text()
+#include <libacars/json.h>          // la_json_append_*()
+#include <libacars/util.h>          // la_dict, la_dict_search(), XCALLOC(), la_hexdump()
+#include <libacars/crc.h>           // la_crc16_arinc(), la_crc32_arinc665()
 #include <libacars/miam-core.h>
 
 /**********************
@@ -38,20 +38,20 @@ static la_proto_node *la_miam_core_v1v2_alr_parse(uint8_t const *hdrbuf, int hdr
  *************************************************/
 
 typedef la_proto_node* (la_miam_core_pdu_parse_f)(uint8_t const *hdrbuf, int hdrlen,
-			uint8_t const *bodybuf, int bodylen);
+		uint8_t const *bodybuf, int bodylen);
 
 static la_dict const la_miam_core_v1_pdu_parser_table[] = {
-	{ .id = LA_MIAM_CORE_PDU_DATA,	.val = &la_miam_core_v1_data_parse },
-	{ .id = LA_MIAM_CORE_PDU_ACK,	.val = &la_miam_core_v1_ack_parse },
-	{ .id = LA_MIAM_CORE_PDU_ALO,	.val = &la_miam_core_v1v2_alo_parse },
-	{ .id = LA_MIAM_CORE_PDU_ALR,	.val = &la_miam_core_v1v2_alr_parse },
+	{ .id = LA_MIAM_CORE_PDU_DATA, .val = &la_miam_core_v1_data_parse },
+	{ .id = LA_MIAM_CORE_PDU_ACK,  .val = &la_miam_core_v1_ack_parse },
+	{ .id = LA_MIAM_CORE_PDU_ALO,  .val = &la_miam_core_v1v2_alo_parse },
+	{ .id = LA_MIAM_CORE_PDU_ALR,  .val = &la_miam_core_v1v2_alr_parse },
 	{ .id = LA_MIAM_CORE_PDU_UNKNOWN, .val = NULL }
 };
 static la_dict const la_miam_core_v2_pdu_parser_table[] = {
-	{ .id = LA_MIAM_CORE_PDU_DATA,	.val = &la_miam_core_v2_data_parse },
-	{ .id = LA_MIAM_CORE_PDU_ACK,	.val = &la_miam_core_v2_ack_parse },
-	{ .id = LA_MIAM_CORE_PDU_ALO,	.val = &la_miam_core_v1v2_alo_parse },
-	{ .id = LA_MIAM_CORE_PDU_ALR,	.val = &la_miam_core_v1v2_alr_parse },
+	{ .id = LA_MIAM_CORE_PDU_DATA, .val = &la_miam_core_v2_data_parse },
+	{ .id = LA_MIAM_CORE_PDU_ACK,  .val = &la_miam_core_v2_ack_parse },
+	{ .id = LA_MIAM_CORE_PDU_ALO,  .val = &la_miam_core_v1v2_alo_parse },
+	{ .id = LA_MIAM_CORE_PDU_ALR,  .val = &la_miam_core_v1v2_alr_parse },
 	{ .id = LA_MIAM_CORE_PDU_UNKNOWN, .val = NULL }
 };
 
@@ -92,7 +92,7 @@ static la_inflate_result la_inflate(uint8_t const *buf, int const in_len) {
 	la_inflate_result result;
 	memset(&result, 0, sizeof(result));
 
-	int ret = inflateInit2(&stream, -15);	// raw deflate with max window size
+	int ret = inflateInit2(&stream, -15);   // raw deflate with max window size
 	if(ret != Z_OK) {
 		la_debug_print(D_ERROR, "inflateInit failed: %d\n", ret);
 		goto end;
@@ -100,7 +100,7 @@ static la_inflate_result la_inflate(uint8_t const *buf, int const in_len) {
 	stream.avail_in = (uInt)in_len;
 	stream.next_in = (uint8_t *)buf;
 	int chunk_len = 4 * in_len;
-	int out_len = chunk_len;			// rough initial approximation
+	int out_len = chunk_len;                // rough initial approximation
 	uint8_t *outbuf = LA_XCALLOC(out_len, sizeof(uint8_t));
 	stream.next_out = outbuf;
 	stream.avail_out = out_len;
@@ -108,11 +108,11 @@ static la_inflate_result la_inflate(uint8_t const *buf, int const in_len) {
 	while((ret = inflate(&stream, Z_FINISH)) == Z_BUF_ERROR) {
 		la_debug_print(D_INFO, "Z_BUF_ERROR, avail_in=%u avail_out=%u\n", stream.avail_in, stream.avail_out);
 		if(stream.avail_out == 0) {
-// Not enough output space
+			// Not enough output space
 			int new_len = out_len + chunk_len;
 			la_debug_print(D_INFO, "outbuf grow: %d -> %d\n", out_len, new_len);
 			if(new_len > MAX_INFLATED_LEN) {
-// Do not go overboard with memory usage
+				// Do not go overboard with memory usage
 				la_debug_print(D_ERROR, "new_len too large: %d > %d\n", new_len, MAX_INFLATED_LEN);
 				break;
 			}
@@ -121,13 +121,13 @@ static la_inflate_result la_inflate(uint8_t const *buf, int const in_len) {
 			stream.avail_out = chunk_len;
 			out_len = new_len;
 		} else if(stream.avail_in == 0) {
-// Input stream is truncated - error out
+			// Input stream is truncated - error out
 			break;
 		}
 	}
 	la_debug_print(D_INFO, "zlib ret=%d avail_out=%u total_out=%lu\n", ret, stream.avail_out, stream.total_out);
-// Make sure the buffer is larger than the result.
-// We need space to append NULL terminator later for printing it.
+	// Make sure the buffer is larger than the result.
+	// We need space to append NULL terminator later for printing it.
 	if(stream.avail_out == 0) {
 		outbuf = LA_XREALLOC(outbuf, (out_len + 1) * sizeof(uint8_t));
 	}
@@ -151,10 +151,10 @@ static la_base85_decode_result la_base85_decode(char const *str, char const *end
 	la_assert(str != NULL);
 	la_assert(str < end);
 
-// A rough approximation of the output buffer size needed.
-// Five base85 digits encode a single 32-bit word
-// Allow four extra words for potential 'z' occurrences
-// (all-zero word encoded with a single character)
+	// A rough approximation of the output buffer size needed.
+	// Five base85 digits encode a single 32-bit word
+	// Allow four extra words for potential 'z' occurrences
+	// (all-zero word encoded with a single character)
 	size_t outsize = ((end - str) / 5 + 4) * 4;
 	la_debug_print(D_INFO, "approx outsize: %zu\n", outsize);
 	uint8_t *out = LA_XCALLOC(outsize, sizeof(uint8_t));
@@ -179,12 +179,12 @@ static la_base85_decode_result la_base85_decode(char const *str, char const *end
 			inpos++;
 		} else {
 			for(int i = 0; i < 5; i++, inpos++, ptr++) {
-// shall we reject 'z' inside the 5-digit group?
+				// shall we reject 'z' inside the 5-digit group?
 				v.val += (*ptr - 0x21) * base85[i];
 			}
 		}
 		if(LA_UNLIKELY(outpos + 5 >= outsize)) {
-// grow the buffer by 25 percent, but not less than 5 elements
+			// grow the buffer by 25 percent, but not less than 5 elements
 			outsize += 5;
 			outsize += outsize / 4;
 			la_debug_print(D_INFO, "outbuf too small; resizing to %zu elements\n", outsize);
@@ -209,8 +209,8 @@ static bool is_printable(uint8_t const *buf, uint32_t data_len) {
 		return false;
 	}
 	for(uint32_t i = 0; i < data_len; i++) {
-		if((buf[i] >= 7  && buf[i] <= 13) ||
-		   (buf[i] >= 32 && buf[i] <= 126)) {
+		if((buf[i] >= 7 && buf[i] <= 13) ||
+				(buf[i] >= 32 && buf[i] <= 126)) {
 			// noop
 		} else {
 			la_debug_print(D_VERBOSE, "false due to character %u at position %u\n", buf[i], i);
@@ -224,7 +224,7 @@ static bool is_printable(uint8_t const *buf, uint32_t data_len) {
 // MIAM CORE v1/v2 common parsers
 
 static la_proto_node *v1v2_alo_alr_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf,
-int bodylen, la_miam_core_pdu_type const pdu_type) {
+		int bodylen, la_miam_core_pdu_type const pdu_type) {
 	LA_UNUSED(bodybuf);
 	LA_UNUSED(bodylen);
 
@@ -241,7 +241,7 @@ int bodylen, la_miam_core_pdu_type const pdu_type) {
 	node->data = pdu;
 	node->next = NULL;
 
-	if(hdrlen < 13) {	// should be 16, but let's not be overly pedantic on unused octets
+	if(hdrlen < 13) {       // should be 16, but let's not be overly pedantic on unused octets
 		la_debug_print(D_ERROR, "Header too short: %d < 16\n", hdrlen);
 		pdu->err |= LA_MIAM_ERR_HDR_TRUNCATED;
 		goto end;
@@ -258,7 +258,7 @@ int bodylen, la_miam_core_pdu_type const pdu_type) {
 	pdu->compression = hdrbuf[0];
 	pdu->networks = hdrbuf[1];
 	la_debug_print(D_INFO, "compression: 0x%02x networks: 0x%02x\n",
-		pdu->compression, pdu->networks);
+			pdu->compression, pdu->networks);
 end:
 	return node;
 }
@@ -274,14 +274,14 @@ static la_proto_node *la_miam_core_v1v2_alr_parse(uint8_t const *hdrbuf, int hdr
 la_proto_node *la_miam_core_pdu_parse(char const *txt) {
 	la_assert(txt != NULL);
 
-// Determine if it's a MIAM CORE PDU - check body/header padding counts and look for header/body delimiter
+	// Determine if it's a MIAM CORE PDU - check body/header padding counts and look for header/body delimiter
 	if(strlen(txt) < 3) {
 		return NULL;
 	}
 	la_miam_core_pdu *pdu = NULL;
 
-	char bpad = txt[0];	// valid values: 0, 1, 2, 3, -, .
-	char hpad = txt[1];	// valid values: 0, 1, 2, 3
+	char bpad = txt[0];     // valid values: 0, 1, 2, 3, -, .
+	char hpad = txt[1];     // valid values: 0, 1, 2, 3
 	txt += 2;
 	if(!((bpad >= '0' && bpad <= '3') || bpad == '-' || bpad == '.')) {
 		la_debug_print(D_INFO, "Invalid body padding: %c\n", bpad);
@@ -291,7 +291,7 @@ la_proto_node *la_miam_core_pdu_parse(char const *txt) {
 		la_debug_print(D_INFO, "Invalid header padding: %c\n", hpad);
 		return NULL;
 	}
-	hpad -= 0x30;	// get digit value: '1' -> 1
+	hpad -= 0x30;           // get digit value: '1' -> 1
 	char *delim = strchr(txt, '|');
 	if(delim == NULL) {
 		la_debug_print(D_ERROR, "Header/body delimiter not found\n");
@@ -301,14 +301,14 @@ la_proto_node *la_miam_core_pdu_parse(char const *txt) {
 		la_debug_print(D_ERROR, "Empty header\n");
 		return NULL;
 	}
-// Assume the initial part is the Header - try to decode it
+	// Assume the initial part is the Header - try to decode it
 	la_base85_decode_result header = la_base85_decode(txt, delim);
 	if(header.buf == NULL || header.len < hpad) { // BASE85 decoder failed or result too short
 		return NULL;
 	}
 	la_debug_print_buf_hex(D_VERBOSE, header.buf, header.len, "Decoded header:\n");
 
-// Decode message body, if exists and if it's encoded
+	// Decode message body, if exists and if it's encoded
 	uint8_t *bodybuf = NULL;
 	int bodylen = 0;
 	la_base85_decode_result body = { .buf = NULL, .len = 0 };
@@ -316,23 +316,23 @@ la_proto_node *la_miam_core_pdu_parse(char const *txt) {
 		if(bpad >= '0' && bpad <= '3') {
 			char *end = strchr(delim, '\0');
 			body = la_base85_decode(delim + 1, end);
-			bpad -= 0x30;			// get digit value: '1' -> 1
+			bpad -= 0x30;               // get digit value: '1' -> 1
 			if(body.buf != NULL && body.len >= bpad) {
-				body.len -= bpad;	// cut off padding bytes
+				body.len -= bpad;       // cut off padding bytes
 			}
 			bodybuf = body.buf;
 			bodylen = body.len;
 		} else if(bpad == '-') {
-// Payload not encoded - just point at the start of it
+			// Payload not encoded - just point at the start of it
 			bodybuf = (uint8_t *)delim + 1;
 			bodylen = strlen(delim + 1);
 		}
 	}
 
-// From now on we assume that this is a MIAM frame and we return a non-NULL PDU with an
-// error code if something goes wrong, so that a proper error message is printed to the output.
+	// From now on we assume that this is a MIAM frame and we return a non-NULL PDU with an
+	// error code if something goes wrong, so that a proper error message is printed to the output.
 	uint8_t *b = header.buf;
-	header.len -= hpad;				// cut off padding bytes
+	header.len -= hpad;                 // cut off padding bytes
 
 	uint8_t version = b[0] & 0xf;
 	uint8_t pdu_type = (b[0] >> 4) & 0xf;
@@ -378,16 +378,16 @@ end:
 
 static void la_miam_errors_format_text(la_vstring * const vstr, uint32_t err, int indent) {
 	static la_dict const la_miam_error_messages[] = {
-		{ .id = LA_MIAM_ERR_SUCCESS,			.val = "No error" },
-		{ .id = LA_MIAM_ERR_HDR_PDU_TYPE_UNKNOWN,	.val = "Unknown PDU type" },
-		{ .id = LA_MIAM_ERR_HDR_PDU_VERSION_UNKNOWN,	.val = "Unsupported MIAM version" },
-		{ .id = LA_MIAM_ERR_HDR_TRUNCATED,		.val = "Header truncated" },
-		{ .id = LA_MIAM_ERR_HDR_APP_TYPE_UNKNOWN,	.val = "Unknown application type" },
-		{ .id = LA_MIAM_ERR_BODY_TRUNCATED,		.val = "Message truncated" },
-		{ .id = LA_MIAM_ERR_BODY_INFLATE_FAILED,	.val = "Decompression failed" },
-		{ .id = LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED,	.val = "Unsupported compression algorithm" },
-		{ .id = LA_MIAM_ERR_BODY_CRC_FAILED,		.val = "CRC check failed" },
-		{ .id = 0,					.val = NULL }
+		{ .id = LA_MIAM_ERR_SUCCESS,                    .val = "No error" },
+		{ .id = LA_MIAM_ERR_HDR_PDU_TYPE_UNKNOWN,       .val = "Unknown PDU type" },
+		{ .id = LA_MIAM_ERR_HDR_PDU_VERSION_UNKNOWN,    .val = "Unsupported MIAM version" },
+		{ .id = LA_MIAM_ERR_HDR_TRUNCATED,              .val = "Header truncated" },
+		{ .id = LA_MIAM_ERR_HDR_APP_TYPE_UNKNOWN,       .val = "Unknown application type" },
+		{ .id = LA_MIAM_ERR_BODY_TRUNCATED,             .val = "Message truncated" },
+		{ .id = LA_MIAM_ERR_BODY_INFLATE_FAILED,        .val = "Decompression failed" },
+		{ .id = LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED,     .val = "Unsupported compression algorithm" },
+		{ .id = LA_MIAM_ERR_BODY_CRC_FAILED,            .val = "CRC check failed" },
+		{ .id = 0,                                      .val = NULL }
 	};
 	la_assert(vstr != NULL);
 	la_assert(indent >= 0);
@@ -409,7 +409,7 @@ static void la_miam_errors_format_json(la_vstring * const vstr, uint32_t err) {
 }
 
 static void la_miam_bitmask_format_text(la_vstring * const vstr, uint8_t const bitmask,
-la_dict const * const dict, int indent) {
+		la_dict const * const dict, int indent) {
 	la_assert(vstr != NULL);
 	la_assert(dict != NULL);
 	la_assert(indent >= 0);
@@ -427,7 +427,7 @@ la_dict const * const dict, int indent) {
 }
 
 static void la_miam_bitmask_format_json(la_vstring * const vstr, uint8_t const bitmask,
-la_dict const * const dict) {
+		la_dict const * const dict) {
 	la_assert(vstr != NULL);
 	la_assert(dict != NULL);
 
@@ -444,7 +444,7 @@ la_dict const * const dict) {
 }
 
 static void v1v2_alo_alr_format_text(la_vstring * const vstr, void const * const data, int indent,
-la_miam_core_pdu_type const pdu_type) {
+		la_miam_core_pdu_type const pdu_type) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 	la_assert(indent >= 0);
@@ -461,17 +461,17 @@ la_miam_core_pdu_type const pdu_type) {
 	LA_ISPRINTF(vstr, indent, "PDU Length: %u\n", pdu->pdu_len);
 	LA_ISPRINTF(vstr, indent, "Aircraft ID: %s\n", pdu->aircraft_id);
 	LA_ISPRINTF(vstr, indent, "Compressions %s:\n",
-		(pdu_type == LA_MIAM_CORE_PDU_ALO ? "supported" : "selected"));
+			(pdu_type == LA_MIAM_CORE_PDU_ALO ? "supported" : "selected"));
 	la_miam_bitmask_format_text(vstr, pdu->compression,
-		la_miam_core_v1v2_alo_alr_compression_names, indent + 1);
+			la_miam_core_v1v2_alo_alr_compression_names, indent + 1);
 	LA_ISPRINTF(vstr, indent, "Networks supported:\n");
 	la_miam_bitmask_format_text(vstr, pdu->networks,
-		la_miam_core_v1v2_alo_alr_network_names, indent + 1);
-// Not checking for body errors here, as there is no body in ALO and ALR PDUs
+			la_miam_core_v1v2_alo_alr_network_names, indent + 1);
+	// Not checking for body errors here, as there is no body in ALO and ALR PDUs
 }
 
 static void v1v2_alo_alr_format_json(la_vstring * const vstr, void const * const data,
-la_miam_core_pdu_type const pdu_type) {
+		la_miam_core_pdu_type const pdu_type) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 
@@ -487,13 +487,13 @@ la_miam_core_pdu_type const pdu_type) {
 	la_json_append_long(vstr, "pdu_len", pdu->pdu_len);
 	la_json_append_string(vstr, "aircraft_id", pdu->aircraft_id);
 	la_json_array_start(vstr,
-		pdu_type == LA_MIAM_CORE_PDU_ALO ? "comp_supported" : "comp_selected");
+			pdu_type == LA_MIAM_CORE_PDU_ALO ? "comp_supported" : "comp_selected");
 	la_miam_bitmask_format_json(vstr, pdu->compression,
-		la_miam_core_v1v2_alo_alr_compression_names);
+			la_miam_core_v1v2_alo_alr_compression_names);
 	la_json_array_end(vstr);
 	la_json_array_start(vstr, "networks_supported");
 	la_miam_bitmask_format_json(vstr, pdu->networks,
-		la_miam_core_v1v2_alo_alr_network_names);
+			la_miam_core_v1v2_alo_alr_network_names);
 	la_json_array_end(vstr);
 }
 
@@ -533,7 +533,7 @@ void la_miam_core_format_text(la_vstring * const vstr, void const * const data, 
 	}
 	la_assert(pdu->pdu_type <= LA_MIAM_CORE_PDU_TYPE_MAX);
 	LA_ISPRINTF(vstr, indent, "MIAM CORE %s, version %u:\n",
-		la_miam_core_pdu_type_names[pdu->pdu_type], pdu->version);
+			la_miam_core_pdu_type_names[pdu->pdu_type], pdu->version);
 	indent++;
 }
 
@@ -612,7 +612,7 @@ static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrl
 	pdu->pdu_len = (hdrbuf[1] << 16) | (hdrbuf[2] << 8) | hdrbuf[3];
 	if(pdu->pdu_len > (uint32_t)(hdrlen + bodylen)) {
 		la_debug_print(D_ERROR, "PDU truncated: length from header: %d > pdu_len %d (%d+%d)\n",
-			pdu->pdu_len, hdrlen + bodylen, hdrlen, bodylen);
+				pdu->pdu_len, hdrlen + bodylen, hdrlen, bodylen);
 		pdu->err |= LA_MIAM_ERR_BODY_TRUNCATED;
 	}
 	hdrbuf += 4; hdrlen -= 4;
@@ -632,7 +632,7 @@ static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrl
 	pdu->encoding = (hdrbuf[1] >> 4) & 0x3;
 	pdu->app_type = hdrbuf[1] & 0xf;
 	la_debug_print(D_INFO, "compression: 0x%x encoding: 0x%x app_type: 0x%x\n",
-		pdu->compression, pdu->encoding, pdu->app_type);
+			pdu->compression, pdu->encoding, pdu->app_type);
 	hdrbuf += 2; hdrlen -= 2;
 
 	uint8_t app_id_len = 0;
@@ -641,7 +641,7 @@ static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrl
 	} else if(pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_4CHAR) {
 		app_id_len = 4;
 	} else if(pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_6CHAR ||
-		  pdu->app_type == LA_MIAM_CORE_V1_APP_NONACARS_6CHAR) {
+			pdu->app_type == LA_MIAM_CORE_V1_APP_NONACARS_6CHAR) {
 		app_id_len = 6;
 	} else {
 		la_debug_print(D_ERROR, "Unknown app type 0x%u\n", pdu->app_type);
@@ -651,8 +651,8 @@ static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrl
 	bytes_needed = app_id_len + LA_MIAM_CORE_V1_CRC_LEN;
 	if(hdrlen < bytes_needed) {
 		la_debug_print(D_ERROR, "Header too short for app_type 0x%x: "
-			"need %u more bytes but only %u available\n",
-			pdu->app_type, bytes_needed, hdrlen);
+				"need %u more bytes but only %u available\n",
+				pdu->app_type, bytes_needed, hdrlen);
 		pdu->err |= LA_MIAM_ERR_HDR_TRUNCATED;
 		goto end;
 	}
@@ -671,9 +671,9 @@ static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrl
 		if(pdu->compression == LA_MIAM_CORE_V1_COMP_DEFLATE) {
 			la_inflate_result inflated = la_inflate(bodybuf, bodylen);
 			la_debug_print_buf_hex(D_VERBOSE, inflated.buf, (int)inflated.buflen,
-				"Decompressed content:\n");
-// If it's text, it needs a NULL terminator.
-// If it's not text, it doesn't hurt either. The buffer is larger than len anyway.
+					"Decompressed content:\n");
+			// If it's text, it needs a NULL terminator.
+			// If it's not text, it doesn't hurt either. The buffer is larger than len anyway.
 			inflated.buf[inflated.buflen] = '\0';
 			pdu->data = inflated.buf;
 			pdu->data_len = inflated.buflen;
@@ -682,15 +682,15 @@ static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrl
 			}
 		} else
 #endif
-		if(pdu->compression == LA_MIAM_CORE_V1_COMP_NONE) {
-			uint8_t *pdu_data = LA_XCALLOC(bodylen + 1, sizeof(uint8_t));
-			memcpy(pdu_data, bodybuf, bodylen);
-			pdu_data[bodylen] = '\0';
-			pdu->data = pdu_data;
-			pdu->data_len = bodylen;
-		} else {
-			pdu->err |= LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED;
-		}
+			if(pdu->compression == LA_MIAM_CORE_V1_COMP_NONE) {
+				uint8_t *pdu_data = LA_XCALLOC(bodylen + 1, sizeof(uint8_t));
+				memcpy(pdu_data, bodybuf, bodylen);
+				pdu_data[bodylen] = '\0';
+				pdu->data = pdu_data;
+				pdu->data_len = bodylen;
+			} else {
+				pdu->err |= LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED;
+			}
 		uint32_t crc_check = la_crc32_arinc665(pdu->data, pdu->data_len, 0xFFFFFFFFu);
 		crc_check = ~crc_check;
 		la_debug_print(D_INFO, "crc: %08x crc_check: %08x\n", pdu->crc, crc_check);
@@ -751,15 +751,15 @@ static void la_miam_core_v1_data_format_text(la_vstring * const vstr, void const
 	la_assert(indent >= 0);
 
 	static la_dict const v1_compression_names[] = {
-		{ .id = LA_MIAM_CORE_V1_COMP_NONE,	.val = "none" },
-		{ .id = LA_MIAM_CORE_V1_COMP_DEFLATE,	.val = "deflate" },
-		{ .id = 0x0,				.val = NULL }
+		{ .id = LA_MIAM_CORE_V1_COMP_NONE,      .val = "none" },
+		{ .id = LA_MIAM_CORE_V1_COMP_DEFLATE,   .val = "deflate" },
+		{ .id = 0x0,                            .val = NULL }
 	};
 
 	static la_dict const v1_encoding_names[] = {
-		{ .id = LA_MIAM_CORE_V1_ENC_ISO5,	.val = "ISO #5" },
-		{ .id = LA_MIAM_CORE_V1_ENC_BINARY,	.val = "binary" },
-		{ .id = 0x0,				.val = NULL }
+		{ .id = LA_MIAM_CORE_V1_ENC_ISO5,       .val = "ISO #5" },
+		{ .id = LA_MIAM_CORE_V1_ENC_BINARY,     .val = "binary" },
+		{ .id = 0x0,                            .val = NULL }
 	};
 
 	LA_CAST_PTR(pdu, la_miam_core_v1_data_pdu *, data);
@@ -771,7 +771,7 @@ static void la_miam_core_v1_data_format_text(la_vstring * const vstr, void const
 	LA_ISPRINTF(vstr, indent, "Aircraft ID: %s\n", pdu->aircraft_id);
 	LA_ISPRINTF(vstr, indent, "Msg num: %u\n", pdu->msg_num);
 	LA_ISPRINTF(vstr, indent, "ACK: %srequired\n",
-		(pdu->ack_option == 1 ? "" : "not "));
+			(pdu->ack_option == 1 ? "" : "not "));
 
 	char *name = la_dict_search(v1_compression_names, pdu->compression);
 	if(name != NULL) {
@@ -788,35 +788,35 @@ static void la_miam_core_v1_data_format_text(la_vstring * const vstr, void const
 	}
 
 	switch(pdu->app_type) {
-	case LA_MIAM_CORE_V1_APP_ACARS_2CHAR:
-	case LA_MIAM_CORE_V1_APP_ACARS_4CHAR:
-	case LA_MIAM_CORE_V1_APP_ACARS_6CHAR:
-		LA_ISPRINTF(vstr, indent, "ACARS:\n");
-		indent++;
-		LA_ISPRINTF(vstr, indent, "Label: %c%c",
-			pdu->app_id[0], pdu->app_id[1]);
+		case LA_MIAM_CORE_V1_APP_ACARS_2CHAR:
+		case LA_MIAM_CORE_V1_APP_ACARS_4CHAR:
+		case LA_MIAM_CORE_V1_APP_ACARS_6CHAR:
+			LA_ISPRINTF(vstr, indent, "ACARS:\n");
+			indent++;
+			LA_ISPRINTF(vstr, indent, "Label: %c%c",
+					pdu->app_id[0], pdu->app_id[1]);
 
-		if(pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_4CHAR ||
-			pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_6CHAR) {
-			la_vstring_append_sprintf(vstr, " Sublabel: %c%c",
-				pdu->app_id[2], pdu->app_id[3]);
-		}
+			if(pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_4CHAR ||
+					pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_6CHAR) {
+				la_vstring_append_sprintf(vstr, " Sublabel: %c%c",
+						pdu->app_id[2], pdu->app_id[3]);
+			}
 
-		if(pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_6CHAR) {
-			la_vstring_append_sprintf(vstr, " MFI: %c%c",
-				pdu->app_id[4], pdu->app_id[5]);
-		}
+			if(pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_6CHAR) {
+				la_vstring_append_sprintf(vstr, " MFI: %c%c",
+						pdu->app_id[4], pdu->app_id[5]);
+			}
 
-		la_vstring_append_sprintf(vstr, "%s", "\n");
+			la_vstring_append_sprintf(vstr, "%s", "\n");
 
-		break;
-	case LA_MIAM_CORE_V1_APP_NONACARS_6CHAR:
-		LA_ISPRINTF(vstr, indent, "Non-ACARS payload:\n");
-		indent++;
-		LA_ISPRINTF(vstr, indent, "Application ID: %s\n", pdu->app_id);
-		break;
-	default:
-		break;
+			break;
+		case LA_MIAM_CORE_V1_APP_NONACARS_6CHAR:
+			LA_ISPRINTF(vstr, indent, "Non-ACARS payload:\n");
+			indent++;
+			LA_ISPRINTF(vstr, indent, "Application ID: %s\n", pdu->app_id);
+			break;
+		default:
+			break;
 	}
 
 	if(pdu->data != NULL) {
@@ -875,30 +875,30 @@ static void la_miam_core_v1_data_format_json(la_vstring * const vstr, void const
 	la_json_append_long(vstr, "app_type", pdu->app_type);
 
 	switch(pdu->app_type) {
-	case LA_MIAM_CORE_V1_APP_ACARS_2CHAR:
-	case LA_MIAM_CORE_V1_APP_ACARS_4CHAR:
-	case LA_MIAM_CORE_V1_APP_ACARS_6CHAR:
-		la_json_object_start(vstr, "acars");
-		la_json_append_string(vstr, "label",
-			(char const * const)(&((char[]){pdu->app_id[0], pdu->app_id[1], '\0'})));
-		if(pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_4CHAR ||
-			pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_6CHAR) {
-			la_json_append_string(vstr, "sublabel",
-				(char const * const)(&((char[]){pdu->app_id[2], pdu->app_id[3], '\0'})));
+		case LA_MIAM_CORE_V1_APP_ACARS_2CHAR:
+		case LA_MIAM_CORE_V1_APP_ACARS_4CHAR:
+		case LA_MIAM_CORE_V1_APP_ACARS_6CHAR:
+			la_json_object_start(vstr, "acars");
+			la_json_append_string(vstr, "label",
+					(char const * const)(&((char[]){pdu->app_id[0], pdu->app_id[1], '\0'})));
+			if(pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_4CHAR ||
+					pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_6CHAR) {
+				la_json_append_string(vstr, "sublabel",
+						(char const * const)(&((char[]){pdu->app_id[2], pdu->app_id[3], '\0'})));
 
-		}
-		if(pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_6CHAR) {
-			la_json_append_string(vstr, "mfi",
-				(char const * const)(&((char[]){pdu->app_id[4], pdu->app_id[5], '\0'})));
-		}
-		break;
-	case LA_MIAM_CORE_V1_APP_NONACARS_6CHAR:
-		la_json_object_start(vstr, "non_acars");
-		la_json_append_string(vstr, "app_id", pdu->app_id);
-		break;
-	default:
-		la_json_object_start(vstr, "unknown_payload_type");
-		break;
+			}
+			if(pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_6CHAR) {
+				la_json_append_string(vstr, "mfi",
+						(char const * const)(&((char[]){pdu->app_id[4], pdu->app_id[5], '\0'})));
+			}
+			break;
+		case LA_MIAM_CORE_V1_APP_NONACARS_6CHAR:
+			la_json_object_start(vstr, "non_acars");
+			la_json_append_string(vstr, "app_id", pdu->app_id);
+			break;
+		default:
+			la_json_object_start(vstr, "unknown_payload_type");
+			break;
 	}
 	la_json_object_start(vstr, "message");
 	if(pdu->data != NULL) {
@@ -906,14 +906,14 @@ static void la_miam_core_v1_data_format_json(la_vstring * const vstr, void const
 			la_json_append_string(vstr, "text", (char *)pdu->data);
 		} else {
 			la_json_append_octet_string(vstr, "octet_string",
-				(uint8_t *)pdu->data, pdu->data_len);
+					(uint8_t *)pdu->data, pdu->data_len);
 		}
 	}
 	if(pdu->err & LA_MIAM_ERR_BODY) {
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_BODY);
 	}
-	la_json_object_end(vstr);	// message
-	la_json_object_end(vstr);	// acars / non_acars / unknown_payload_type
+	la_json_object_end(vstr);   // message
+	la_json_object_end(vstr);   // acars / non_acars / unknown_payload_type
 }
 
 static void la_miam_core_v1_ack_format_text(la_vstring * const vstr, void const * const data, int indent) {
@@ -944,7 +944,7 @@ static void la_miam_core_v1_ack_format_text(la_vstring * const vstr, void const 
 	} else {
 		LA_ISPRINTF(vstr, indent, "Transfer result: unknown (%u)\n", pdu->ack_xfer_result);
 	}
-// Not checking for body errors here, as there is no body in an ack PDU
+	// Not checking for body errors here, as there is no body in an ack PDU
 }
 
 static void la_miam_core_v1_ack_format_json(la_vstring * const vstr, void const * const data) {
@@ -1035,7 +1035,7 @@ static la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrl
 	pdu->encoding = (hdrbuf[1] >> 4) & 0x3;
 	pdu->app_type = hdrbuf[1] & 0xf;
 	la_debug_print(D_INFO, "compression: 0x%x encoding: 0x%x app_type: 0x%x\n",
-		pdu->compression, pdu->encoding, pdu->app_type);
+			pdu->compression, pdu->encoding, pdu->app_type);
 	hdrbuf += 2; hdrlen -= 2;
 
 	uint8_t app_id_len = 0;
@@ -1044,7 +1044,7 @@ static la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrl
 	} else if(pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_4CHAR) {
 		app_id_len = 4;
 	} else if(pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_6CHAR ||
-		  pdu->app_type == LA_MIAM_CORE_V2_APP_NONACARS_6CHAR) {
+			pdu->app_type == LA_MIAM_CORE_V2_APP_NONACARS_6CHAR) {
 		app_id_len = 6;
 	} else if((pdu->app_type & 0x8) != 0 && pdu->app_type != 0xd /* reserved value */) {
 		app_id_len = (pdu->app_type & 0x7) + 1;
@@ -1056,8 +1056,8 @@ static la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrl
 	bytes_needed = app_id_len + LA_MIAM_CORE_V2_CRC_LEN;
 	if(hdrlen < bytes_needed) {
 		la_debug_print(D_ERROR, "Header too short for app_type 0x%x: "
-			"need %u more bytes but only %u available\n",
-			pdu->app_type, bytes_needed, hdrlen);
+				"need %u more bytes but only %u available\n",
+				pdu->app_type, bytes_needed, hdrlen);
 		pdu->err |= LA_MIAM_ERR_HDR_TRUNCATED;
 		goto end;
 	}
@@ -1076,9 +1076,9 @@ static la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrl
 		if(pdu->compression == LA_MIAM_CORE_V2_COMP_DEFLATE) {
 			la_inflate_result inflated = la_inflate(bodybuf, bodylen);
 			la_debug_print_buf_hex(D_VERBOSE, inflated.buf, (int)inflated.buflen,
-				"Decompressed content:\n");
-// If it's text, it needs a NULL terminator.
-// If it's not text, it doesn't hurt either. The buffer is larger than len anyway.
+					"Decompressed content:\n");
+			// If it's text, it needs a NULL terminator.
+			// If it's not text, it doesn't hurt either. The buffer is larger than len anyway.
 			inflated.buf[inflated.buflen] = '\0';
 			pdu->data = inflated.buf;
 			pdu->data_len = inflated.buflen;
@@ -1087,15 +1087,15 @@ static la_proto_node *la_miam_core_v2_data_parse(uint8_t const *hdrbuf, int hdrl
 			}
 		} else
 #endif
-		if(pdu->compression == LA_MIAM_CORE_V2_COMP_NONE) {
-			uint8_t *pdu_data = LA_XCALLOC(bodylen + 1, sizeof(uint8_t));
-			memcpy(pdu_data, bodybuf, bodylen);
-			pdu_data[bodylen] = '\0';
-			pdu->data = pdu_data;
-			pdu->data_len = bodylen;
-		} else {
-			pdu->err |= LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED;
-		}
+			if(pdu->compression == LA_MIAM_CORE_V2_COMP_NONE) {
+				uint8_t *pdu_data = LA_XCALLOC(bodylen + 1, sizeof(uint8_t));
+				memcpy(pdu_data, bodybuf, bodylen);
+				pdu_data[bodylen] = '\0';
+				pdu->data = pdu_data;
+				pdu->data_len = bodylen;
+			} else {
+				pdu->err |= LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED;
+			}
 		uint16_t crc_check = la_crc16_arinc(pdu->data, pdu->data_len, 0xFFFFu);
 		la_debug_print(D_INFO, "crc: %04x crc_check: %04x\n", pdu->crc, crc_check);
 		if(crc_check != pdu->crc) {
@@ -1133,7 +1133,7 @@ static la_proto_node *la_miam_core_v2_ack_parse(uint8_t const *hdrbuf, int hdrle
 	memcpy(pdu->crc, hdrbuf, LA_MIAM_CORE_V2_CRC_LEN);
 	hdrbuf += LA_MIAM_CORE_V2_CRC_LEN; hdrlen -= LA_MIAM_CORE_V2_CRC_LEN;
 
-	hdrbuf += 2; hdrlen -= 2;	// jump over 2 spare octets
+	hdrbuf += 2; hdrlen -= 2;       // jump over 2 spare octets
 	if(hdrlen > 0) {
 		la_debug_print(D_INFO, "Warning: %u bytes left after MIAM header\n", hdrlen);
 	}
@@ -1149,15 +1149,15 @@ static void la_miam_core_v2_data_format_text(la_vstring * const vstr, void const
 	la_assert(indent >= 0);
 
 	static la_dict const v2_compression_names[] = {
-		{ .id = LA_MIAM_CORE_V2_COMP_NONE,	.val = "none" },
-		{ .id = LA_MIAM_CORE_V2_COMP_DEFLATE,	.val = "deflate" },
-		{ .id = 0x0,				.val = NULL }
+		{ .id = LA_MIAM_CORE_V2_COMP_NONE,      .val = "none" },
+		{ .id = LA_MIAM_CORE_V2_COMP_DEFLATE,   .val = "deflate" },
+		{ .id = 0x0,                            .val = NULL }
 	};
 
 	static la_dict const v2_encoding_names[] = {
-		{ .id = LA_MIAM_CORE_V2_ENC_ISO5,	.val = "ISO #5" },
-		{ .id = LA_MIAM_CORE_V2_ENC_BINARY,	.val = "binary" },
-		{ .id = 0x0,				.val = NULL }
+		{ .id = LA_MIAM_CORE_V2_ENC_ISO5,       .val = "ISO #5" },
+		{ .id = LA_MIAM_CORE_V2_ENC_BINARY,     .val = "binary" },
+		{ .id = 0x0,                            .val = NULL }
 	};
 
 	LA_CAST_PTR(pdu, la_miam_core_v2_data_pdu *, data);
@@ -1167,7 +1167,7 @@ static void la_miam_core_v2_data_format_text(la_vstring * const vstr, void const
 	}
 	LA_ISPRINTF(vstr, indent, "Msg num: %u\n", pdu->msg_num);
 	LA_ISPRINTF(vstr, indent, "ACK: %srequired\n",
-		(pdu->ack_option == 1 ? "" : "not "));
+			(pdu->ack_option == 1 ? "" : "not "));
 
 	char *name = la_dict_search(v2_compression_names, pdu->compression);
 	if(name != NULL) {
@@ -1184,40 +1184,40 @@ static void la_miam_core_v2_data_format_text(la_vstring * const vstr, void const
 	}
 
 	switch(pdu->app_type) {
-	case LA_MIAM_CORE_V2_APP_ACARS_2CHAR:
-	case LA_MIAM_CORE_V2_APP_ACARS_4CHAR:
-	case LA_MIAM_CORE_V2_APP_ACARS_6CHAR:
-		LA_ISPRINTF(vstr, indent, "ACARS:\n");
-		indent++;
-		LA_ISPRINTF(vstr, indent, "Label: %c%c",
-			pdu->app_id[0], pdu->app_id[1]);
+		case LA_MIAM_CORE_V2_APP_ACARS_2CHAR:
+		case LA_MIAM_CORE_V2_APP_ACARS_4CHAR:
+		case LA_MIAM_CORE_V2_APP_ACARS_6CHAR:
+			LA_ISPRINTF(vstr, indent, "ACARS:\n");
+			indent++;
+			LA_ISPRINTF(vstr, indent, "Label: %c%c",
+					pdu->app_id[0], pdu->app_id[1]);
 
-		if(pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_4CHAR ||
-			pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_6CHAR) {
-			la_vstring_append_sprintf(vstr, " Sublabel: %c%c",
-				pdu->app_id[2], pdu->app_id[3]);
-		}
+			if(pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_4CHAR ||
+					pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_6CHAR) {
+				la_vstring_append_sprintf(vstr, " Sublabel: %c%c",
+						pdu->app_id[2], pdu->app_id[3]);
+			}
 
-		if(pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_6CHAR) {
-			la_vstring_append_sprintf(vstr, " MFI: %c%c",
-				pdu->app_id[4], pdu->app_id[5]);
-		}
+			if(pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_6CHAR) {
+				la_vstring_append_sprintf(vstr, " MFI: %c%c",
+						pdu->app_id[4], pdu->app_id[5]);
+			}
 
-		la_vstring_append_sprintf(vstr, "%s", "\n");
-		break;
-	case 0x4:
-	case 0x5:
-	case 0x6:
-	case 0x7:
-	case 0xd:
-// reserved for future use
-		break;
-	case LA_MIAM_CORE_V2_APP_NONACARS_6CHAR:
-	default:	// including 0x8-0x15
-		LA_ISPRINTF(vstr, indent, "Non-ACARS payload:\n");
-		indent++;
-		LA_ISPRINTF(vstr, indent, "Application ID: %s\n", pdu->app_id);
-		break;
+			la_vstring_append_sprintf(vstr, "%s", "\n");
+			break;
+		case 0x4:
+		case 0x5:
+		case 0x6:
+		case 0x7:
+		case 0xd:
+			// reserved for future use
+			break;
+		case LA_MIAM_CORE_V2_APP_NONACARS_6CHAR:
+		default:    // including 0x8-0x15
+			LA_ISPRINTF(vstr, indent, "Non-ACARS payload:\n");
+			indent++;
+			LA_ISPRINTF(vstr, indent, "Application ID: %s\n", pdu->app_id);
+			break;
 	}
 
 	if(pdu->data != NULL) {
@@ -1274,35 +1274,35 @@ static void la_miam_core_v2_data_format_json(la_vstring * const vstr, void const
 	la_json_append_long(vstr, "app_type", pdu->app_type);
 
 	switch(pdu->app_type) {
-	case LA_MIAM_CORE_V2_APP_ACARS_2CHAR:
-	case LA_MIAM_CORE_V2_APP_ACARS_4CHAR:
-	case LA_MIAM_CORE_V2_APP_ACARS_6CHAR:
-		la_json_object_start(vstr, "acars");
-		la_json_append_string(vstr, "label",
-			(char const * const)(&((char[]){pdu->app_id[0], pdu->app_id[1], '\0'})));
-		if(pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_4CHAR ||
-			pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_6CHAR) {
-			la_json_append_string(vstr, "sublabel",
-				(char const * const)(&((char[]){pdu->app_id[2], pdu->app_id[3], '\0'})));
+		case LA_MIAM_CORE_V2_APP_ACARS_2CHAR:
+		case LA_MIAM_CORE_V2_APP_ACARS_4CHAR:
+		case LA_MIAM_CORE_V2_APP_ACARS_6CHAR:
+			la_json_object_start(vstr, "acars");
+			la_json_append_string(vstr, "label",
+					(char const * const)(&((char[]){pdu->app_id[0], pdu->app_id[1], '\0'})));
+			if(pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_4CHAR ||
+					pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_6CHAR) {
+				la_json_append_string(vstr, "sublabel",
+						(char const * const)(&((char[]){pdu->app_id[2], pdu->app_id[3], '\0'})));
 
-		}
-		if(pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_6CHAR) {
-			la_json_append_string(vstr, "mfi",
-				(char const * const)(&((char[]){pdu->app_id[4], pdu->app_id[5], '\0'})));
-		}
-		break;
-	case 0x4:
-	case 0x5:
-	case 0x6:
-	case 0x7:
-	case 0xd:
-// reserved for future use
-		break;
-	case LA_MIAM_CORE_V2_APP_NONACARS_6CHAR:
-	default:	// including 0x8-0x15
-		la_json_object_start(vstr, "non_acars");
-		la_json_append_string(vstr, "app_id", pdu->app_id);
-		break;
+			}
+			if(pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_6CHAR) {
+				la_json_append_string(vstr, "mfi",
+						(char const * const)(&((char[]){pdu->app_id[4], pdu->app_id[5], '\0'})));
+			}
+			break;
+		case 0x4:
+		case 0x5:
+		case 0x6:
+		case 0x7:
+		case 0xd:
+			// reserved for future use
+			break;
+		case LA_MIAM_CORE_V2_APP_NONACARS_6CHAR:
+		default:    // including 0x8-0x15
+			la_json_object_start(vstr, "non_acars");
+			la_json_append_string(vstr, "app_id", pdu->app_id);
+			break;
 	}
 	la_json_object_start(vstr, "message");
 	if(pdu->data != NULL) {
@@ -1310,14 +1310,14 @@ static void la_miam_core_v2_data_format_json(la_vstring * const vstr, void const
 			la_json_append_string(vstr, "text", (char *)pdu->data);
 		} else {
 			la_json_append_octet_string(vstr, "octet_string",
-				(uint8_t *)pdu->data, pdu->data_len);
+					(uint8_t *)pdu->data, pdu->data_len);
 		}
 	}
 	if(pdu->err & LA_MIAM_ERR_BODY) {
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_BODY);
 	}
-	la_json_object_end(vstr);	// message
-	la_json_object_end(vstr);	// acars / non_acars
+	la_json_object_end(vstr);   // message
+	la_json_object_end(vstr);   // acars / non_acars
 }
 
 static void la_miam_core_v2_ack_format_text(la_vstring * const vstr, void const * const data, int indent) {
@@ -1347,7 +1347,7 @@ static void la_miam_core_v2_ack_format_text(la_vstring * const vstr, void const 
 	} else {
 		LA_ISPRINTF(vstr, indent, "Transfer result: unknown (%u)\n", pdu->ack_xfer_result);
 	}
-// Not checking for body errors here, as there is no body in an ack PDU
+	// Not checking for body errors here, as there is no body in an ack PDU
 }
 
 static void la_miam_core_v2_ack_format_json(la_vstring * const vstr, void const * const data) {

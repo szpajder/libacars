@@ -4,17 +4,17 @@
  *  Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
  */
 
-#include <libacars/asn1/asn_application.h>	// asn_TYPE_descriptor_t, asn_sprintf
-#include <libacars/asn1/OCTET_STRING.h>		// OCTET_STRING_t
-#include <libacars/asn1/INTEGER.h>		// asn_INTEGER_enum_map_t, asn_INTEGER2long()
-#include <libacars/asn1/BOOLEAN.h>		// BOOLEAN_t
-#include <libacars/asn1/constr_CHOICE.h>	// _fetch_present_idx()
-#include <libacars/asn1/asn_SET_OF.h>		// _A_CSET_FROM_VOID()
-#include <libacars/asn1-util.h>			// LA_ASN1_FORMATTER_PROTOTYPE
-#include <libacars/macros.h>			// LA_CAST_PTR
-#include <libacars/util.h>			// la_dict_search
-#include <libacars/vstring.h>			// la_vstring, la_vstring_append_sprintf(), LA_ISPRINTF
-#include <libacars/json.h>			// la_json_*()
+#include <libacars/asn1/asn_application.h>      // asn_TYPE_descriptor_t, asn_sprintf
+#include <libacars/asn1/OCTET_STRING.h>         // OCTET_STRING_t
+#include <libacars/asn1/INTEGER.h>              // asn_INTEGER_enum_map_t, asn_INTEGER2long()
+#include <libacars/asn1/BOOLEAN.h>              // BOOLEAN_t
+#include <libacars/asn1/constr_CHOICE.h>        // _fetch_present_idx()
+#include <libacars/asn1/asn_SET_OF.h>           // _A_CSET_FROM_VOID()
+#include <libacars/asn1-util.h>                 // LA_ASN1_FORMATTER_PROTOTYPE
+#include <libacars/macros.h>                    // LA_CAST_PTR
+#include <libacars/util.h>                      // la_dict_search
+#include <libacars/vstring.h>                   // la_vstring, la_vstring_append_sprintf(), LA_ISPRINTF
+#include <libacars/json.h>                      // la_json_*()
 
 char const *la_value2enum(asn_TYPE_descriptor_t *td, long const value) {
 	if(td == NULL) return NULL;
@@ -24,14 +24,14 @@ char const *la_value2enum(asn_TYPE_descriptor_t *td, long const value) {
 }
 
 void la_format_INTEGER_with_unit_as_text(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td,
-	void const *sptr, int indent, char const * const unit, double multiplier, int decimal_places) {
+		void const *sptr, int indent, char const * const unit, double multiplier, int decimal_places) {
 	LA_UNUSED(td);
 	LA_CAST_PTR(val, long *, sptr);
 	LA_ISPRINTF(vstr, indent, "%s: %.*f%s\n", label, decimal_places, (double)(*val) * multiplier, unit);
 }
 
 void la_format_INTEGER_with_unit_as_json(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td,
-	void const *sptr, int indent, char const * const unit, double multiplier, int decimal_places) {
+		void const *sptr, int indent, char const * const unit, double multiplier, int decimal_places) {
 	LA_UNUSED(td);
 	LA_UNUSED(indent);
 	LA_CAST_PTR(valptr, long *, sptr);
@@ -47,7 +47,7 @@ void la_format_INTEGER_with_unit_as_json(la_vstring *vstr, char const * const la
 }
 
 void la_format_CHOICE_as_text(la_vstring *vstr, char const * const label, la_dict const * const choice_labels,
-	asn1_output_fun_t cb, asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
+		asn1_output_fun_t cb, asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
 
 	asn_CHOICE_specifics_t *specs = (asn_CHOICE_specifics_t *)td->specifics;
 	int present = _fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
@@ -85,7 +85,7 @@ void la_format_CHOICE_as_text(la_vstring *vstr, char const * const label, la_dic
 }
 
 void la_format_CHOICE_as_json(la_vstring *vstr, char const * const label, la_dict const * const choice_labels,
-	asn1_output_fun_t cb, asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
+		asn1_output_fun_t cb, asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
 
 	asn_CHOICE_specifics_t *specs = (asn_CHOICE_specifics_t *)td->specifics;
 	int present = _fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
@@ -116,7 +116,7 @@ end:
 }
 
 void la_format_SEQUENCE_as_text(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
-	asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
+		asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
 	if(label != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s:\n", label);
 		indent++;
@@ -138,7 +138,7 @@ void la_format_SEQUENCE_as_text(la_vstring *vstr, char const * const label, asn1
 }
 
 void la_format_SEQUENCE_as_json(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
-	asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
+		asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
 
 	la_json_array_start(vstr, label);
 	for(int edx = 0; edx < td->elements_count; edx++) {
@@ -162,7 +162,7 @@ void la_format_SEQUENCE_as_json(la_vstring *vstr, char const * const label, asn1
 
 
 void la_format_SEQUENCE_OF_as_text(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
-	asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
+		asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
 	if(label != NULL) {
 		LA_ISPRINTF(vstr, indent, "%s:\n", label);
 		indent++;
@@ -179,7 +179,7 @@ void la_format_SEQUENCE_OF_as_text(la_vstring *vstr, char const * const label, a
 }
 
 void la_format_SEQUENCE_OF_as_json(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
-	asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
+		asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
 	la_json_array_start(vstr, label);
 	asn_TYPE_member_t *elm = td->elements;
 	const asn_anonymous_set_ *list = _A_CSET_FROM_VOID(sptr);
@@ -206,7 +206,7 @@ LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_any) {
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_OCTET_STRING) {
 	LA_CAST_PTR(octstr, OCTET_STRING_t *, sptr);
-// replace nulls with periods for printf() to work correctly
+	// replace nulls with periods for printf() to work correctly
 	char *buf = (char *)octstr->buf;
 	for(int i = 0; i < octstr->size; i++) {
 		if(buf[i] == '\0') buf[i] = '.';

@@ -3,27 +3,27 @@
  *
  *  Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
  */
-#include <stdio.h>		// fprintf
+#include <stdio.h>              // fprintf
 #include <stdint.h>
-#include <stdlib.h>		// calloc, realloc, free
-#include <string.h>		// strerror, strlen, strdup, strnlen, strspn, strpbrk
-#include <time.h>		// struct tm
-#include <errno.h>		// errno
-#include <unistd.h>		// _exit
-#include "config.h"		// HAVE_STRSEP, WITH_LIBXML2
+#include <stdlib.h>             // calloc, realloc, free
+#include <string.h>             // strerror, strlen, strdup, strnlen, strspn, strpbrk
+#include <time.h>               // struct tm
+#include <errno.h>              // errno
+#include <unistd.h>             // _exit
+#include "config.h"             // HAVE_STRSEP, WITH_LIBXML2
 #ifdef WITH_LIBXML2
-#include <libxml/parser.h>	// xmlParseDoc
-#include <libxml/tree.h>	// xmlBuffer.*, xmlNodeDump, xmlDocGetRootElement, xmlFreeDoc
-#include <libxml/xmlerror.h>	// initGenericErrorDefaultFunc, xmlGenericError
+#include <libxml/parser.h>      // xmlParseDoc
+#include <libxml/tree.h>        // xmlBuffer.*, xmlNodeDump, xmlDocGetRootElement, xmlFreeDoc
+#include <libxml/xmlerror.h>    // initGenericErrorDefaultFunc, xmlGenericError
 #endif
-#include <libacars/macros.h>	// la_debug_print()
+#include <libacars/macros.h>    // la_debug_print()
 #include <libacars/util.h>
 
 void *la_xcalloc(size_t nmemb, size_t size, const char *file, const int line, const char *func) {
 	void *ptr = calloc(nmemb, size);
 	if(ptr == NULL) {
 		fprintf(stderr, "%s:%d: %s(): calloc(%zu, %zu) failed: %s\n",
-			file, line, func, nmemb, size, strerror(errno));
+				file, line, func, nmemb, size, strerror(errno));
 		_exit(1);
 	}
 	return ptr;
@@ -33,7 +33,7 @@ void *la_xrealloc(void *ptr, size_t size, const char *file, const int line, cons
 	ptr = realloc(ptr, size);
 	if(ptr == NULL) {
 		fprintf(stderr, "%s:%d: %s(): realloc(%zu) failed: %s\n",
-			file, line, func, size, strerror(errno));
+				file, line, func, size, strerror(errno));
 		_exit(1);
 	}
 	return ptr;
@@ -67,7 +67,7 @@ size_t la_slurp_hexstring(char* string, uint8_t **buf) {
 		} else if (c >= 'A' && c <= 'F') {
 			value = (10 + (c - 'A'));
 		} else if (c >= 'a' && c <= 'f') {
-			 value = (10 + (c - 'a'));
+			value = (10 + (c - 'a'));
 		} else {
 			la_debug_print(D_ERROR, "stopped at invalid char %u at pos %zu\n", c, i);
 			return i/2;
@@ -86,10 +86,10 @@ char *la_hexdump(uint8_t *data, size_t len) {
 	if((len & 0xf) != 0) {
 		rows++;
 	}
-	size_t rowlen = 16 * 2 + 16;		// 32 hex digits + 16 spaces per row
-	rowlen += 16;				// ASCII characters per row
-	rowlen += 10;				// extra space for separators
-	size_t alloc_size = rows * rowlen + 1;	// terminating NULL
+	size_t rowlen = 16 * 2 + 16;            // 32 hex digits + 16 spaces per row
+	rowlen += 16;                           // ASCII characters per row
+	rowlen += 10;                           // extra space for separators
+	size_t alloc_size = rows * rowlen + 1;  // terminating NULL
 	char *buf = LA_XCALLOC(alloc_size, sizeof(char));
 	char *ptr = buf;
 	size_t i = 0, j = 0;
@@ -131,10 +131,10 @@ char *la_hexdump(uint8_t *data, size_t len) {
 }
 
 int la_strntouint16_t(char const *txt, int const charcnt) {
-	if(	txt == NULL ||
-		charcnt < 1 ||
-		charcnt > 9 ||	// prevent overflowing int
-		strnlen(txt, charcnt) < (size_t)charcnt)
+	if(txt == NULL ||
+			charcnt < 1 ||
+			charcnt > 9 ||      // prevent overflowing int
+			strnlen(txt, charcnt) < (size_t)charcnt)
 	{
 		return -1;
 	}
@@ -230,8 +230,8 @@ xmlBufferPtr la_prettify_xml(char *buf) {
 	if(buf == NULL) {
 		return NULL;
 	}
-// Disables printing XML parser errors to stderr by setting error handler to noop.
-// Can't do this once in library constructor, because this is a per-thread setting.
+	// Disables printing XML parser errors to stderr by setting error handler to noop.
+	// Can't do this once in library constructor, because this is a per-thread setting.
 	if(xmlGenericError != la_xml_errfunc_noop) {
 		xmlGenericErrorFunc errfuncptr = la_xml_errfunc_noop;
 		initGenericErrorDefaultFunc(&errfuncptr);

@@ -5,29 +5,29 @@
  */
 
 #include <stdint.h>
-#include <string.h>			// memcpy()
-#include <math.h>			// pow(), trunc()
-#include <libacars/macros.h>		// la_debug_print, LA_CAST_PTR
-#include <libacars/bitstream.h>		// la_bitstream_*
-#include <libacars/libacars.h>		// la_msg_dir, la_proto_node, la_proto_tree_find_protocol
-#include <libacars/arinc.h>		// la_arinc_imi
-#include <libacars/list.h>		// la_list_*
-#include <libacars/util.h>		// la_dict, la_dict_search(), LA_XCALLOC, LA_XFREE
-#include <libacars/vstring.h>		// la_vstring, la_vstring_append_sprintf()
-#include <libacars/json.h>		// la_json_object_*(), la_json_append_*()
+#include <string.h>                 // memcpy()
+#include <math.h>                   // pow(), trunc()
+#include <libacars/macros.h>        // la_debug_print, LA_CAST_PTR
+#include <libacars/bitstream.h>     // la_bitstream_*
+#include <libacars/libacars.h>      // la_msg_dir, la_proto_node, la_proto_tree_find_protocol
+#include <libacars/arinc.h>         // la_arinc_imi
+#include <libacars/list.h>          // la_list_*
+#include <libacars/util.h>          // la_dict, la_dict_search(), LA_XCALLOC, LA_XFREE
+#include <libacars/vstring.h>       // la_vstring, la_vstring_append_sprintf()
+#include <libacars/json.h>          // la_json_object_*(), la_json_append_*()
 #include <libacars/adsc.h>
 
 static double la_adsc_coordinate_parse(uint32_t c) {
-// extend the 21-bit signed field to 32-bit signed int
+	// extend the 21-bit signed field to 32-bit signed int
 	struct { signed int coord:21; } s;
 	int r = s.coord = (int)c;
 	la_debug_print(D_INFO, "r=%d\n", r);
-// Field range is -180 to 180 degrees.
-// MSB weight is defined to have a weight of 90 degrees.
-// LSB weight is therefore 90/(2^19).
-// First, calculate maximum value of the field:
+	// Field range is -180 to 180 degrees.
+	// MSB weight is defined to have a weight of 90 degrees.
+	// LSB weight is therefore 90/(2^19).
+	// First, calculate maximum value of the field:
 	double result = (180.0-90.0/pow(2, 19));
-// Then multiply it by r/max_r
+	// Then multiply it by r/max_r
 	result *= (double)r;
 	result /= (double)0xfffff;
 	la_debug_print(D_INFO, "result: %f\n", result);
@@ -69,11 +69,11 @@ static double la_adsc_distance_parse(uint32_t d) {
 }
 
 static double la_adsc_heading_parse(uint32_t h) {
-// Heading/track format is the same as latitude/longitude
-// except that:
-// - the field is 12-bit long (including sign bit)
-// - LSB weight is 90/(2^10).
-// FIXME: reduce this to a common function
+	// Heading/track format is the same as latitude/longitude
+	// except that:
+	// - the field is 12-bit long (including sign bit)
+	// - LSB weight is 90/(2^10).
+	// FIXME: reduce this to a common function
 	struct { signed int hdg:12; } s;
 	int r = s.hdg = (int)h;
 	la_debug_print(D_INFO, "r=%d\n", r);
@@ -87,10 +87,10 @@ static double la_adsc_heading_parse(uint32_t h) {
 }
 
 static double la_adsc_wind_dir_parse(uint32_t w) {
-// Wind direction format is the same as latitude/longitude
-// except that:
-// - the field is 9-bit long (including sign bit)
-// - LSB weight is 90/(2^7).
+	// Wind direction format is the same as latitude/longitude
+	// except that:
+	// - the field is 9-bit long (including sign bit)
+	// - LSB weight is 90/(2^7).
 	struct { signed int dir:9; } s;
 	int r = s.dir = (int)w;
 	la_debug_print(D_INFO, "r=%d\n", r);
@@ -116,8 +116,8 @@ static double la_adsc_temperature_parse(uint32_t t) {
 
 #define LA_ADSC_CHECK_LEN(t, l, m) if((l) < (m)) { \
 	la_debug_print(D_ERROR, "Truncated tag %u: len: %u < %u\n", (t), (l), (m)); \
-		return -1; \
-	}
+	return -1; \
+}
 #define LA_ADSC_PARSER_PROTOTYPE(x) static int x(void *dest, uint8_t *buf, uint32_t len)
 #define LA_ADSC_FORMATTER_PROTOTYPE(x) static void x(la_adsc_formatter_ctx_t * const ctx, char const * const label, void const * const data)
 
@@ -396,7 +396,7 @@ static la_dict const la_adsc_downlink_tag_descriptor_table[] = {
 		}
 	},
 	{
-		.id = 255,	// Fake tag for reason code in DIS message
+		.id = 255,      // Fake tag for reason code in DIS message
 		.val = &(la_adsc_type_descriptor_t){
 			.label = "Reason",
 			.json_key = "reason",
@@ -446,7 +446,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_nack_parse) {
 	n->reason = buf[1];
 	la_debug_print(D_INFO, "reason: %u\n", n->reason);
 
-// these reason codes have extended data byte
+	// these reason codes have extended data byte
 	if(buf[1] == 1 || buf[1] == 2 || buf[1] == 7) {
 		tag_len++;
 		if(len < tag_len) {
@@ -475,7 +475,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_noncomp_group_parse) {
 	g->is_unrecognized = (buf[1] & 0x80) ? 1 : 0;
 	g->is_whole_group_unavail = (buf[1] & 0x40) ? 1 : 0;
 	la_debug_print(D_INFO, "tag: %u unrecognized: %u whole_group: %u\n",
-		g->noncomp_tag, g->is_unrecognized, g->is_whole_group_unavail);
+			g->noncomp_tag, g->is_unrecognized, g->is_whole_group_unavail);
 
 	if(g->is_unrecognized || g->is_whole_group_unavail) {
 		return tag_len;
@@ -486,7 +486,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_noncomp_group_parse) {
 		return tag_len;
 	}
 
-// following octets contain 4-bit numbers of non-compliant parameters (up to 15)
+	// following octets contain 4-bit numbers of non-compliant parameters (up to 15)
 	tag_len += g->param_cnt / 2 + g->param_cnt % 2;
 	la_debug_print(D_INFO, "new tag_len: %u\n", tag_len);
 	if(len < tag_len) {
@@ -495,7 +495,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_noncomp_group_parse) {
 	}
 	buf += 2; len -= 2;
 	for(int i = 0; i < g->param_cnt; i++) {
-// store nibbles separately
+		// store nibbles separately
 		g->params[i] = (*buf >> (((i + 1) % 2) * 4)) & 0xf;
 		buf += i % 2; len -= i % 2;
 	}
@@ -530,7 +530,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_noncomp_notify_parse) {
 				la_debug_print(D_ERROR, "truncated: read %u/%u groups\n", i + 1, n->group_cnt);
 				return -1;
 			} else {
-				break;	// parsing completed
+				break;      // parsing completed
 			}
 		}
 	}
@@ -563,7 +563,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_basic_report_parse) {
 	r->accuracy = (uint8_t)((tmp >> 1) & 0x7);
 	r->tcas_health = (uint8_t)((tmp >> 4) & 1);
 	la_debug_print(D_INFO, "redundancy: %u accuracy: %u TCAS: %u\n",
-		r->redundancy, r->accuracy, r->tcas_health);
+			r->redundancy, r->accuracy, r->tcas_health);
 
 	la_bitstream_destroy(bs);
 	return tag_len;
@@ -582,10 +582,10 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_flight_id_parse) {
 	}
 	uint32_t tmp = 0;
 	for(size_t i = 0; i < sizeof(f->id) - 1; i++) {
-// ISO5 alphabet on 6 bits, valid characters: A-Z, 0-9, space
-// (00) 10 0000 - space
-// (01) 0x xxxx - A-Z
-// (00) 11 xxxx - 0-9
+		// ISO5 alphabet on 6 bits, valid characters: A-Z, 0-9, space
+		// (00) 10 0000 - space
+		// (01) 0x xxxx - A-Z
+		// (00) 11 xxxx - 0-9
 		LA_BS_READ_OR_RETURN(bs, &tmp, 6, -1);
 		if((tmp & 0x20) == 0)
 			tmp += 0x40;
@@ -827,9 +827,9 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_group_format_text) {
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Tag %u:\n", g->noncomp_tag);
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s",
-		g->is_unrecognized ? "Unrecognized group" :
+			g->is_unrecognized ? "Unrecognized group" :
 			(g->is_whole_group_unavail ? "Unavailable group" : "Unavailable parameters: ")
-	);
+			);
 	if(!g->is_unrecognized && !g->is_whole_group_unavail && g->param_cnt > 0) {
 		for(int i = 0; i < g->param_cnt; i++) {
 			la_vstring_append_sprintf(ctx->vstr, "%d ", g->params[i]);
@@ -845,7 +845,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_group_format_json) {
 
 	la_json_append_long(ctx->vstr, "noncomp_tag", g->noncomp_tag);
 	la_json_append_string(ctx->vstr, "noncomp_cause",
-		g->is_unrecognized ? "group_unrecognized" :
+			g->is_unrecognized ? "group_unrecognized" :
 			(g->is_whole_group_unavail ? "group_unavailable" : "params_unavailable"));
 	if(!g->is_unrecognized && !g->is_whole_group_unavail) {
 		la_json_array_start(ctx->vstr, "params");
@@ -912,10 +912,10 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_basic_report_format_text) {
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Lon: %.7f\n", r->lon);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Alt: %d ft\n", r->alt);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Time: %.3f sec past hour (:%02.0f:%06.3f)\n",
-		r->timestamp,
-		trunc(r->timestamp / 60.0),
-		r->timestamp - 60.0 * trunc(r->timestamp / 60.0)
-	);
+			r->timestamp,
+			trunc(r->timestamp / 60.0),
+			r->timestamp - 60.0 * trunc(r->timestamp / 60.0)
+			);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Position accuracy: %s\n", accuracy_table[r->accuracy]);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "NAV unit redundancy: %s\n", redundancy_state_table[r->redundancy]);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "TCAS: %s\n", tcas_state_table[r->tcas_health]);
@@ -925,9 +925,9 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_basic_report_format_text) {
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_basic_report_format_json) {
 	LA_UNUSED(label);
 	static const float accuracy_table[] = {
-		[0] = -1.0f,	// NAV capability lost
-		[1] = 30.0f,	// less than 30 nm
-		[2] = 15.0f,	// ... etc.
+		[0] = -1.0f,    // NAV capability lost
+		[1] = 30.0f,    // less than 30 nm
+		[2] = 15.0f,    // ... etc.
 		[3] = 8.0f,
 		[4] = 4.0f,
 		[5] = 1.0f,
@@ -1113,10 +1113,10 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_airframe_id_format_json) {
 	LA_UNUSED(label);
 	LA_CAST_PTR(a, la_adsc_airframe_id_t *, data);
 	la_json_append_long(ctx->vstr, "icao_id",
-		((long)(a->icao_hex[0]) << 16) |
-		((long)(a->icao_hex[1]) << 8)  |
-		(long)(a->icao_hex[2])
-	);
+			((long)(a->icao_hex[0]) << 16) |
+			((long)(a->icao_hex[1]) << 8)  |
+			(long)(a->icao_hex[2])
+			);
 }
 
 /****************
@@ -1348,8 +1348,8 @@ static void la_adsc_tag_destroy(void *tag) {
 		return;
 	}
 	if(t->type->destroy != NULL)
-// simple types do not have any special destructors
-// and can be freed directly
+		// simple types do not have any special destructors
+		// and can be freed directly
 		t->type->destroy(t->data);
 	else
 		LA_XFREE(t->data);
@@ -1417,7 +1417,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_reporting_interval_format_json) {
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_acft_intent_group_format_text) {
 	LA_CAST_PTR(t, la_adsc_acft_intent_group_req_t const * const, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: every %u reports, projection time: %u minutes\n",
-		label, t->modulus, t->acft_intent_projection_time);
+			label, t->modulus, t->acft_intent_projection_time);
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_acft_intent_group_format_json) {
@@ -1430,10 +1430,10 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_acft_intent_group_format_json) {
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_lat_dev_change_format_text) {
 	LA_CAST_PTR(e, la_adsc_lat_dev_chg_event_t const * const, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent,
-		"%s: %.3f nm\n",
-		label,
-		e->lat_dev_threshold
-	);
+			"%s: %.3f nm\n",
+			label,
+			e->lat_dev_threshold
+			);
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_lat_dev_change_format_json) {
@@ -1445,11 +1445,11 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_lat_dev_change_format_json) {
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_vspd_change_format_text) {
 	LA_CAST_PTR(e, la_adsc_vspd_chg_event_t const * const, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent,
-		"%s: %c%d ft/min\n",
-		label,
-		e->vspd_threshold >= 0 ? '>' : '<',
-		abs(e->vspd_threshold)
-	);
+			"%s: %c%d ft/min\n",
+			label,
+			e->vspd_threshold >= 0 ? '>' : '<',
+			abs(e->vspd_threshold)
+			);
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_vspd_change_format_json) {
@@ -1462,11 +1462,11 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_vspd_change_format_json) {
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_alt_range_format_text) {
 	LA_CAST_PTR(e, la_adsc_alt_range_event_t const * const, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent,
-		"%s: %d-%d ft\n",
-		label,
-		e->floor_alt,
-		e->ceiling_alt
-	);
+			"%s: %d-%d ft\n",
+			label,
+			e->floor_alt,
+			e->ceiling_alt
+			);
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_alt_range_format_json) {
@@ -1544,7 +1544,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_reporting_interval_parse) {
 	LA_NEW(la_adsc_report_interval_req_t, ri);
 	t->data = ri;
 	uint8_t sf = (buf[0] & 0xc0) >> 6;
-// convert scaling factor to multiplier value
+	// convert scaling factor to multiplier value
 	if(sf == 2)
 		sf = 8;
 	else if(sf == 3)
@@ -1618,9 +1618,9 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_contract_request_parse) {
 
 	while(len > 0) {
 		la_debug_print(D_INFO, "Remaining length: %u\n", len);
-// First lookup the tag value - if it's unknown, then it's probably a next request
-// in a multi-request ADS message. We don't want la_adsc_tag_parse() to parse it,
-// because we would get a nasty "-- Unparseable tag" error message in the output.
+		// First lookup the tag value - if it's unknown, then it's probably a next request
+		// in a multi-request ADS message. We don't want la_adsc_tag_parse() to parse it,
+		// because we would get a nasty "-- Unparseable tag" error message in the output.
 		if(la_dict_search(la_adsc_request_tag_descriptor_table, (int)buf[0]) == NULL) {
 			la_debug_print(D_INFO, "Tag %d unknown - assuming end-of-request\n", (int)buf[0]);
 			break;
@@ -1652,7 +1652,7 @@ static int la_adsc_tag_parse(la_adsc_tag_t *t, la_dict const *tag_descriptor_tab
 	}
 	la_debug_print(D_INFO, "Found tag %u (%s)\n", t->tag, type->label);
 	int consumed_bytes = 0;
-	if(type->parse == NULL) {	// tag is empty, no parsing required - return with success
+	if(type->parse == NULL) {       // tag is empty, no parsing required - return with success
 		goto end;
 	}
 	if((consumed_bytes = (*(type->parse))(t, buf, len)) < 0) {
@@ -1675,8 +1675,8 @@ la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc
 	la_adsc_tag_t *tag = NULL;
 	int consumed_bytes;
 
-// Uplink and downlink tag values are the same, but their syntax is different.
-// Figure out the dictionary to use based on the message direction.
+	// Uplink and downlink tag values are the same, but their syntax is different.
+	// Figure out the dictionary to use based on the message direction.
 	static la_dict const *tag_table = NULL;
 	if(msg_dir == LA_MSG_DIR_GND2AIR)
 		tag_table = la_adsc_uplink_tag_descriptor_table;
@@ -1686,39 +1686,39 @@ la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc
 
 	msg->err = false;
 	switch(imi) {
-	case ARINC_MSG_ADS:
-		while(len > 0) {
-			la_debug_print(D_INFO, "Remaining length: %u\n", len);
-			tag = LA_XCALLOC(1, sizeof(la_adsc_tag_t));
-			msg->tag_list = la_list_append(msg->tag_list, tag);
-			if((consumed_bytes = la_adsc_tag_parse(tag, tag_table, buf, len)) < 0) {
+		case ARINC_MSG_ADS:
+			while(len > 0) {
+				la_debug_print(D_INFO, "Remaining length: %u\n", len);
+				tag = LA_XCALLOC(1, sizeof(la_adsc_tag_t));
+				msg->tag_list = la_list_append(msg->tag_list, tag);
+				if((consumed_bytes = la_adsc_tag_parse(tag, tag_table, buf, len)) < 0) {
+					msg->err = true;
+					break;
+				}
+				buf += consumed_bytes; len -= consumed_bytes;
+			}
+			break;
+		case ARINC_MSG_DIS:
+			// DIS payload consists of an error code only, without any tag.
+			// Let's insert a fake tag value of 255.
+			if(len < 1) {
+				la_debug_print(D_ERROR, "DIS message too short\n");
 				msg->err = true;
 				break;
 			}
-			buf += consumed_bytes; len -= consumed_bytes;
-		}
-		break;
-	case ARINC_MSG_DIS:
-// DIS payload consists of an error code only, without any tag.
-// Let's insert a fake tag value of 255.
-		if(len < 1) {
-			la_debug_print(D_ERROR, "DIS message too short\n");
-			msg->err = true;
+			tag = LA_XCALLOC(1, sizeof(la_adsc_tag_t));
+			msg->tag_list = la_list_append(msg->tag_list, tag);
+			len = 2;
+			uint8_t *tmpbuf = LA_XCALLOC(len, sizeof(uint8_t));
+			tmpbuf[0] = 255;
+			tmpbuf[1] = buf[0];
+			if(la_adsc_tag_parse(tag, tag_table, tmpbuf, len) < 0) {
+				msg->err = true;
+			}
+			LA_XFREE(tmpbuf);
 			break;
-		}
-		tag = LA_XCALLOC(1, sizeof(la_adsc_tag_t));
-		msg->tag_list = la_list_append(msg->tag_list, tag);
-		len = 2;
-		uint8_t *tmpbuf = LA_XCALLOC(len, sizeof(uint8_t));
-		tmpbuf[0] = 255;
-		tmpbuf[1] = buf[0];
-		if(la_adsc_tag_parse(tag, tag_table, tmpbuf, len) < 0) {
-			msg->err = true;
-		}
-		LA_XFREE(tmpbuf);
-		break;
-	default:
-		break;
+		default:
+			break;
 	}
 	return node;
 }
@@ -1748,9 +1748,9 @@ static void la_adsc_tag_output_json(void const * const p, void *ctx) {
 		return;
 	}
 	if(t->type->format_json != NULL && t->type->json_key != NULL) {
-// Every tags gets encapsulated in a separate anonymous object,
-// so that correct JSON output is produced even if the message
-// contains duplicate tags.
+		// Every tags gets encapsulated in a separate anonymous object,
+		// so that correct JSON output is produced even if the message
+		// contains duplicate tags.
 		la_json_object_start(c->vstr, NULL);
 		la_json_object_start(c->vstr, t->type->json_key);
 		t->type->format_json(c, t->type->json_key, t->data);
@@ -1789,7 +1789,7 @@ void la_adsc_format_json(la_vstring * const vstr, void const * const data) {
 	}
 	la_adsc_formatter_ctx_t ctx = {
 		.vstr = vstr,
-		.indent = 0	// unused in JSON output
+		.indent = 0     // unused in JSON output
 	};
 	la_json_array_start(vstr, "tags");
 	la_list_foreach(msg->tag_list, la_adsc_tag_output_json, &ctx);

@@ -8,10 +8,10 @@
 #define LA_MIAM_H 1
 
 #include <stdint.h>
-#include <time.h>			// struct tm
-#include <libacars/libacars.h>		// la_type_descriptor, la_proto_node
-#include <libacars/vstring.h>		// la_vstring
-#include <libacars/reassembly.h>	// la_reasm_ctx, la_reasm_status reasm_status
+#include <time.h>                   // struct tm
+#include <libacars/libacars.h>      // la_type_descriptor, la_proto_node
+#include <libacars/vstring.h>       // la_vstring
+#include <libacars/reassembly.h>    // la_reasm_ctx, la_reasm_status reasm_status
 
 #ifdef __cplusplus
 extern "C" {
@@ -114,7 +114,7 @@ typedef struct {
 
 la_proto_node *la_miam_parse(char const *txt);
 la_proto_node *la_miam_parse_and_reassemble(char const *reg, char const *txt,
-	la_reasm_ctx *rtables, struct timeval const rx_time);
+		la_reasm_ctx *rtables, struct timeval const rx_time);
 void la_miam_format_text(la_vstring * const vstr, void const * const data, int indent);
 void la_miam_format_json(la_vstring * const vstr, void const * const data);
 

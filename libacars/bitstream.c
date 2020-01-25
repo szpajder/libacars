@@ -4,8 +4,8 @@
  *  Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
  */
 #include <stdint.h>
-#include <libacars/util.h>		// LA_XCALLOC, LA_XFREE
-#include <libacars/bitstream.h>		// la_bitstream_t
+#include <libacars/util.h>          // LA_XCALLOC, LA_XFREE
+#include <libacars/bitstream.h>     // la_bitstream_t
 
 la_bitstream_t *la_bitstream_init(uint32_t len) {
 	la_bitstream_t *ret;

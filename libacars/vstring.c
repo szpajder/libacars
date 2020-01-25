@@ -4,15 +4,15 @@
  *  Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
  */
 
-#include <limits.h>			// INT_MAX
-#include <stdio.h>			// vsnprintf
+#include <limits.h>                 // INT_MAX
+#include <stdio.h>                  // vsnprintf
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>			// memcpy, strdup, strsep
-#include <libacars/macros.h>		// la_assert, la_debug_print
-#include <libacars/util.h>		// LA_XCALLOC, LA_XFREE, LA_STRSEP
-#include <libacars/vstring.h>		// la_vstring
+#include <string.h>                 // memcpy, strdup, strsep
+#include <libacars/macros.h>        // la_assert, la_debug_print
+#include <libacars/util.h>          // LA_XCALLOC, LA_XFREE, LA_STRSEP
+#include <libacars/vstring.h>       // la_vstring
 
 #define LA_VSTR_INITIAL_SIZE 256
 #define LA_VSTR_SIZE_MULT 2
@@ -26,7 +26,7 @@ static void la_vstring_grow(la_vstring * const vstr, size_t const space_needed) 
 		new_size *= LA_VSTR_SIZE_MULT;
 	}
 	la_debug_print(D_VERBOSE, "allocated_size=%zu len=%zu space_needed=%zu new_size: %zu\n",
-		vstr->allocated_size, vstr->len, space_needed, new_size);
+			vstr->allocated_size, vstr->len, space_needed, new_size);
 	la_assert(new_size <= LA_VSTR_SIZE_MAX);
 	vstr->str = LA_XREALLOC(vstr->str, new_size);
 	vstr->allocated_size = new_size;
@@ -59,7 +59,7 @@ void la_isprintf_multiline_text(la_vstring * const vstr, int const indent, char 
 	if(txt == NULL) {
 		return;
 	}
-// have to work on a copy, because strsep modifies its first argument
+	// have to work on a copy, because strsep modifies its first argument
 	char *copy = strdup(txt);
 	char *ptr = copy;
 	char *line = NULL;
@@ -79,25 +79,25 @@ void la_vstring_append_sprintf(la_vstring * const vstr, char const *fmt, ...) {
 	int ret;
 	va_list ap;
 	va_start(ap, fmt);
-		ret = vsnprintf(vstr->str + vstr->len, space_left, fmt, ap);
+	ret = vsnprintf(vstr->str + vstr->len, space_left, fmt, ap);
 	va_end(ap);
 	la_assert(ret >= 0);
 	result_size = 1 + (size_t)ret;
-	if(result_size < space_left) {	// we have enough space
+	if(result_size < space_left) {  // we have enough space
 		goto end;
 	} else {
 		// Not enough space - realloc and retry once
 		la_vstring_grow(vstr, result_size);
 		space_left = la_vstring_space_left(vstr);
 		va_start(ap, fmt);
-			ret = vsnprintf(vstr->str + vstr->len, space_left, fmt, ap);
+		ret = vsnprintf(vstr->str + vstr->len, space_left, fmt, ap);
 		va_end(ap);
 		la_assert(ret >= 0);
 		result_size = 1 + (size_t)ret;
 		la_assert(result_size < space_left);
 	}
 end:
-	vstr->len += result_size - 1;	// not including '\0'
+	vstr->len += result_size - 1;   // not including '\0'
 	return;
 }
 
