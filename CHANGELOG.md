@@ -1,6 +1,11 @@
 # ChangeLog
 
+## Version 2.0.1 (2020-08-24)
+* Fixed a bug causing FANS1/A ErrorInformation message elements to be decoded
+  incorrectly
+
 ## Version 2.0.0 (2020-01-16)
+
 * New major release 2. API and ABI are not backwards compatible with version 1,
   hence the new soname - libacars-2.so.2. Header files are now installed to
   /usr/local/include/libacars-2. New pkg-config script libacars-2.pc provides
@@ -57,14 +62,16 @@
 * examples: media_advisory app has been removed. Use decode_acars_apps instead.
 * Bugfixes, code cleanups.
 
-## Version 1.3.1 (2019-09-20):
+## Version 1.3.1 (2019-09-20)
+
 * Binary releases for Windows were mistakenly built with AVX instruction set
   enabled which caused the lib to fail on older CPUs (https://github.com/szpajder/libacars/issues/3).
   Thanks to G7GQW for reporting and to Jonti Olds for analysis.
 * Downgraded optimization level for release builds from -O3 to -O2 to reduce
   chances of similar problems for cross-platform builds.
 
-## Version 1.3.0 (2019-08-09):
+## Version 1.3.0 (2019-08-09)
+
 * JSON output support for all message types. Any protocol tree can be
   serialized into a JSON string with `la_proto_tree_format_json()` function.
   Functions for serializing each individual message type into JSON are provided
@@ -74,7 +81,8 @@
   value. If `LA_JSON` is not set, the program displays human readable output.
 * Small bugfixes in ACARS and MIAM decoders.
 
-## Version 1.2.0 (2019-02-26):
+## Version 1.2.0 (2019-02-26)
+
 * Added support for decoding Media Independent Aircraft Messaging (MIAM - ACARS
   label MA) version 1 and 2. All types of MIAM frames are decoded, provided that
   they fit in a single ACARS message. In case of multi-fragment MIAM messages
@@ -88,7 +96,8 @@
   obsolete - it will be removed in the next release.
 * Minor bugfixes in the build system.
 
-## Version 1.1.0 (2019-01-18):
+## Version 1.1.0 (2019-01-18)
+
 * Incompatible API change: so far `LA_VERSION` was a preprocessor macro,
   which was expanded during compilation of any program using it. As a result,
   its value contained the version of the C header, while the intention was
@@ -101,5 +110,6 @@
 * Fixed decoding of ADS-C messages containing multiple contract requests.
 * A few small fixes.
 
-## Version 1.0.0 (2018-12-10):
+## Version 1.0.0 (2018-12-10)
+
 * First stable release.
