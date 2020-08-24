@@ -25,13 +25,13 @@
 #define LA_PRETTY_FUNCTION ""
 #endif
 
-#define la_assert_se(expr)			\
-	do {					\
-		if (LA_UNLIKELY(!(expr))) {	\
+#define la_assert_se(expr) \
+	do { \
+		if (LA_UNLIKELY(!(expr))) { \
 			fprintf(stderr, "Assertion '%s' failed at %s:%u, function %s(). Aborting.\n", \
-				#expr , __FILE__, __LINE__, LA_PRETTY_FUNCTION); \
-			abort();		\
-		}				\
+					#expr , __FILE__, __LINE__, LA_PRETTY_FUNCTION); \
+			abort(); \
+		} \
 	} while (false)
 
 #define la_nop() do {} while (false)

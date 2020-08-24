@@ -8,17 +8,17 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libacars/asn1/FANSATCDownlinkMessage.h>	// asn_DEF_FANSATCDownlinkMessage
-#include <libacars/asn1/FANSATCUplinkMessage.h>		// asn_DEF_FANSATCUplinkMessage
-#include <libacars/asn1/asn_application.h>		// asn_sprintf()
-#include <libacars/macros.h>				// la_assert
-#include <libacars/asn1-util.h>				// la_asn1_decode_as()
-#include <libacars/asn1-format-cpdlc.h>			// la_asn1_output_cpdlc_as_*()
-#include <libacars/cpdlc.h>				// la_cpdlc_msg
-#include <libacars/libacars.h>				// la_proto_node, la_config_get_bool, la_proto_tree_find_protocol
-#include <libacars/util.h>				// la_debug_print, LA_CAST_PTR
-#include <libacars/vstring.h>				// la_vstring, la_vstring_append_sprintf()
-#include <libacars/json.h>				// la_json_append_bool()
+#include <libacars/asn1/FANSATCDownlinkMessage.h>   // asn_DEF_FANSATCDownlinkMessage
+#include <libacars/asn1/FANSATCUplinkMessage.h>     // asn_DEF_FANSATCUplinkMessage
+#include <libacars/asn1/asn_application.h>          // asn_sprintf()
+#include <libacars/macros.h>                        // la_assert
+#include <libacars/asn1-util.h>                     // la_asn1_decode_as()
+#include <libacars/asn1-format-cpdlc.h>             // la_asn1_output_cpdlc_as_*()
+#include <libacars/cpdlc.h>                         // la_cpdlc_msg
+#include <libacars/libacars.h>                      // la_proto_node, la_config_get_bool, la_proto_tree_find_protocol
+#include <libacars/util.h>                          // la_debug_print, LA_CAST_PTR
+#include <libacars/vstring.h>                       // la_vstring, la_vstring_append_sprintf()
+#include <libacars/json.h>                          // la_json_append_bool()
 
 la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	if(buf == NULL)
@@ -36,7 +36,7 @@ la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	}
 	la_assert(msg->asn_type != NULL);
 	if(len == 0) {
-// empty payload is not an error
+		// empty payload is not an error
 		la_debug_print(D_INFO, "Empty CPDLC message, decoding skipped\n");
 		return node;
 	}

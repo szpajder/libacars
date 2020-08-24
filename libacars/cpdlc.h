@@ -9,9 +9,9 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <libacars/libacars.h>			// la_type_descriptor, la_proto_node
-#include <libacars/vstring.h>			// la_vstring
-#include <libacars/asn1/asn_application.h>	// asn_TYPE_descriptor_t
+#include <libacars/libacars.h>              // la_type_descriptor, la_proto_node
+#include <libacars/vstring.h>               // la_vstring
+#include <libacars/asn1/asn_application.h>  // asn_TYPE_descriptor_t
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,7 +21,7 @@ typedef struct {
 	asn_TYPE_descriptor_t *asn_type;
 	void *data;
 	bool err;
-// reserved for future use
+	// reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
 	void (*reserved2)(void);

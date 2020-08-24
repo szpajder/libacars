@@ -6,11 +6,11 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>		// strcmp
-#include <libacars/macros.h>	// la_assert
-#include <libacars/hash.h>	// la_hash
-#include <libacars/list.h>	// la_list
-#include <libacars/util.h>	// LA_XCALLOC, LA_XFREE
+#include <string.h>                     // strcmp
+#include <libacars/macros.h>            // la_assert
+#include <libacars/hash.h>              // la_hash
+#include <libacars/list.h>              // la_list
+#include <libacars/util.h>              // LA_XCALLOC, LA_XFREE
 
 #define LA_HASH_SIZE 173
 
@@ -64,13 +64,13 @@ bool la_hash_compare_keys_str(void const *key1, void const *key2) {
 }
 
 la_hash *la_hash_new(la_hash_func *compute_hash, la_hash_compare_func *compare_keys,
-la_hash_key_destroy_func *destroy_key, la_hash_value_destroy_func *destroy_value) {
+		la_hash_key_destroy_func *destroy_key, la_hash_value_destroy_func *destroy_value) {
 
 	LA_NEW(la_hash, h);
 	h->compute_hash = (compute_hash ? compute_hash : la_hash_key_str);
 	h->compare_keys = (compare_keys ? compare_keys : la_hash_compare_keys_str);
-	h->destroy_key = destroy_key;		// no default; might be NULL
-	h->destroy_value = destroy_value;	// no default; might be NULL
+	h->destroy_key = destroy_key;        // no default; might be NULL
+	h->destroy_value = destroy_value;    // no default; might be NULL
 	return h;
 }
 
@@ -79,7 +79,7 @@ static size_t la_hash_get_bucket(la_hash const *h, void const *key) {
 }
 
 static la_list *la_hash_lookup_list_node(la_hash const *h, void const *key,
-la_list **prev_node) {
+		la_list **prev_node) {
 	la_assert(h != NULL);
 	la_assert(key != NULL);
 
@@ -98,11 +98,11 @@ la_list **prev_node) {
 		c++;
 	}
 end:
-// Give back pointer to the previous node if the caller wants it
+	// Give back pointer to the previous node if the caller wants it
 	if(prev_node != NULL) {
 		*prev_node = pl;
 	}
-// Return the node containing the requested key (or NULL if not found)
+	// Return the node containing the requested key (or NULL if not found)
 	return l;
 }
 
@@ -130,15 +130,15 @@ bool la_hash_insert(la_hash *h, void *key, void *value) {
 
 	la_list *list_node = la_hash_lookup_list_node(h, key, NULL);
 	if(list_node != NULL) {
-// Key already exists - insert the new value, free the old value,
-// preserve the old key, free the new key
+		// Key already exists - insert the new value, free the old value,
+		// preserve the old key, free the new key
 		LA_CAST_PTR(elem, la_hash_element *, list_node->data);
 		la_hash_destroy_key(h, key);
 		la_hash_destroy_value(h, elem->value);
 		elem->value = value;
 		return true;
 	}
-// Key not found - create new hash entry
+	// Key not found - create new hash entry
 	LA_NEW(la_hash_element, elem);
 	elem->key = key;
 	elem->value = value;
@@ -159,8 +159,8 @@ bool la_hash_remove(la_hash *h, void *key) {
 	if(list_node == NULL) {
 		return false;
 	}
-// If prev_node is not NULL, then join two list parts together.
-// Otherwise replace the top of the list in the bucket.
+	// If prev_node is not NULL, then join two list parts together.
+	// Otherwise replace the top of the list in the bucket.
 	if(prev_node != NULL) {
 		prev_node->next = list_node->next;
 	} else {
@@ -168,19 +168,19 @@ bool la_hash_remove(la_hash *h, void *key) {
 		h->buckets[bucket] = list_node->next;
 	}
 	list_node->next = NULL;
-// Now free the key and value
+	// Now free the key and value
 	LA_CAST_PTR(elem, la_hash_element *, list_node->data);
 	la_hash_destroy_key(h, elem->key);
 	la_hash_destroy_value(h, elem->value);
-// This will free elem too
-// XXX: use la_hash_element_destroy instead?
+	// This will free elem too
+	// XXX: use la_hash_element_destroy instead?
 	la_list_free(list_node);
 	return true;
 }
 
 static void la_free_noop(void *data) {
 	LA_UNUSED(data);
-// noop
+	// noop
 }
 
 // Iterates over hash entries executing la_hash_if_func() for each key-value
@@ -203,7 +203,7 @@ int la_hash_foreach_remove(la_hash *h, la_hash_if_func *if_func, void *if_func_c
 	for(la_list *l = keys_to_delete; l != NULL; l = la_list_next(l)) {
 		la_hash_remove(h, l->data);
 	}
-// can't use la_list_free() here, as keys have already been freed by la_hash_remove()
+	// can't use la_list_free() here, as keys have already been freed by la_hash_remove()
 	la_list_free_full(keys_to_delete, la_free_noop);
 	return num_keys_deleted;
 }

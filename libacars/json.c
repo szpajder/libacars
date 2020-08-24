@@ -6,10 +6,10 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>			// strlen()
-#include <libacars/macros.h>		// la_assert()
-#include <libacars/vstring.h>		// la_vstring
-#include <libacars/util.h>		// LA_XCALLOC(), LA_XFREE()
+#include <string.h>                     // strlen()
+#include <libacars/macros.h>            // la_assert()
+#include <libacars/vstring.h>           // la_vstring
+#include <libacars/util.h>              // LA_XCALLOC(), LA_XFREE()
 
 static void la_json_trim_comma(la_vstring * const vstr) {
 	la_assert(vstr != NULL);
@@ -29,7 +29,7 @@ static char *la_json_escapechars(char const * const str) {
 		for(size_t i = 0; i < orig_len; i++) {
 			if(str[i] < ' ' || str[i] == '\"' || str[i] == '\\') {
 				needs_escaping = true;
-				new_len += 5;		// to fit the \uNNNN form
+				new_len += 5;           // to fit the \uNNNN form
 			}
 		}
 	}
@@ -77,8 +77,8 @@ static char *la_json_escapechars(char const * const str) {
 static inline void la_json_print_key(la_vstring * const vstr, char const * const key) {
 	la_assert(vstr != NULL);
 	if(key != NULL && key[0] != '\0') {
-// Warning: no character escaping is performed here. For libacars this is fine
-// as all key names are static. Escaping them would add unnecessary overhead.
+		// Warning: no character escaping is performed here. For libacars this is fine
+		// as all key names are static. Escaping them would add unnecessary overhead.
 		la_vstring_append_sprintf(vstr, "\"%s\":", key);
 	}
 }
@@ -143,7 +143,7 @@ void la_json_array_end(la_vstring * const vstr) {
 }
 
 void la_json_append_octet_string(la_vstring * const vstr, char const * const key,
-uint8_t const * const buf, size_t len) {
+		uint8_t const * const buf, size_t len) {
 	la_assert(vstr != NULL);
 	la_json_array_start(vstr, key);
 	if(buf != NULL && len > 0) {

@@ -6,17 +6,17 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>		// calloc()
-#include <string.h>		// strchr(), strlen(), strncmp(), strcmp()
-#include <sys/time.h>		// struct timeval
-#include <libacars/macros.h>	// la_assert()
-#include <libacars/libacars.h>	// la_proto_node, la_type_descriptor
-#include <libacars/vstring.h>	// la_vstring
-#include <libacars/json.h>	// la_json_append_*()
-#include <libacars/util.h>	// la_dict, la_dict_search(),
-				// la_strntouint16_t(), la_simple_strptime()
+#include <stdlib.h>                 /* calloc() */
+#include <string.h>                 /* strchr(), strlen(), strncmp(), strcmp() */
+#include <sys/time.h>               /* struct timeval */
+#include <libacars/macros.h>        /* la_assert() */
+#include <libacars/libacars.h>      /* la_proto_node, la_type_descriptor */
+#include <libacars/vstring.h>       /* la_vstring */
+#include <libacars/json.h>          /* la_json_append_*() */
+#include <libacars/util.h>          /* la_dict, la_dict_search(),
+                                       la_strntouint16_t(), la_simple_strptime() */
 #include <libacars/reassembly.h>
-#include <libacars/miam-core.h> // la_miam_core_pdu_parse(), la_miam_core_format_*()
+#include <libacars/miam-core.h>     /* la_miam_core_pdu_parse(), la_miam_core_format_*() */
 #include <libacars/miam.h>
 
 // Clean up stale reassembly entries every 20 File Segment frames.
@@ -77,7 +77,7 @@ static bool la_miam_file_key_compare(void const *key1, void const *key2) {
 	LA_CAST_PTR(k1, la_miam_file_key *, key1);
 	LA_CAST_PTR(k2, la_miam_file_key *, key2);
 	return (!strcmp(k1->reg, k2->reg) &&
-		(k1->file_id == k2->file_id));
+			(k1->file_id == k2->file_id));
 }
 
 static void *la_miam_file_key_get(void const *msg_info) {
@@ -134,7 +134,7 @@ static la_proto_node *la_miam_single_transfer_parse(char const *txt) {
 }
 
 static la_proto_node *la_miam_file_transfer_request_parse(char const *reg, char const *txt,
-la_reasm_ctx *rtables, struct timeval const rx_time) {
+		la_reasm_ctx *rtables, struct timeval const rx_time) {
 	la_assert(txt != NULL);
 
 	la_miam_file_transfer_request_msg *msg = NULL;
@@ -168,37 +168,37 @@ la_reasm_ctx *rtables, struct timeval const rx_time) {
 	node->data = msg;
 	node->next = NULL;
 
-// If reassembly engine is enabled, then we have to create a reassembly table
-// entry for this transfer now, because File Segment frames do not contain
-// all necessary state information (file size, in particular).
+	// If reassembly engine is enabled, then we have to create a reassembly table
+	// entry for this transfer now, because File Segment frames do not contain
+	// all necessary state information (file size, in particular).
 	if(rtables != NULL && reg != NULL) {
 		la_reasm_table *miam_file_table = la_reasm_table_lookup(rtables,
-			&la_DEF_miam_file_segment_message);
+				&la_DEF_miam_file_segment_message);
 		if(miam_file_table == NULL) {
 			miam_file_table = la_reasm_table_new(rtables,
-				&la_DEF_miam_file_segment_message, miam_file_reasm_funcs,
-				LA_MIAM_FILE_REASM_TABLE_CLEANUP_INTERVAL);
+					&la_DEF_miam_file_segment_message, miam_file_reasm_funcs,
+					LA_MIAM_FILE_REASM_TABLE_CLEANUP_INTERVAL);
 		}
-// Add the initial empty fragment to the table.
-// Can't use msg as msg_info directly, because we will be adding subsequent
-// fragments from la_miam_file_segment_parse(), where the type of msg is
-// different.
+		// Add the initial empty fragment to the table.
+		// Can't use msg as msg_info directly, because we will be adding subsequent
+		// fragments from la_miam_file_segment_parse(), where the type of msg is
+		// different.
 		msg->reasm_status = la_reasm_fragment_add(miam_file_table,
-		&(la_reasm_fragment_info){
-			.msg_info = &(la_miam_file_key){
-				.reg = (char *)reg,
-				.file_id = msg->file_id
-			},
-			.msg_data = NULL,	// payload will start in the next segment
-			.msg_data_len = 0,
-			.total_pdu_len = msg->file_size,
-			.seq_num = 0,		// in sequence with file segment numbers, which go from 1
-			.seq_num_first = 0,
-			.seq_num_wrap = SEQ_WRAP_NONE,
-			.is_final_fragment = false,
-			.rx_time = rx_time,
-			.reasm_timeout = la_miam_file_reasm_timeout
-		});
+				&(la_reasm_fragment_info){
+					.msg_info = &(la_miam_file_key){
+						.reg = (char *)reg,
+						.file_id = msg->file_id
+					},
+					.msg_data = NULL,       // payload will start in the next segment
+					.msg_data_len = 0,
+					.total_pdu_len = msg->file_size,
+					.seq_num = 0,           // in sequence with file segment numbers, which go from 1
+					.seq_num_first = 0,
+					.seq_num_wrap = SEQ_WRAP_NONE,
+					.is_final_fragment = false,
+					.rx_time = rx_time,
+					.reasm_timeout = la_miam_file_reasm_timeout
+				});
 	}
 	return node;
 hdr_error:
@@ -245,7 +245,7 @@ static la_proto_node *la_miam_file_transfer_accept_parse(char const *txt) {
 	txt += 3;
 
 	la_debug_print(D_INFO, "file_id: %u seg_size: %u onground_tempo: %u inflight_tempo: %u\n",
-		msg->file_id, msg->segment_size, msg->onground_segment_tempo, msg->inflight_segment_tempo);
+			msg->file_id, msg->segment_size, msg->onground_segment_tempo, msg->inflight_segment_tempo);
 
 	la_proto_node *node = la_proto_node_new();
 	node->td = &la_DEF_miam_file_transfer_accept_message;
@@ -259,7 +259,7 @@ hdr_error:
 }
 
 static la_proto_node *la_miam_file_segment_parse(char const *reg, char const *txt,
-la_reasm_ctx *rtables, struct timeval const rx_time) {
+		la_reasm_ctx *rtables, struct timeval const rx_time) {
 	la_assert(txt != NULL);
 	LA_NEW(la_miam_file_segment_msg, msg);
 	int i;
@@ -283,9 +283,9 @@ la_reasm_ctx *rtables, struct timeval const rx_time) {
 	node->data = msg;
 	node->next = NULL;
 
-// Can't use msg as msg_info directly in la_reasm_fragment_info, because the
-// initial fragment is added by la_miam_file_transfer_request_parse(), where
-// the type of msg is different.
+	// Can't use msg as msg_info directly in la_reasm_fragment_info, because the
+	// initial fragment is added by la_miam_file_transfer_request_parse(), where
+	// the type of msg is different.
 	la_miam_file_key msg_key = {
 		.reg = (char *)reg,
 		.file_id = msg->file_id
@@ -296,41 +296,41 @@ la_reasm_ctx *rtables, struct timeval const rx_time) {
 		miam_file_table = la_reasm_table_lookup(rtables, &la_DEF_miam_file_segment_message);
 		if(miam_file_table == NULL) {
 			miam_file_table = la_reasm_table_new(rtables,
-				&la_DEF_miam_file_segment_message, miam_file_reasm_funcs,
-				LA_MIAM_FILE_REASM_TABLE_CLEANUP_INTERVAL);
+					&la_DEF_miam_file_segment_message, miam_file_reasm_funcs,
+					LA_MIAM_FILE_REASM_TABLE_CLEANUP_INTERVAL);
 		}
-// Add the fragment to the table.
+		// Add the fragment to the table.
 		msg->reasm_status = la_reasm_fragment_add(miam_file_table,
-		&(la_reasm_fragment_info){
-			.msg_info = &msg_key,
-			.msg_data = (uint8_t *)txt,
-			.msg_data_len = strlen(txt),
-			.total_pdu_len = 0,		// already set in 1st fragment
-			.seq_num = msg->segment_id,
-			.seq_num_first = 0,
-			.seq_num_wrap = SEQ_WRAP_NONE,
-			.is_final_fragment = false,	// not used here
-			.rx_time = rx_time,
-			.reasm_timeout = la_miam_file_reasm_timeout
-		});
+				&(la_reasm_fragment_info){
+					.msg_info = &msg_key,
+					.msg_data = (uint8_t *)txt,
+					.msg_data_len = strlen(txt),
+					.total_pdu_len = 0,         // already set in 1st fragment
+					.seq_num = msg->segment_id,
+					.seq_num_first = 0,
+					.seq_num_wrap = SEQ_WRAP_NONE,
+					.is_final_fragment = false, // not used here
+					.rx_time = rx_time,
+					.reasm_timeout = la_miam_file_reasm_timeout
+				});
 	}
 
 	uint8_t *reassembled_msg = NULL;
 	if(msg->reasm_status == LA_REASM_COMPLETE &&
-		la_reasm_payload_get(miam_file_table, &msg_key, &reassembled_msg) > 0) {
-// reassembled_msg is a newly allocated byte buffer, which is guaranteed to
-// be NULL-terminated, so we can cast it to char * directly.
-// Store the pointer to it in msg struct for freeing it later.
+			la_reasm_payload_get(miam_file_table, &msg_key, &reassembled_msg) > 0) {
+		// reassembled_msg is a newly allocated byte buffer, which is guaranteed to
+		// be NULL-terminated, so we can cast it to char * directly.
+		// Store the pointer to it in msg struct for freeing it later.
 		txt = msg->txt = (char *)reassembled_msg;
 
 	}
 
 	bool decode_payload = true;
-// If reassembly is enabled and is now in progress (ie. the message is not yet complete),
-// then decode_fragments config flag decides whether to decode apps in this message
-// or not.
+	// If reassembly is enabled and is now in progress (ie. the message is not yet complete),
+	// then decode_fragments config flag decides whether to decode apps in this message
+	// or not.
 	if(rtables != NULL && (msg->reasm_status == LA_REASM_IN_PROGRESS ||
-		msg->reasm_status == LA_REASM_DUPLICATE)) {
+				msg->reasm_status == LA_REASM_DUPLICATE)) {
 		(void)la_config_get_bool("decode_fragments", &decode_payload);
 	}
 	if(decode_payload) {
@@ -454,7 +454,7 @@ static la_proto_node *la_miam_xon_ind_parse(char const *txt) {
 	txt += 3;
 
 	la_debug_print(D_INFO, "file_id: %u onground_tempo: %u inflight_tempo: %u\n",
-		msg->file_id, msg->onground_segment_tempo, msg->inflight_segment_tempo);
+			msg->file_id, msg->onground_segment_tempo, msg->inflight_segment_tempo);
 
 	la_proto_node *node = la_proto_node_new();
 	node->td = &la_DEF_miam_xon_ind_message;
@@ -468,17 +468,17 @@ hdr_error:
 }
 
 la_proto_node *la_miam_parse_and_reassemble(char const *reg, char const *txt,
-la_reasm_ctx *rtables, struct timeval const rx_time) {
+		la_reasm_ctx *rtables, struct timeval const rx_time) {
 	if(txt == NULL) {
 		return NULL;
 	}
 	size_t len = strlen(txt);
 
-// First character identifies the ACARS CF frame
+	// First character identifies the ACARS CF frame
 	if(len == 0) {
 		return NULL;
 	}
-	la_miam_frame_id fid = LA_MIAM_FID_UNKNOWN; 		// safe default
+	la_miam_frame_id fid = LA_MIAM_FID_UNKNOWN;     // safe default
 	for(int i = 0; i < LA_MIAM_FRAME_ID_CNT; i++) {
 		if(txt[0] == frame_id_map[i].fid_char) {
 			fid = frame_id_map[i].frame_id;
@@ -493,29 +493,29 @@ la_reasm_ctx *rtables, struct timeval const rx_time) {
 	txt++; len--;
 	la_proto_node *next_node = NULL;
 	switch(fid) {
-	case LA_MIAM_FID_SINGLE_TRANSFER:
-		next_node = la_miam_single_transfer_parse(txt);
-		break;
-	case LA_MIAM_FID_FILE_TRANSFER_REQ:
-		next_node = la_miam_file_transfer_request_parse(reg, txt, rtables, rx_time);
-		break;
-	case LA_MIAM_FID_FILE_TRANSFER_ACCEPT:
-		next_node = la_miam_file_transfer_accept_parse(txt);
-		break;
-	case LA_MIAM_FID_FILE_SEGMENT:
-		next_node = la_miam_file_segment_parse(reg, txt, rtables, rx_time);
-		break;
-	case LA_MIAM_FID_FILE_TRANSFER_ABORT:
-		next_node = la_miam_file_transfer_abort_parse(txt);
-		break;
-	case LA_MIAM_FID_XOFF_IND:
-		next_node = la_miam_xoff_ind_parse(txt);
-		break;
-	case LA_MIAM_FID_XON_IND:
-		next_node = la_miam_xon_ind_parse(txt);
-		break;
-	default:
-		break;
+		case LA_MIAM_FID_SINGLE_TRANSFER:
+			next_node = la_miam_single_transfer_parse(txt);
+			break;
+		case LA_MIAM_FID_FILE_TRANSFER_REQ:
+			next_node = la_miam_file_transfer_request_parse(reg, txt, rtables, rx_time);
+			break;
+		case LA_MIAM_FID_FILE_TRANSFER_ACCEPT:
+			next_node = la_miam_file_transfer_accept_parse(txt);
+			break;
+		case LA_MIAM_FID_FILE_SEGMENT:
+			next_node = la_miam_file_segment_parse(reg, txt, rtables, rx_time);
+			break;
+		case LA_MIAM_FID_FILE_TRANSFER_ABORT:
+			next_node = la_miam_file_transfer_abort_parse(txt);
+			break;
+		case LA_MIAM_FID_XOFF_IND:
+			next_node = la_miam_xoff_ind_parse(txt);
+			break;
+		case LA_MIAM_FID_XON_IND:
+			next_node = la_miam_xon_ind_parse(txt);
+			break;
+		default:
+			break;
 	}
 	if(next_node == NULL) {
 		return NULL;
@@ -531,7 +531,7 @@ la_reasm_ctx *rtables, struct timeval const rx_time) {
 
 la_proto_node *la_miam_parse(char const *txt) {
 	return la_miam_parse_and_reassemble(NULL, txt, NULL,
-		(struct timeval){ .tv_sec = 0, .tv_usec = 0});
+			(struct timeval){ .tv_sec = 0, .tv_usec = 0});
 }
 
 static void la_miam_single_transfer_format_text(la_vstring * const vstr, void const * const data, int indent) {
@@ -553,9 +553,9 @@ static void la_miam_file_transfer_request_format_text(la_vstring * const vstr, v
 	LA_ISPRINTF(vstr, indent, "File size: %zu bytes\n", msg->file_size);
 	struct tm *t = &msg->validity_time;
 	LA_ISPRINTF(vstr, indent, "Complete until: %d-%02d-%02d %02d:%02d:%02d\n",
-		t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-		t->tm_hour, t->tm_min, t->tm_sec
-	);
+			t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+			t->tm_hour, t->tm_min, t->tm_sec
+			);
 	LA_ISPRINTF(vstr, indent, "Reassembly: %s\n", la_reasm_status_name_get(msg->reasm_status));
 }
 
@@ -644,7 +644,7 @@ static void la_miam_file_transfer_abort_format_text(la_vstring * const vstr, voi
 	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	char *descr = la_dict_search(abort_reasons, msg->reason);
 	LA_ISPRINTF(vstr, indent, "Reason: %u (%s)\n", msg->reason,
-		(descr != NULL ? descr : "unknown"));
+			(descr != NULL ? descr : "unknown"));
 }
 
 static void la_miam_file_transfer_abort_format_json(la_vstring * const vstr, void const * const data) {

@@ -4,17 +4,17 @@
  *  Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
  */
 
-#include <libacars/asn1/FANSATCDownlinkMessage.h>	// FANSATCDownlinkMessage_t and dependencies
-#include <libacars/asn1/FANSATCUplinkMessage.h>		// FANSATCUplinkMessage_t and dependencies
-#include <libacars/asn1-util.h>				// la_asn_formatter, la_asn1_output()
-#include <libacars/asn1-format-common.h>		// common formatters and helper functions
-#include <libacars/asn1-format-cpdlc.h>			// la_asn1_output_cpdlc_as_json(),
-							// FANSATCUplinkMsgElementId_labels,
-							// FANSATCDownlinkMsgElementId_labels
-#include <libacars/macros.h>				// LA_ISPRINTF
-#include <libacars/util.h>				// LA_XCALLOC, la_dict_search()
-#include <libacars/vstring.h>				// la_vstring
-#include <libacars/json.h>				// la_json_*()
+#include <libacars/asn1/FANSATCDownlinkMessage.h>   /* FANSATCDownlinkMessage_t and dependencies */
+#include <libacars/asn1/FANSATCUplinkMessage.h>     /* FANSATCUplinkMessage_t and dependencies */
+#include <libacars/asn1-util.h>                     /* la_asn_formatter, la_asn1_output() */
+#include <libacars/asn1-format-common.h>            /* common formatters and helper functions */
+#include <libacars/asn1-format-cpdlc.h>             /* la_asn1_output_cpdlc_as_json(),
+                                                       FANSATCUplinkMsgElementId_labels,
+                                                       FANSATCDownlinkMsgElementId_labels */
+#include <libacars/macros.h>                        /* LA_ISPRINTF */
+#include <libacars/util.h>                          /* LA_XCALLOC, la_dict_search() */
+#include <libacars/vstring.h>                       /* la_vstring */
+#include <libacars/json.h>                          /* la_json_*() */
 
 /************************
  * ASN.1 type formatters
@@ -416,23 +416,23 @@ static la_asn_formatter const la_asn1_cpdlc_json_formatter_table[] = {
 	{ .type = &asn_DEF_FANSWindSpeedEnglish, .format = la_asn1_format_json_FANSWindSpeedEnglish, .label = "wind_speed_english" },
 	{ .type = &asn_DEF_FANSWindSpeedMetric, .format = la_asn1_format_json_FANSWindSpeedMetric, .label = "wind_speed_metric" },
 	{ .type = &asn_DEF_NULL, .format = la_asn1_format_text_NULL, .label = NULL }
-// Formatters for the following simple types are not implemented - they are handled by formatters
-// of complex types where these simple types are used.
-//
-// Handled by la_asn1_format_json_FANSTime
-//	{ .type = &asn_DEF_FANSTimehours, .format = la_asn1_format_json_long, .label = "hour" },
-//	{ .type = &asn_DEF_FANSTimeminutes, .format = la_asn1_format_json_long, .label = "minute" },
-// Handled by &asn_DEF_FANSTimestamp
-//	{ .type = &asn_DEF_FANSTimeSeconds, .format = la_asn1_format_json_long, .label = "second" },
-// Handled by la_asn1_format_json_FANSBeaconCode
-//	{ .type = &asn_DEF_FANSBeaconCodeOctalDigit, .format = , .label = "beacon_code_octal_digit" },
-// Handled by la_asn1_format_json_FANSLatitude / la_asn1_format_json_FANSLongitude
-//	{ .type = &asn_DEF_FANSMinutesLatLon, .format = , .label = "minutes_lat_lon" },
+	// Formatters for the following simple types are not implemented - they are handled by formatters
+	// of complex types where these simple types are used.
+	//
+	// Handled by la_asn1_format_json_FANSTime
+	// { .type = &asn_DEF_FANSTimehours, .format = la_asn1_format_json_long, .label = "hour" },
+	// { .type = &asn_DEF_FANSTimeminutes, .format = la_asn1_format_json_long, .label = "minute" },
+	// Handled by &asn_DEF_FANSTimestamp
+	// { .type = &asn_DEF_FANSTimeSeconds, .format = la_asn1_format_json_long, .label = "second" },
+	// Handled by la_asn1_format_json_FANSBeaconCode
+	// { .type = &asn_DEF_FANSBeaconCodeOctalDigit, .format = , .label = "beacon_code_octal_digit" },
+	// Handled by la_asn1_format_json_FANSLatitude / la_asn1_format_json_FANSLongitude
+	// { .type = &asn_DEF_FANSMinutesLatLon, .format = , .label = "minutes_lat_lon" },
 };
 
 static size_t la_asn1_cpdlc_json_formatter_table_len = sizeof(la_asn1_cpdlc_json_formatter_table) / sizeof(la_asn_formatter);
 
 void la_asn1_output_cpdlc_as_json(la_vstring *vstr, asn_TYPE_descriptor_t *td, const void *sptr, int indent) {
 	la_asn1_output(vstr, la_asn1_cpdlc_json_formatter_table, la_asn1_cpdlc_json_formatter_table_len,
-		td, sptr, indent, false);
+			td, sptr, indent, false);
 }

@@ -7,7 +7,7 @@
 #ifndef LA_VSTRING_H
 #define LA_VSTRING_H 1
 
-#include <stddef.h>		// size_t
+#include <stddef.h>         // size_t
 #include <stdbool.h>
 
 #ifdef __cplusplus
@@ -28,9 +28,9 @@ extern "C" {
 #define LA_ISPRINTF(vstr, i, f, ...) la_vstring_append_sprintf(vstr, "%*s" f, i, "", ##__VA_ARGS__)
 
 typedef struct {
-	char *str;		// string buffer pointer
-	size_t len;		// current length of the string (excl. '\0')
-	size_t allocated_size;	// current allocated buffer size (ie. max len = allocated_len - 1)
+	char *str;              // string buffer pointer
+	size_t len;             // current length of the string (excl. '\0')
+	size_t allocated_size;  // current allocated buffer size (ie. max len = allocated_len - 1)
 } la_vstring;
 
 la_vstring *la_vstring_new();

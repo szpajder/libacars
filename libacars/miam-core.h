@@ -8,8 +8,8 @@
 #define LA_MIAM_CORE_H 1
 
 #include <stdint.h>
-#include <libacars/libacars.h>		// la_type_descriptor, la_proto_node
-#include <libacars/vstring.h>		// la_vstring
+#include <libacars/libacars.h>          // la_type_descriptor, la_proto_node
+#include <libacars/vstring.h>           // la_vstring
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,20 +18,20 @@ extern "C" {
 // MIAM decoder error codes. Expressed as uint32_t:
 // Lower half: header errors
 // Upper half: body errors
-#define LA_MIAM_ERR_SUCCESS			(0)
-#define LA_MIAM_ERR_HDR_PDU_TYPE_UNKNOWN	(1 << 1)
-#define LA_MIAM_ERR_HDR_PDU_VERSION_UNKNOWN	(1 << 2)
-#define LA_MIAM_ERR_HDR_TRUNCATED		(1 << 3)
-#define LA_MIAM_ERR_HDR_APP_TYPE_UNKNOWN 	(1 << 4)
+#define LA_MIAM_ERR_SUCCESS                 (0)
+#define LA_MIAM_ERR_HDR_PDU_TYPE_UNKNOWN    (1 << 1)
+#define LA_MIAM_ERR_HDR_PDU_VERSION_UNKNOWN (1 << 2)
+#define LA_MIAM_ERR_HDR_TRUNCATED           (1 << 3)
+#define LA_MIAM_ERR_HDR_APP_TYPE_UNKNOWN    (1 << 4)
 
-#define LA_MIAM_ERR_BODY_TRUNCATED		(1 << 16)
-#define LA_MIAM_ERR_BODY_INFLATE_FAILED 	(1 << 17)
-#define LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED	(1 << 18)
-#define LA_MIAM_ERR_BODY_CRC_FAILED		(1 << 19)
+#define LA_MIAM_ERR_BODY_TRUNCATED          (1 << 16)
+#define LA_MIAM_ERR_BODY_INFLATE_FAILED     (1 << 17)
+#define LA_MIAM_ERR_BODY_COMPR_UNSUPPORTED  (1 << 18)
+#define LA_MIAM_ERR_BODY_CRC_FAILED         (1 << 19)
 
 // header/body error masks
-#define LA_MIAM_ERR_HDR				0x0000ffffu
-#define LA_MIAM_ERR_BODY			0xffff0000u
+#define LA_MIAM_ERR_HDR                     0x0000ffffu
+#define LA_MIAM_ERR_BODY                    0xffff0000u
 
 typedef struct {
 	void *data;
@@ -46,7 +46,7 @@ typedef struct {
 	uint8_t compression;
 	uint8_t encoding;
 	uint8_t app_type;
-// reserved for future use
+	// reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
 	void (*reserved2)(void);
@@ -68,7 +68,7 @@ typedef struct {
 	uint8_t msg_ack_num;
 	uint8_t ack_xfer_result;
 	uint8_t crc[4];
-// reserved for future use
+	// reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
 	void (*reserved2)(void);
@@ -92,7 +92,7 @@ typedef struct {
 	uint8_t compression;
 	uint8_t encoding;
 	uint8_t app_type;
-// reserved for future use
+	// reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
 	void (*reserved2)(void);
@@ -112,7 +112,7 @@ typedef struct {
 	uint8_t msg_ack_num;
 	uint8_t ack_xfer_result;
 	uint8_t crc[2];
-// reserved for future use
+	// reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
 	void (*reserved2)(void);
@@ -133,7 +133,7 @@ typedef struct {
 	char aircraft_id[8];
 	uint8_t compression;
 	uint8_t networks;
-// reserved for future use
+	// reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
 	void (*reserved2)(void);
@@ -158,10 +158,10 @@ typedef enum {
 #define LA_MIAM_CORE_PDU_TYPE_MAX 4
 
 typedef struct {
-	uint32_t err;			// PDU decoding error code
-	uint8_t version;		// MIAM CORE PDU version
-	la_miam_core_pdu_type pdu_type;	// MIAM CORE PDU type
-// reserved for future use
+	uint32_t err;                   // PDU decoding error code
+	uint8_t version;                // MIAM CORE PDU version
+	la_miam_core_pdu_type pdu_type; // MIAM CORE PDU type
+	// reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
 	void (*reserved2)(void);

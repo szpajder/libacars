@@ -8,9 +8,9 @@
 #define LA_ACARS_H 1
 #include <stdint.h>
 #include <stdbool.h>
-#include <libacars/libacars.h>			// la_proto_node, la_type_descriptor
-#include <libacars/vstring.h>			// la_vstring
-#include <libacars/reassembly.h>		// la_reasm_ctx, la_reasm_status
+#include <libacars/libacars.h>              // la_proto_node, la_type_descriptor
+#include <libacars/vstring.h>               // la_vstring
+#include <libacars/reassembly.h>            // la_reasm_ctx, la_reasm_status
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,7 +19,7 @@ extern "C" {
 // Supported radio link types
 // These are the allowed values of "acars_bearer" configuration option
 
-#define LA_ACARS_BEARER_INVALID   0             // do not use
+#define LA_ACARS_BEARER_INVALID   0         // do not use
 #define LA_ACARS_BEARER_VHF       1
 #define LA_ACARS_BEARER_HFDL      2
 #define LA_ACARS_BEARER_SATCOM    3
@@ -43,7 +43,7 @@ typedef struct {
 	char flight_id[7];
 	la_reasm_status reasm_status;
 	char *txt;
-// reserved for future use
+	// reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
 	void (*reserved2)(void);
@@ -59,15 +59,15 @@ typedef struct {
 // acars.c
 extern la_type_descriptor const la_DEF_acars_message;
 la_proto_node *la_acars_decode_apps(char const * const label,
-	char const * const txt, la_msg_dir const msg_dir);
+		char const * const txt, la_msg_dir const msg_dir);
 la_proto_node *la_acars_apps_parse_and_reassemble(char const * const reg,
-	char const * const label, char const * const txt, la_msg_dir const msg_dir,
-	la_reasm_ctx *rtables, struct timeval const rx_time);
+		char const * const label, char const * const txt, la_msg_dir const msg_dir,
+		la_reasm_ctx *rtables, struct timeval const rx_time);
 la_proto_node *la_acars_parse_and_reassemble(uint8_t *buf, int len, la_msg_dir msg_dir,
-	la_reasm_ctx *rtables, struct timeval rx_time);
+		la_reasm_ctx *rtables, struct timeval rx_time);
 la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir);
 int la_acars_extract_sublabel_and_mfi(char const * const label, la_msg_dir const msg_dir,
-	char const * const txt, int const len, char *sublabel, char *mfi);
+		char const * const txt, int const len, char *sublabel, char *mfi);
 void la_acars_format_text(la_vstring *vstr, void const * const data, int indent);
 void la_acars_format_json(la_vstring *vstr, void const * const data);
 la_proto_node *la_proto_tree_find_acars(la_proto_node *root);

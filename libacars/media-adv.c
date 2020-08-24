@@ -5,15 +5,14 @@
  */
 
 #include <stdbool.h>
-#include <ctype.h>			// isupper(), isdigit()
-#include <string.h>			// strchr(), strcpy(), strncpy(), strlen()
-#include <libacars/libacars.h>		// la_proto_node, la_proto_tree_find_protocol()
-#include <libacars/media-adv.h>		// la_arinc_msg, LA_ARINC_IMI_CNT
-#include <libacars/macros.h>		// la_assert()
-#include <libacars/vstring.h>		// la_vstring, la_vstring_append_sprintf(),
-					// LA_ISPRINTF()
-#include <libacars/json.h>		// la_json_*()
-#include <libacars/util.h>		// LA_XCALLOC(), ATOI2()
+#include <ctype.h>                  // isupper(), isdigit()
+#include <string.h>                 // strchr(), strcpy(), strncpy(), strlen()
+#include <libacars/libacars.h>      // la_proto_node, la_proto_tree_find_protocol()
+#include <libacars/media-adv.h>     // la_arinc_msg, LA_ARINC_IMI_CNT
+#include <libacars/macros.h>        // la_assert()
+#include <libacars/vstring.h>       // la_vstring, la_vstring_append_sprintf(), LA_ISPRINTF()
+#include <libacars/json.h>          // la_json_*()
+#include <libacars/util.h>          // LA_XCALLOC(), ATOI2()
 
 typedef struct {
 	char const code;
@@ -102,7 +101,7 @@ la_proto_node *la_media_adv_parse(char const *txt) {
 		// Available links are for 4 to symbol / if present
 		char *end = strchr(txt, '/');
 		// if there is no / only available links are present
-		if(end == NULL)  {
+		if(end == NULL) {
 			size_t index = 9;
 			while(index < payload_len) {
 				msg->available_links[index - 9] = txt[index];
@@ -152,10 +151,10 @@ void la_media_adv_format_text(la_vstring * const vstr, void const * const data, 
 
 	// Prepare time
 	LA_ISPRINTF(vstr, indent, "Link %s %s at %02d:%02d:%02d UTC\n",
-		get_link_description(msg->current_link),
-		(msg->state == 'E') ? "established" : "lost",
-		msg->hour, msg->minute, msg->second
-	);
+			get_link_description(msg->current_link),
+			(msg->state == 'E') ? "established" : "lost",
+			msg->hour, msg->minute, msg->second
+			);
 
 	// print all available links
 	LA_ISPRINTF(vstr, indent, "Available links: ");

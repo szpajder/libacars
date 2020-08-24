@@ -8,8 +8,8 @@
 #define LA_MEDIA_ADV_H 1
 
 #include <stdint.h>
-#include <libacars/libacars.h>		// la_type_descriptor, la_proto_node
-#include <libacars/vstring.h>		// la_vstring
+#include <libacars/libacars.h>      // la_type_descriptor, la_proto_node
+#include <libacars/vstring.h>       // la_vstring
 
 #ifdef __cplusplus
 extern "C" {

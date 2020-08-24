@@ -4,26 +4,26 @@
  *  Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
  */
 
-#include <string.h>				// memcpy(), strdup()
-#include <sys/time.h>				// struct timeval
-#include "config.h"				// WITH_LIBXML2
+#include <string.h>                         // memcpy(), strdup()
+#include <sys/time.h>                       // struct timeval
+#include "config.h"                         // WITH_LIBXML2
 #ifdef WITH_LIBXML2
-#include <libxml/tree.h>			// xmlBufferPtr, xmlBufferFree()
+#include <libxml/tree.h>                    // xmlBufferPtr, xmlBufferFree()
 #endif
-#include <libacars/libacars.h>			// la_proto_node, la_proto_tree_find_protocol
-#include <libacars/macros.h>			// la_assert, la_debug_print, LA_CAST_PTR
-#include <libacars/arinc.h>			// la_arinc_parse()
-#include <libacars/media-adv.h>			// la_media_adv_parse()
-#include <libacars/miam.h>			// la_miam_parse_and_reassemble()
-#include <libacars/crc.h>			// la_crc16_ccitt()
-#include <libacars/vstring.h>			// la_vstring, LA_ISPRINTF()
-#include <libacars/json.h>			// la_json_append_*()
-#include <libacars/util.h>			// LA_XCALLOC, LA_XFREE, la_prettify_xml
-#include <libacars/hash.h>			// LA_HASH_INIT, la_hash_string()
+#include <libacars/libacars.h>              // la_proto_node, la_proto_tree_find_protocol
+#include <libacars/macros.h>                // la_assert, la_debug_print, LA_CAST_PTR
+#include <libacars/arinc.h>                 // la_arinc_parse()
+#include <libacars/media-adv.h>             // la_media_adv_parse()
+#include <libacars/miam.h>                  // la_miam_parse_and_reassemble()
+#include <libacars/crc.h>                   // la_crc16_ccitt()
+#include <libacars/vstring.h>               // la_vstring, LA_ISPRINTF()
+#include <libacars/json.h>                  // la_json_append_*()
+#include <libacars/util.h>                  // LA_XCALLOC, LA_XFREE, la_prettify_xml
+#include <libacars/hash.h>                  // LA_HASH_INIT, la_hash_string()
 #include <libacars/reassembly.h>
 #include <libacars/acars.h>
 
-#define LA_ACARS_PREAMBLE_LEN	16		// including CRC and DEL, not including SOH
+#define LA_ACARS_PREAMBLE_LEN    16         // including CRC and DEL, not including SOH
 #define DEL 0x7f
 #define STX 0x02
 #define ETX 0x03
@@ -44,11 +44,11 @@ static la_acars_timeout_profile const timeout_profiles[] = {
 		.downlink = { .tv_sec = 0,    .tv_usec = 0 },
 		.uplink   = { .tv_sec = 0,    .tv_usec = 0 }
 	},
-// Note: LA_ACARS_BEARER_VHF applies both to PoA and VDL2.
-// ARINC 618 specifies 420 and 90 seconds for VDL2, respectively,
-// however these values are too small and would result in many
-// incomplete reassemblies, especially in downlink direction.
-// PoA timers seem to work better in practice.
+	// Note: LA_ACARS_BEARER_VHF applies both to PoA and VDL2.
+	// ARINC 618 specifies 420 and 90 seconds for VDL2, respectively,
+	// however these values are too small and would result in many
+	// incomplete reassemblies, especially in downlink direction.
+	// PoA timers seem to work better in practice.
 	[LA_ACARS_BEARER_VHF] = {
 		.downlink = { .tv_sec = 660,  .tv_usec = 0 },    // VGT4
 		.uplink   = { .tv_sec = 90,   .tv_usec = 0 }     // VAT4
@@ -79,8 +79,8 @@ static bool la_acars_key_compare(void const *key1, void const *key2) {
 	LA_CAST_PTR(k1, la_acars_key *, key1);
 	LA_CAST_PTR(k2, la_acars_key *, key2);
 	return (!strcmp(k1->reg, k2->reg) &&
-		!strcmp(k1->label, k2->label) &&
-		!strcmp(k1->msg_num, k2->msg_num));
+			!strcmp(k1->label, k2->label) &&
+			!strcmp(k1->msg_num, k2->msg_num));
 }
 
 static void la_acars_key_destroy(void *ptr) {
@@ -125,72 +125,72 @@ static la_reasm_table_funcs acars_reasm_funcs = {
 };
 
 la_proto_node *la_acars_apps_parse_and_reassemble(char const * const reg,
-char const * const label, char const * const txt, la_msg_dir const msg_dir,
-la_reasm_ctx *rtables,struct timeval const rx_time) {
+		char const * const label, char const * const txt, la_msg_dir const msg_dir,
+		la_reasm_ctx *rtables,struct timeval const rx_time) {
 	la_proto_node *ret = NULL;
 	if(label == NULL || txt == NULL) {
 		goto end;
 	}
 	switch(label[0]) {
-	case 'A':
-		switch(label[1]) {
-		case '6':
 		case 'A':
-			if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
-				goto end;
+			switch(label[1]) {
+				case '6':
+				case 'A':
+					if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
+						goto end;
+					}
+					break;
 			}
 			break;
-		}
-		break;
-	case 'B':
-		switch(label[1]) {
-		case '6':
-		case 'A':
-			if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
-				goto end;
+		case 'B':
+			switch(label[1]) {
+				case '6':
+				case 'A':
+					if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
+						goto end;
+					}
+					break;
 			}
 			break;
-		}
-		break;
-	case 'H':
-		switch(label[1]) {
-		case '1':
-			if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
-				goto end;
-			}
-			if((ret = la_miam_parse_and_reassemble(reg, txt, rtables, rx_time)) != NULL) {
-				goto end;
-			}
-			break;
-		}
-		break;
-	case 'M':
-		switch(label[1]) {
-		case 'A':
-			if((ret = la_miam_parse_and_reassemble(reg, txt, rtables, rx_time)) != NULL) {
-				goto end;
+		case 'H':
+			switch(label[1]) {
+				case '1':
+					if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
+						goto end;
+					}
+					if((ret = la_miam_parse_and_reassemble(reg, txt, rtables, rx_time)) != NULL) {
+						goto end;
+					}
+					break;
 			}
 			break;
-		}
-		break;
-	case 'S':
-		switch(label[1]) {
-		case 'A':
-			if((ret = la_media_adv_parse(txt)) != NULL) {
-				goto end;
+		case 'M':
+			switch(label[1]) {
+				case 'A':
+					if((ret = la_miam_parse_and_reassemble(reg, txt, rtables, rx_time)) != NULL) {
+						goto end;
+					}
+					break;
 			}
 			break;
-		}
-		break;
+		case 'S':
+			switch(label[1]) {
+				case 'A':
+					if((ret = la_media_adv_parse(txt)) != NULL) {
+						goto end;
+					}
+					break;
+			}
+			break;
 	}
 end:
 	return ret;
 }
 
 la_proto_node *la_acars_decode_apps(char const * const label,
-	char const * const txt, la_msg_dir const msg_dir) {
+		char const * const txt, la_msg_dir const msg_dir) {
 	return la_acars_apps_parse_and_reassemble(NULL, label, txt, msg_dir,
-		NULL, (struct timeval){ .tv_sec = 0, .tv_usec = 0 });
+			NULL, (struct timeval){ .tv_sec = 0, .tv_usec = 0 });
 }
 
 #define COPY_IF_NOT_NULL(d, s, l) do { \
@@ -204,7 +204,7 @@ la_proto_node *la_acars_decode_apps(char const * const label,
 	} } while(0)
 
 int la_acars_extract_sublabel_and_mfi(char const * const label, la_msg_dir const msg_dir,
-	char const * const txt, int const len, char *sublabel, char *mfi) {
+		char const * const txt, int const len, char *sublabel, char *mfi) {
 
 	if(txt == NULL || label == NULL || strlen(label) < 2) {
 		return -1;
@@ -223,14 +223,14 @@ int la_acars_extract_sublabel_and_mfi(char const * const label, la_msg_dir const
 
 	if(label[0] == 'H' && label[1] == '1') {
 		if(msg_dir == LA_MSG_DIR_GND2AIR) {
-// Note: this algorithm works correctly only for service-related messages
-// without SMT header. The header, if present, precedes the "- #" character
-// sequence, while this algorithm expects this sequence to appear at the
-// start of the message text. However this is not a big deal since the main
-// purpose of this routine is to skip initial sublabel/MFI part and return
-// a pointer to the beginning of the next layer application payload (eg.
-// ARINC-622 ATS message). Right now libacars does not decode any application
-// layer protocols transmitted with SMT headers, so it's not a huge issue.
+			// Note: this algorithm works correctly only for service-related messages
+			// without SMT header. The header, if present, precedes the "- #" character
+			// sequence, while this algorithm expects this sequence to appear at the
+			// start of the message text. However this is not a big deal since the main
+			// purpose of this routine is to skip initial sublabel/MFI part and return
+			// a pointer to the beginning of the next layer application payload (eg.
+			// ARINC-622 ATS message). Right now libacars does not decode any application
+			// layer protocols transmitted with SMT headers, so it's not a huge issue.
 			if(remaining >= 5 && strncmp(ptr, "- #", 3) == 0) {
 				la_debug_print(D_INFO, "Uplink sublabel: %c%c\n", ptr[3], ptr[4]);
 				sublabel_ptr = ptr + 3;
@@ -243,11 +243,11 @@ int la_acars_extract_sublabel_and_mfi(char const * const label, la_msg_dir const
 				ptr += 4; consumed += 4; remaining -= 4;
 			}
 		}
-// Look for MFI only if sublabel has been found
+		// Look for MFI only if sublabel has been found
 		if(sublabel_ptr == NULL) {
 			goto end;
 		}
-// MFI format is the same for both directions
+		// MFI format is the same for both directions
 		if(remaining >= 4 && ptr[0] == '/' && ptr[3] == ' ') {
 			la_debug_print(D_INFO, "MFI: %c%c\n", ptr[1], ptr[2]);
 			mfi_ptr = ptr + 1;
@@ -264,7 +264,7 @@ end:
 // Note: buf must contain raw ACARS bytes, NOT including initial SOH byte
 // (0x01) and including terminating DEL byte (0x7f).
 la_proto_node *la_acars_parse_and_reassemble(uint8_t *buf, int len, la_msg_dir msg_dir,
-la_reasm_ctx *rtables, struct timeval rx_time) {
+		la_reasm_ctx *rtables, struct timeval rx_time) {
 	if(buf == NULL) {
 		return NULL;
 	}
@@ -308,8 +308,8 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 		goto fail;
 	}
 	len--;
-// Here we have DEL, CRC and ETX/ETB bytes removed.
-// There are at least 12 bytes remaining.
+	// Here we have DEL, CRC and ETX/ETB bytes removed.
+	// There are at least 12 bytes remaining.
 
 	int remaining = len;
 	char *ptr = buf2;
@@ -324,7 +324,7 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 	msg->ack = *ptr;
 	ptr++; remaining--;
 
-// change special values to something printable
+	// change special values to something printable
 	if (msg->ack == NAK) {
 		msg->ack = '!';
 	} else if(msg->ack == ACK) {
@@ -346,7 +346,7 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 	if (msg->block_id == 0) {
 		msg->block_id = ' ';
 	}
-// If the message direction is unknown, guess it using the block ID character.
+	// If the message direction is unknown, guess it using the block ID character.
 	if(msg_dir == LA_MSG_DIR_UNKNOWN) {
 		if(IS_DOWNLINK_BLK(msg->block_id)) {
 			msg_dir = LA_MSG_DIR_AIR2GND;
@@ -356,12 +356,12 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 		la_debug_print(D_ERROR, "Assuming msg_dir=%d\n", msg_dir);
 	}
 	if(remaining < 1) {
-// ACARS preamble has been consumed up to this point.
-// If this is an uplink with an empty message text, then we are done.
-// XXX: we are skipping the reassembly stage here, is this 100% correct?
-// If this ever needs to be changed, special care has to be taken for
-// empty ACKs (label: _<7F> aka _d), because they have out-of-sequence
-// block IDs (X, Y, Z, X, ...).
+		// ACARS preamble has been consumed up to this point.
+		// If this is an uplink with an empty message text, then we are done.
+		// XXX: we are skipping the reassembly stage here, is this 100% correct?
+		// If this ever needs to be changed, special care has to be taken for
+		// empty ACKs (label: _<7F> aka _d), because they have out-of-sequence
+		// block IDs (X, Y, Z, X, ...).
 		if(!IS_DOWNLINK_BLK(msg->block_id)) {
 			msg->txt = strdup("");
 			msg->reasm_status = LA_REASM_SKIPPED;
@@ -371,21 +371,21 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 			goto fail;
 		}
 	}
-// Otherwise we expect STX here.
+	// Otherwise we expect STX here.
 	if(*ptr != STX) {
 		la_debug_print(D_ERROR, "%02x: No STX byte after preamble\n", *ptr);
 		goto fail;
 	}
 	ptr++; remaining--;
 
-// Replace NULLs in message text to make it printable
-// XXX: Should we replace all nonprintable chars here?
+	// Replace NULLs in message text to make it printable
+	// XXX: Should we replace all nonprintable chars here?
 	for(i = 0; i < remaining; i++) {
 		if(ptr[i] == 0) {
 			ptr[i] = '.';
 		}
 	}
-// Extract downlink-specific fields from message text
+	// Extract downlink-specific fields from message text
 	if (IS_DOWNLINK_BLK(msg->block_id)) {
 		if(remaining < 10) {
 			la_debug_print(D_ERROR, "Downlink text field too short: %d < 10\n", remaining);
@@ -399,57 +399,57 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 		ptr += 6; remaining -= 6;
 	}
 
-// Extract sublabel and MFI if present
+	// Extract sublabel and MFI if present
 	int offset = la_acars_extract_sublabel_and_mfi(msg->label, msg_dir,
-		ptr, remaining, msg->sublabel, msg->mfi);
+			ptr, remaining, msg->sublabel, msg->mfi);
 	if(offset > 0) {
 		ptr += offset;
 		remaining -= offset;
 	}
 
 	la_reasm_table *acars_rtable = NULL;
-	if(rtables != NULL) {		// reassembly engine is enabled
+	if(rtables != NULL) {       // reassembly engine is enabled
 		acars_rtable = la_reasm_table_lookup(rtables, &la_DEF_acars_message);
 		if(acars_rtable == NULL) {
 			acars_rtable = la_reasm_table_new(rtables, &la_DEF_acars_message,
-				acars_reasm_funcs, LA_ACARS_REASM_TABLE_CLEANUP_INTERVAL);
+					acars_reasm_funcs, LA_ACARS_REASM_TABLE_CLEANUP_INTERVAL);
 		}
 		bool down = IS_DOWNLINK_BLK(msg->block_id);
 
 		long int acars_bearer = LA_ACARS_BEARER_INVALID;
 		(void)la_config_get_int("acars_bearer", &acars_bearer);
 		if(acars_bearer < LA_ACARS_BEARER_MIN || acars_bearer > LA_ACARS_BEARER_MAX) {
-// This bearer will cause reassembly to fail with LA_REASM_INVALID_ARGS
+			// This bearer will cause reassembly to fail with LA_REASM_INVALID_ARGS
 			acars_bearer = LA_ACARS_BEARER_INVALID;
 		}
 		la_acars_timeout_profile const *timeout_profile = timeout_profiles + acars_bearer;
 		la_debug_print(D_VERBOSE, "Using timeout profile for bearer %ld (up: %lu dn: %lu)\n",
-			acars_bearer,
-			timeout_profile->uplink.tv_sec,
-			timeout_profile->downlink.tv_sec);
+				acars_bearer,
+				timeout_profile->uplink.tv_sec,
+				timeout_profile->downlink.tv_sec);
 
 		msg->reasm_status = la_reasm_fragment_add(acars_rtable,
-		&(la_reasm_fragment_info){
-			.msg_info = msg,
-			.msg_data = (uint8_t *)ptr,
-			.msg_data_len = remaining,
-			.total_pdu_len = 0,		// not used here
-			.seq_num = down ? msg->msg_num_seq - 'A' : msg->block_id - 'A',
-			.seq_num_first = down ? 0 : SEQ_FIRST_NONE,
-			.seq_num_wrap = down ? SEQ_WRAP_NONE : 'X' - 'A',
-			.is_final_fragment = msg->final_block,
-			.rx_time = rx_time,
-			.reasm_timeout = down ? timeout_profile->downlink : timeout_profile->uplink
-		});
+				&(la_reasm_fragment_info){
+				.msg_info = msg,
+				.msg_data = (uint8_t *)ptr,
+				.msg_data_len = remaining,
+				.total_pdu_len = 0,        // not used here
+				.seq_num = down ? msg->msg_num_seq - 'A' : msg->block_id - 'A',
+				.seq_num_first = down ? 0 : SEQ_FIRST_NONE,
+				.seq_num_wrap = down ? SEQ_WRAP_NONE : 'X' - 'A',
+				.is_final_fragment = msg->final_block,
+				.rx_time = rx_time,
+				.reasm_timeout = down ? timeout_profile->downlink : timeout_profile->uplink
+				});
 	}
 	uint8_t *reassembled_msg = NULL;
 	if(msg->reasm_status == LA_REASM_COMPLETE &&
-		la_reasm_payload_get(acars_rtable, msg, &reassembled_msg) > 0) {
-// reassembled_msg is a newly allocated byte buffer, which is guaranteed to
-// be NULL-terminated, so we can cast it to char * directly.
+			la_reasm_payload_get(acars_rtable, msg, &reassembled_msg) > 0) {
+		// reassembled_msg is a newly allocated byte buffer, which is guaranteed to
+		// be NULL-terminated, so we can cast it to char * directly.
 		msg->txt = (char *)reassembled_msg;
 
-	} else {	// this will also trigger when reassembly engine is disabled
+	} else {        // this will also trigger when reassembly engine is disabled
 		msg->txt = LA_XCALLOC(remaining + 1, sizeof(char));
 		if(remaining > 0) {
 			memcpy(msg->txt, ptr, remaining);
@@ -458,16 +458,16 @@ la_reasm_ctx *rtables, struct timeval rx_time) {
 
 	if(strlen(msg->txt) > 0) {
 		bool decode_apps = true;
-// If reassembly is enabled and is now in progress (ie. the message is not yet complete),
-// then decode_fragments config flag decides whether to decode apps in this message
-// or not.
+		// If reassembly is enabled and is now in progress (ie. the message is not yet complete),
+		// then decode_fragments config flag decides whether to decode apps in this message
+		// or not.
 		if(rtables != NULL && (msg->reasm_status == LA_REASM_IN_PROGRESS ||
-			msg->reasm_status == LA_REASM_DUPLICATE)) {
+					msg->reasm_status == LA_REASM_DUPLICATE)) {
 			(void)la_config_get_bool("decode_fragments", &decode_apps);
 		}
 		if(decode_apps) {
 			node->next = la_acars_apps_parse_and_reassemble(msg->reg, msg->label,
-				msg->txt, msg_dir, rtables, rx_time);
+					msg->txt, msg_dir, rtables, rx_time);
 		}
 	}
 	goto end;
@@ -480,7 +480,7 @@ end:
 
 la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 	return la_acars_parse_and_reassemble(buf, len, msg_dir, NULL,
-		(struct timeval){ .tv_sec = 0, .tv_usec = 0 });
+			(struct timeval){ .tv_sec = 0, .tv_usec = 0 });
 }
 
 void la_acars_format_text(la_vstring *vstr, void const * const data, int indent) {
@@ -505,7 +505,7 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 	}
 
 	LA_ISPRINTF(vstr, indent, "Mode: %1c Label: %s Blk id: %c More: %d Ack: %c",
-		msg->mode, msg->label, msg->block_id, !msg->final_block, msg->ack);
+			msg->mode, msg->label, msg->block_id, !msg->final_block, msg->ack);
 	if(IS_DOWNLINK_BLK(msg->block_id)) {
 		la_vstring_append_sprintf(vstr, " Msg num: %s%c\n", msg->msg_num, msg->msg_num_seq);
 	} else {
@@ -529,7 +529,7 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 				la_isprintf_multiline_text(vstr, indent + 1, (char *)xmlbufptr->content);
 				xmlBufferFree(xmlbufptr);
 			} else {
-// Doesn't look like XML - print it as normal
+				// Doesn't look like XML - print it as normal
 				prettify_xml = false;
 			}
 		}

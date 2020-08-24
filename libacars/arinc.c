@@ -5,22 +5,22 @@
  */
 
 #include <stdbool.h>
-#include <ctype.h>			// isupper(), isdigit()
-#include <string.h>			// strstr()
-#include <libacars/libacars.h>		// la_proto_node, la_proto_tree_find_protocol
-#include <libacars/arinc.h>		// la_arinc_msg, LA_ARINC_IMI_CNT
-#include <libacars/crc.h>		// la_crc16_arinc()
-#include <libacars/macros.h>		// la_debug_print()
-#include <libacars/vstring.h>		// la_vstring_append_sprintf()
-#include <libacars/util.h>		// la_slurp_hexstring()
-#include <libacars/json.h>		// la_json_append_*()
-#include <libacars/adsc.h>		// la_adsc_parse()
-#include <libacars/cpdlc.h>		// la_cpdlc_parse()
+#include <ctype.h>                      // isupper(), isdigit()
+#include <string.h>                     // strstr()
+#include <libacars/libacars.h>          // la_proto_node, la_proto_tree_find_protocol
+#include <libacars/arinc.h>             // la_arinc_msg, LA_ARINC_IMI_CNT
+#include <libacars/crc.h>               // la_crc16_arinc()
+#include <libacars/macros.h>            // la_debug_print()
+#include <libacars/vstring.h>           // la_vstring_append_sprintf()
+#include <libacars/util.h>              // la_slurp_hexstring()
+#include <libacars/json.h>              // la_json_append_*()
+#include <libacars/adsc.h>              // la_adsc_parse()
+#include <libacars/cpdlc.h>             // la_cpdlc_parse()
 
-#define LA_ARINC_IMI_LEN	3
-#define LA_ARINC_AIR_REG_LEN	7
-#define LA_ARINC_CRC_LEN	2
-#define LA_CRC_ARINC_GOOD	0x1D0Fu
+#define LA_ARINC_IMI_LEN        3
+#define LA_ARINC_AIR_REG_LEN    7
+#define LA_ARINC_CRC_LEN        2
+#define LA_CRC_ARINC_GOOD       0x1D0Fu
 
 typedef enum {
 	ARINC_APP_TYPE_UNKNOWN = 0,
@@ -55,32 +55,32 @@ static la_arinc_imi_props const imi_props[LA_ARINC_IMI_CNT] = {
 		.description = "Unknown message type",
 		.json_key = "unknown"
 	},
-	[ARINC_MSG_AT1]	= {
+	[ARINC_MSG_AT1] = {
 		.app_type = ARINC_APP_TYPE_BINARY,
 		.description = "FANS-1/A CPDLC Message",
 		.json_key = "fans1a_cpdlc_msg",
 	},
-	[ARINC_MSG_CR1]	= {
+	[ARINC_MSG_CR1] = {
 		.app_type = ARINC_APP_TYPE_BINARY,
 		.description = "FANS-1/A CPDLC Connect Request",
 		.json_key = "fans1a_cpdlc_connect_request",
 	},
-	[ARINC_MSG_CC1]	= {
+	[ARINC_MSG_CC1] = {
 		.app_type = ARINC_APP_TYPE_BINARY,
 		.description = "FANS-1/A CPDLC Connect Confirm",
 		.json_key = "fans1a_cpdlc_connect_confirm",
 	},
-	[ARINC_MSG_DR1]	= {
+	[ARINC_MSG_DR1] = {
 		.app_type = ARINC_APP_TYPE_BINARY,
 		.description = "FANS-1/A CPDLC Disconnect Request",
 		.json_key = "fans1a_cpdlc_disconnect_request",
 	},
-	[ARINC_MSG_ADS]	= {
+	[ARINC_MSG_ADS] = {
 		.app_type = ARINC_APP_TYPE_BINARY,
 		.description = "ADS-C message",
 		.json_key = "adsc_msg",
 	},
-	[ARINC_MSG_DIS]	= {
+	[ARINC_MSG_DIS] = {
 		.app_type = ARINC_APP_TYPE_BINARY,
 		.description = "ADS-C disconnect request",
 		.json_key = "adsc_disconnect_request",
@@ -104,10 +104,10 @@ static char *guess_arinc_msg_type(char const *txt, la_arinc_msg *msg) {
 	la_assert(msg);
 	la_arinc_imi imi = ARINC_MSG_UNKNOWN;
 
-// H1 messages start with sublabel and MFI - these fields must be stripped
-// before passing message text to this routine. This is done by
-// la_acars_extract_sublabel_and_mfi(). In any case, message text
-// must start with the ground address, optionally preceded by '/'.
+	// H1 messages start with sublabel and MFI - these fields must be stripped
+	// before passing message text to this routine. This is done by
+	// la_acars_extract_sublabel_and_mfi(). In any case, message text
+	// must start with the ground address, optionally preceded by '/'.
 	if(txt[0] == '/') {
 		txt++;
 	}
@@ -126,14 +126,14 @@ static char *guess_arinc_msg_type(char const *txt, la_arinc_msg *msg) {
 	}
 	char *gs_addr = NULL;
 	size_t gs_addr_len = 0;
-// Check for seven-character ground address ("AKLCDYA.AT1...")
+	// Check for seven-character ground address ("AKLCDYA.AT1...")
 	if(imi_ptr - txt == 7) {
 		if(is_numeric_or_uppercase(imi_ptr - 7, 7)) {
 			gs_addr = imi_ptr - 7;
 			gs_addr_len = 7;
 			goto complete;
 		}
-// Check for four-character ground address ("EDYY.AFN...")
+		// Check for four-character ground address ("EDYY.AFN...")
 	} else if(imi_ptr - txt == 4) {
 		if(is_numeric_or_uppercase(imi_ptr - 4, 4)) {
 			gs_addr = imi_ptr - 4;
@@ -147,12 +147,12 @@ complete:
 	msg->imi = imi;
 	memcpy(msg->gs_addr, gs_addr, gs_addr_len);
 	msg->gs_addr[gs_addr_len] = '\0';
-// Skip the dot before IMI and point to the start of the CRC-protected part
+	// Skip the dot before IMI and point to the start of the CRC-protected part
 	return imi_ptr + 1;
 }
 
 static bool la_is_crc_ok(char const * const text_part, uint8_t const * const binary_part, size_t const binary_part_len) {
-// compute CRC over IMI+air_reg+binary_part_with_CRC
+	// compute CRC over IMI+air_reg+binary_part_with_CRC
 	size_t buflen = LA_ARINC_IMI_LEN + LA_ARINC_AIR_REG_LEN + binary_part_len;
 	uint8_t *buf = LA_XCALLOC(buflen, sizeof(uint8_t));
 	memcpy(buf, text_part, LA_ARINC_IMI_LEN + LA_ARINC_AIR_REG_LEN);
@@ -190,20 +190,20 @@ la_proto_node *la_arinc_parse(char const *txt, la_msg_dir const msg_dir) {
 		msg->crc_ok = la_is_crc_ok(payload, buf, buflen);
 		buflen -= LA_ARINC_CRC_LEN; // strip CRC
 		switch(msg->imi) {
-		case ARINC_MSG_CR1:
-		case ARINC_MSG_CC1:
-		case ARINC_MSG_DR1:
-		case ARINC_MSG_AT1:
-			next_node = la_cpdlc_parse(buf, buflen, msg_dir);
-			LA_XFREE(buf);
-			break;
-		case ARINC_MSG_ADS:
-		case ARINC_MSG_DIS:
-			next_node = la_adsc_parse(buf, buflen, msg_dir, msg->imi);
-			LA_XFREE(buf);
-			break;
-		default:
-			break;
+			case ARINC_MSG_CR1:
+			case ARINC_MSG_CC1:
+			case ARINC_MSG_DR1:
+			case ARINC_MSG_AT1:
+				next_node = la_cpdlc_parse(buf, buflen, msg_dir);
+				LA_XFREE(buf);
+				break;
+			case ARINC_MSG_ADS:
+			case ARINC_MSG_DIS:
+				next_node = la_adsc_parse(buf, buflen, msg_dir, msg->imi);
+				LA_XFREE(buf);
+				break;
+			default:
+				break;
 		}
 	}
 

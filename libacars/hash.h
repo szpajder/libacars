@@ -24,7 +24,7 @@ typedef void (la_hash_value_destroy_func)(void *value);
 #define LA_HASH_MULTIPLIER 17
 
 la_hash *la_hash_new(la_hash_func *compute_hash, la_hash_compare_func *compare_keys,
-	la_hash_key_destroy_func *destroy_key, la_hash_value_destroy_func *destroy_value);
+		la_hash_key_destroy_func *destroy_key, la_hash_value_destroy_func *destroy_value);
 bool la_hash_insert(la_hash *h, void *key, void *value);
 bool la_hash_remove(la_hash *h, void *key);
 void *la_hash_lookup(la_hash const *h, void const *key);

@@ -31,7 +31,12 @@ typedef enum FANSErrorInformation {
 	FANSErrorInformation_insufficientData	= 8,
 	FANSErrorInformation_unexpectedData	= 9,
 	FANSErrorInformation_invalidData	= 10,
-	FANSErrorInformation_reservedErrorMsg	= 16
+	FANSErrorInformation_reservedErrorMsg1	= 11,
+	FANSErrorInformation_reservedErrorMsg2	= 12,
+	FANSErrorInformation_reservedErrorMsg3	= 13,
+	FANSErrorInformation_reservedErrorMsg4	= 14,
+	FANSErrorInformation_reservedErrorMsg5	= 15,
+	FANSErrorInformation_reservedErrorMsg6	= 16
 } e_FANSErrorInformation;
 
 /* FANSErrorInformation */

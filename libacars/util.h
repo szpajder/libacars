@@ -6,12 +6,12 @@
 #ifndef LA_UTIL_H
 #define LA_UTIL_H 1
 #include <stdint.h>
-#include <stddef.h>		// size_t
-#include <stdlib.h>		// free()
-#include <time.h>		// struct tm
-#include "config.h"		// HAVE_STRSEP, WITH_LIBXML2
+#include <stddef.h>         // size_t
+#include <stdlib.h>         // free()
+#include <time.h>           // struct tm
+#include "config.h"         // HAVE_STRSEP, WITH_LIBXML2
 #ifdef WITH_LIBXML2
-#include <libxml/tree.h>	// xmlBufferPtr
+#include <libxml/tree.h>    // xmlBufferPtr
 #endif
 
 typedef struct {

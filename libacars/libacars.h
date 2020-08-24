@@ -8,7 +8,7 @@
 #define LA_LIBACARS_H 1
 #include <stdbool.h>
 #include <libacars/version.h>
-#include <libacars/vstring.h>		// la_vstring
+#include <libacars/vstring.h>       // la_vstring
 
 #ifdef __cplusplus
 extern "C" {

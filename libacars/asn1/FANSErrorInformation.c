@@ -97,7 +97,7 @@ FANSErrorInformation_encode_uper(asn_TYPE_descriptor_t *td,
 }
 
 static asn_per_constraints_t asn_PER_type_FANSErrorInformation_constr_1 GCC_NOTUSED = {
-	{ APC_CONSTRAINED,	 4,  4,  0,  11 }	/* (0..11) */,
+	{ APC_CONSTRAINED,	 5,  5,  0,  16 }	/* (0..16) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
@@ -113,7 +113,12 @@ static const asn_INTEGER_enum_map_t asn_MAP_FANSErrorInformation_value2enum_1[] 
 	{ 8,	16,	"insufficientData" },
 	{ 9,	14,	"unexpectedData" },
 	{ 10,	11,	"invalidData" },
-	{ 16,	16,	"reservedErrorMsg" }
+	{ 11,	17,	"reservedErrorMsg1" },
+	{ 12,	17,	"reservedErrorMsg2" },
+	{ 13,	17,	"reservedErrorMsg3" },
+	{ 14,	17,	"reservedErrorMsg4" },
+	{ 15,	17,	"reservedErrorMsg5" },
+	{ 16,	17,	"reservedErrorMsg6" }
 };
 static const unsigned int asn_MAP_FANSErrorInformation_enum2value_1[] = {
 	0,	/* applicationError(0) */
@@ -125,14 +130,19 @@ static const unsigned int asn_MAP_FANSErrorInformation_enum2value_1[] = {
 	5,	/* insufficientMsgStorageCapacity(5) */
 	10,	/* invalidData(10) */
 	6,	/* noAvailableMsgIdentificationNumber(6) */
-	11,	/* reservedErrorMsg(16) */
+	11,	/* reservedErrorMsg1(11) */
+	12,	/* reservedErrorMsg2(12) */
+	13,	/* reservedErrorMsg3(13) */
+	14,	/* reservedErrorMsg4(14) */
+	15,	/* reservedErrorMsg5(15) */
+	16,	/* reservedErrorMsg6(16) */
 	9,	/* unexpectedData(9) */
 	2	/* unrecognizedMsgReferenceNumber(2) */
 };
 static const asn_INTEGER_specifics_t asn_SPC_FANSErrorInformation_specs_1 = {
 	asn_MAP_FANSErrorInformation_value2enum_1,	/* "tag" => N; sorted by tag */
 	asn_MAP_FANSErrorInformation_enum2value_1,	/* N => "tag"; sorted by N */
-	12,	/* Number of elements in the maps */
+	17,	/* Number of elements in the maps */
 	0,	/* Enumeration is not extensible */
 	1,	/* Strict enumeration */
 	0,	/* Native long size */

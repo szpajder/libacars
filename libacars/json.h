@@ -9,7 +9,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <libacars/vstring.h>		// la_vstring
+#include <libacars/vstring.h>           // la_vstring
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,7 +26,7 @@ void la_json_append_long(la_vstring * const vstr, char const * const key, long c
 void la_json_append_char(la_vstring * const vstr, char const * const key, char const  val);
 void la_json_append_string(la_vstring * const vstr, char const * const key, char const * const val);
 void la_json_append_octet_string(la_vstring * const vstr, char const * const key,
-	uint8_t const * const buf, size_t len);
+		uint8_t const * const buf, size_t len);
 void la_json_start(la_vstring * const vstr);
 void la_json_end(la_vstring * const vstr);
 

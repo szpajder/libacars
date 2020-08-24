@@ -4,9 +4,9 @@
  *  Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
  */
 
-#include <libacars/macros.h>	// la_assert
-#include <libacars/list.h>	// la_list
-#include <libacars/util.h>	// LA_XCALLOC, LA_XFREE
+#include <libacars/macros.h>    // la_assert
+#include <libacars/list.h>      // la_list
+#include <libacars/util.h>      // LA_XCALLOC, LA_XFREE
 
 la_list *la_list_next(la_list const * const l) {
 	if(l == NULL) {
