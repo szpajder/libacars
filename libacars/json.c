@@ -64,7 +64,7 @@ static char *la_json_escapechars(char const * const str) {
 					*outptr++ = '\\';
 					break;
 				default:
-					sprintf(outptr, "u%04x", str[i]);
+					sprintf(outptr, "u%04x", (uint8_t)str[i]);
 					outptr += 5;
 			}
 		} else {
