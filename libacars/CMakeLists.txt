@@ -18,6 +18,8 @@ check_c_source_compiles("int main(void){return 0;}" HAVE_LD_VERSION_SCRIPT)
 set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_SAVE})
 file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/conftest.ldscript")
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+
 # strdup, strtok_r
 add_definitions(-D_XOPEN_SOURCE=600)
 
