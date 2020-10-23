@@ -1573,7 +1573,10 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_vspd_change_parse) {
 	LA_NEW(la_adsc_vspd_chg_event_t, e);
 	t->data = e;
 
-	e->vspd_threshold = (char)buf[0] * 64;
+	struct { signed int vt:8; } s;
+	e->vspd_threshold = s.vt = (int)buf[0];
+	e->vspd_threshold *= 64;
+	la_debug_print(D_INFO, "result: %d\n", e->vspd_threshold);
 	return tag_len;
 }
 
