@@ -63,7 +63,7 @@ ACARS_2.0 {
     la_json_object_end;
     la_json_object_start;
     la_json_start;
-    la_hash_compare_str;
+    la_hash_compare_keys_str;
     la_hash_destroy;
     la_hash_foreach_remove;
     la_hash_remove;
