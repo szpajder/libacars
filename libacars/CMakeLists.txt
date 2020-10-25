@@ -1,4 +1,5 @@
 include(CheckCSourceCompiles)
+include(CheckCCompilerFlag)
 include(TestBigEndian)
 include(CheckSymbolExists)
 include(CheckPrototypeDefinition)
@@ -38,6 +39,11 @@ endif()
 if (HAVE_LD_VERSION_SCRIPT)
 	set(acars_ldscript "${CMAKE_CURRENT_SOURCE_DIR}/symversions.ldscript")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script,${acars_ldscript}")
+endif()
+
+CHECK_C_COMPILER_FLAG(-fno-common CC_HAS_FNO_COMMON)
+if(CC_HAS_FNO_COMMON)
+        add_definitions(-fno-common)
 endif()
 
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
