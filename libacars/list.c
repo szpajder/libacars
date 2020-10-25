@@ -37,10 +37,9 @@ size_t la_list_length(la_list const *l) {
 }
 
 void la_list_foreach(la_list *l, void (*cb)(), void *ctx) {
-	la_assert(cb);
-	while(l != NULL) {
+	la_assert(cb != NULL);
+	for(; l != NULL; l = la_list_next(l)) {
 		cb(l->data, ctx);
-		l = la_list_next(l);
 	}
 }
 
