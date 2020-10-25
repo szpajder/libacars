@@ -413,7 +413,7 @@ static la_asn1_formatter const la_asn1_cpdlc_json_formatter_table[] = {
 	{ .type = &asn_DEF_FANSWindSpeed, .format = la_asn1_format_CHOICE_cpdlc_as_json, .label = "wind_speed" },
 	{ .type = &asn_DEF_FANSWindSpeedEnglish, .format = la_asn1_format_FANSWindSpeedEnglish_as_json, .label = "wind_speed_english" },
 	{ .type = &asn_DEF_FANSWindSpeedMetric, .format = la_asn1_format_FANSWindSpeedMetric_as_json, .label = "wind_speed_metric" },
-	{ .type = &asn_DEF_NULL, .format = la_asn1_format_NULL_as_text, .label = NULL }
+	{ .type = &asn_DEF_NULL, .format = NULL, .label = NULL }
 	// Formatters for the following simple types are not implemented - they are handled by formatters
 	// of complex types where these simple types are used.
 	//

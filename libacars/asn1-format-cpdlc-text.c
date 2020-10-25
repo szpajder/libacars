@@ -777,7 +777,7 @@ static la_asn1_formatter const la_asn1_cpdlc_text_formatter_table[] = {
 	{ .type = &asn_DEF_FANSWindSpeed, .format = la_asn1_format_CHOICE_cpdlc_as_text, .label = NULL },
 	{ .type = &asn_DEF_FANSWindSpeedEnglish, .format = la_asn1_format_FANSWindSpeedEnglish_as_text, .label = "Wind speed" },
 	{ .type = &asn_DEF_FANSWindSpeedMetric, .format = la_asn1_format_FANSWindSpeedMetric_as_text, .label = "Wind speed" },
-	{ .type = &asn_DEF_NULL, .format = la_asn1_format_NULL_as_text, .label = NULL }
+	{ .type = &asn_DEF_NULL, .format = NULL, .label = NULL }
 };
 
 static size_t la_asn1_cpdlc_text_formatter_table_len =

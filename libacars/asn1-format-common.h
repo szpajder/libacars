@@ -21,7 +21,6 @@ void la_format_SEQUENCE_OF_as_text(la_asn1_formatter_params p, la_asn1_formatter
 
 LA_ASN1_FORMATTER_FUN(la_asn1_format_any_as_text);
 LA_ASN1_FORMATTER_FUN(la_asn1_format_OCTET_STRING_as_text);
-LA_ASN1_FORMATTER_FUN(la_asn1_format_NULL_as_text);
 LA_ASN1_FORMATTER_FUN(la_asn1_format_ENUM_as_text);
 
 void la_format_INTEGER_with_unit_as_json(la_asn1_formatter_params p,

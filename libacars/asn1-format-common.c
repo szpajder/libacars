@@ -229,11 +229,6 @@ LA_ASN1_FORMATTER_FUN(la_asn1_format_OCTET_STRING_as_json) {
 	LA_XFREE(string_buf);
 }
 
-LA_ASN1_FORMATTER_FUN(la_asn1_format_NULL_as_text) {
-	LA_UNUSED(p);
-	// NOOP
-}
-
 LA_ASN1_FORMATTER_FUN(la_asn1_format_ENUM_as_text) {
 	long const value = *(long const *)p.sptr;
 	char const *s = la_value2enum(p.td, value);
