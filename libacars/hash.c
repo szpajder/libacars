@@ -87,17 +87,12 @@ static la_list *la_hash_lookup_list_node(la_hash const *h, void const *key,
 	la_list *l = h->buckets[bucket];
 	la_list *pl = NULL;
 	la_hash_element *elem;
-	int c=0;
-	while(l != NULL) {
-		elem = (la_hash_element *)l->data;
+	for(; l != NULL; pl = l, l = la_list_next(l)) {
+		elem = l->data;
 		if(h->compare_keys(key, elem->key) == true) {
-			goto end;
+			break;
 		}
-		pl = l;
-		l = la_list_next(l);
-		c++;
 	}
-end:
 	// Give back pointer to the previous node if the caller wants it
 	if(prev_node != NULL) {
 		*prev_node = pl;
