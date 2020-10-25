@@ -121,20 +121,11 @@ void la_json_append_octet_string_as_string(la_vstring * const vstr, char const
 // Note: this function does not handle NULL characters inside the string.
 // Whenever this might be an issue, la_json_append_octet_string_as_string shall be used instead.
 void la_json_append_string(la_vstring * const vstr, char const * const key, char const * const val) {
-	la_assert(vstr != NULL);
-	if(val == NULL) {
-		return;
-	}
-	la_json_print_key(vstr, key);
-	char *escaped = la_json_escapechars((uint8_t const *)val, strlen(val));
-	la_vstring_append_sprintf(vstr, "\"%s\",", escaped);
-	LA_XFREE(escaped);
+	la_json_append_octet_string_as_string(vstr, key, (uint8_t const *)val, strlen(val));
 }
 
 void la_json_append_char(la_vstring * const vstr, char const * const key, char const val) {
-	la_assert(vstr != NULL);
-	char tmp[2] = { val, '\0' };
-	la_json_append_string(vstr, key, tmp);
+	la_json_append_octet_string_as_string(vstr, key, (uint8_t * const)&val, 1);
 }
 
 void la_json_object_start(la_vstring * const vstr, char const * const key) {
