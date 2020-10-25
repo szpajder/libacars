@@ -16,126 +16,132 @@
 #include <libacars/vstring.h>                       /* la_vstring */
 #include <libacars/json.h>                          /* la_json_*() */
 
+// Forward declarations
+static la_asn1_formatter const la_asn1_cpdlc_json_formatter_table[];
+static size_t la_asn1_cpdlc_json_formatter_table_len;
+
 /************************
  * ASN.1 type formatters
  ************************/
 
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_output_cpdlc_as_json) {
+	la_asn1_output(p, la_asn1_cpdlc_json_formatter_table, la_asn1_cpdlc_json_formatter_table_len, false);
+}
+
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_CHOICE_cpdlc) {
-	la_format_CHOICE_as_json(vstr, label, NULL, &la_asn1_output_cpdlc_as_json, td, sptr, indent);
+	la_format_CHOICE_as_json(p, NULL, la_asn1_output_cpdlc_as_json);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_SEQUENCE_cpdlc) {
-	la_format_SEQUENCE_as_json(vstr, label, &la_asn1_output_cpdlc_as_json, td, sptr, indent);
+	la_format_SEQUENCE_as_json(p, la_asn1_output_cpdlc_as_json);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_SEQUENCE_OF_cpdlc) {
-	la_format_SEQUENCE_OF_as_json(vstr, label, &la_asn1_output_cpdlc_as_json, td, sptr, indent);
+	la_format_SEQUENCE_OF_as_json(p, la_asn1_output_cpdlc_as_json);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSAltimeterEnglish) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "inHg", 0.01, 2);
+	la_format_INTEGER_with_unit_as_json(p, "inHg", 0.01);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSAltimeterMetric) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "hPa", 0.1, 1);
+	la_format_INTEGER_with_unit_as_json(p, "hPa", 0.1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSAltitudeGNSSFeet) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "ft", 1, 0);
+	la_format_INTEGER_with_unit_as_json(p, "ft", 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSAltitudeFlightLevelMetric) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "m", 10, 0);
+	la_format_INTEGER_with_unit_as_json(p, "m", 10);
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_Degrees) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "deg", 1, 0);
+	la_format_INTEGER_with_unit_as_json(p, "deg", 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSDistanceOffsetNm) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "nm", 1, 0);
+	la_format_INTEGER_with_unit_as_json(p, "nm", 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSDistanceMetric) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "km", 1, 0);
+	la_format_INTEGER_with_unit_as_json(p, "km", 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSFeetX10) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "ft", 10, 0);
+	la_format_INTEGER_with_unit_as_json(p, "ft", 10);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSFrequencyhf) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "kHz", 1, 0);
+	la_format_INTEGER_with_unit_as_json(p, "kHz", 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSFrequencykHzToMHz) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "MHz", 0.001, 3);
+	la_format_INTEGER_with_unit_as_json(p, "MHz", 0.001);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSDistanceEnglish) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "nm", 0.1, 1);
+	la_format_INTEGER_with_unit_as_json(p, "nm", 0.1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSLegTime) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "min", 0.1, 1);
+	la_format_INTEGER_with_unit_as_json(p, "min", 0.1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSLatitudeDegrees) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "deg", 1, 0);
+	la_format_INTEGER_with_unit_as_json(p, "deg", 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSLongitudeDegrees) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "deg", 1, 0);
+	la_format_INTEGER_with_unit_as_json(p, "deg", 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSMeters) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "m", 1, 0);
+	la_format_INTEGER_with_unit_as_json(p, "m", 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSTemperatureC) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "C", 1, 0);
+	la_format_INTEGER_with_unit_as_json(p, "C", 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSTemperatureF) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "F", 1, 0);
+	la_format_INTEGER_with_unit_as_json(p, "F", 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSWindSpeedEnglish) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "kts", 1, 0);
+	la_format_INTEGER_with_unit_as_json(p, "kts", 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSWindSpeedMetric) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "km/h", 1, 0);
+	la_format_INTEGER_with_unit_as_json(p, "km/h", 1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSRTATolerance) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "min", 0.1, 1);
+	la_format_INTEGER_with_unit_as_json(p, "min", 0.1);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSSpeedEnglishX10) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "kts", 10, 0);
+	la_format_INTEGER_with_unit_as_json(p, "kts", 10);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSSpeedMetricX10) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "km/h", 10, 0);
+	la_format_INTEGER_with_unit_as_json(p, "km/h", 10);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSSpeedMach) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "", 0.01, 2);
+	la_format_INTEGER_with_unit_as_json(p, "", 0.01);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSVerticalRateEnglish) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "ft/min", 100, 0);
+	la_format_INTEGER_with_unit_as_json(p, "ft/min", 100);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSVerticalRateMetric) {
-	la_format_INTEGER_with_unit_as_json(vstr, label, td, sptr, indent, "m/min", 10, 0);
+	la_format_INTEGER_with_unit_as_json(p, "m/min", 10);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSBeaconCode) {
-	LA_UNUSED(td);
-	LA_UNUSED(indent);
-	LA_CAST_PTR(code, FANSBeaconCode_t *, sptr);
+	LA_CAST_PTR(code, FANSBeaconCode_t *, p.sptr);
 	long **cptr = code->list.array;
 	char str[5] = {
 		(char)(*cptr[0]) + '0',
@@ -144,69 +150,61 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSBeaconCode) {
 		(char)(*cptr[3]) + '0',
 		'\0'
 	};
-	la_json_append_string(vstr, label, str);
+	la_json_append_string(p.vstr, p.label, str);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSTime) {
-	LA_UNUSED(td);
-	LA_UNUSED(indent);
-	LA_CAST_PTR(t, FANSTime_t *, sptr);
-	la_json_object_start(vstr, label);
-	la_json_append_long(vstr, "hour", t->hours);
-	la_json_append_long(vstr, "min", t->minutes);
-	la_json_object_end(vstr);
+	LA_CAST_PTR(t, FANSTime_t *, p.sptr);
+	la_json_object_start(p.vstr, p.label);
+	la_json_append_long(p.vstr, "hour", t->hours);
+	la_json_append_long(p.vstr, "min", t->minutes);
+	la_json_object_end(p.vstr);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSTimestamp) {
-	LA_UNUSED(td);
-	LA_UNUSED(indent);
-	LA_CAST_PTR(t, FANSTimestamp_t *, sptr);
-	la_json_object_start(vstr, label);
-	la_json_append_long(vstr, "hour", t->hours);
-	la_json_append_long(vstr, "min", t->minutes);
-	la_json_append_long(vstr, "sec", t->seconds);
-	la_json_object_end(vstr);
+	LA_CAST_PTR(t, FANSTimestamp_t *, p.sptr);
+	la_json_object_start(p.vstr, p.label);
+	la_json_append_long(p.vstr, "hour", t->hours);
+	la_json_append_long(p.vstr, "min", t->minutes);
+	la_json_append_long(p.vstr, "sec", t->seconds);
+	la_json_object_end(p.vstr);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSLatitude) {
-	LA_UNUSED(td);
-	LA_UNUSED(indent);
-	LA_CAST_PTR(lat, FANSLatitude_t *, sptr);
+	LA_CAST_PTR(lat, FANSLatitude_t *, p.sptr);
 	long const ldir = lat->latitudeDirection;
 	char const *ldir_name = la_value2enum(&asn_DEF_FANSLatitudeDirection, ldir);
-	la_json_object_start(vstr, label);
-	la_json_append_long(vstr, "deg", lat->latitudeDegrees);
+	la_json_object_start(p.vstr, p.label);
+	la_json_append_long(p.vstr, "deg", lat->latitudeDegrees);
 	if(lat->minutesLatLon != NULL) {
-		la_json_append_double(vstr, "min", *(long const *)(lat->minutesLatLon) / 10.0);
+		la_json_append_double(p.vstr, "min", *(long const *)(lat->minutesLatLon) / 10.0);
 	}
-	la_json_append_string(vstr, "dir", ldir_name);
-	la_json_object_end(vstr);
+	la_json_append_string(p.vstr, "dir", ldir_name);
+	la_json_object_end(p.vstr);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSLongitude) {
-	LA_UNUSED(td);
-	LA_UNUSED(indent);
-	LA_CAST_PTR(lat, FANSLongitude_t *, sptr);
+	LA_CAST_PTR(lat, FANSLongitude_t *, p.sptr);
 	long const ldir = lat->longitudeDirection;
 	char const *ldir_name = la_value2enum(&asn_DEF_FANSLongitudeDirection, ldir);
-	la_json_object_start(vstr, label);
-	la_json_append_long(vstr, "deg", lat->longitudeDegrees);
+	la_json_object_start(p.vstr, p.label);
+	la_json_append_long(p.vstr, "deg", lat->longitudeDegrees);
 	if(lat->minutesLatLon != NULL) {
-		la_json_append_double(vstr, "min", *(long const *)(lat->minutesLatLon) / 10.0);
+		la_json_append_double(p.vstr, "min", *(long const *)(lat->minutesLatLon) / 10.0);
 	}
-	la_json_append_string(vstr, "dir", ldir_name);
-	la_json_object_end(vstr);
+	la_json_append_string(p.vstr, "dir", ldir_name);
+	la_json_object_end(p.vstr);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSATCDownlinkMsgElementId) {
-	la_format_CHOICE_as_json(vstr, label, FANSATCDownlinkMsgElementId_labels, &la_asn1_output_cpdlc_as_json, td, sptr, indent);
+	la_format_CHOICE_as_json(p, FANSATCDownlinkMsgElementId_labels, la_asn1_output_cpdlc_as_json);
 }
 
 static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_FANSATCUplinkMsgElementId) {
-	la_format_CHOICE_as_json(vstr, label, FANSATCUplinkMsgElementId_labels, &la_asn1_output_cpdlc_as_json, td, sptr, indent);
+	la_format_CHOICE_as_json(p, FANSATCUplinkMsgElementId_labels, la_asn1_output_cpdlc_as_json);
 }
 
-static la_asn_formatter const la_asn1_cpdlc_json_formatter_table[] = {
+static la_asn1_formatter const la_asn1_cpdlc_json_formatter_table[] = {
 	{ .type = &asn_DEF_FANSAircraftEquipmentCode, .format = la_asn1_format_json_SEQUENCE_cpdlc, .label = "ac_equipment_code" },
 	{ .type = &asn_DEF_FANSAircraftFlightIdentification, .format = la_asn1_format_json_OCTET_STRING, .label = "ac_flight_id" },
 	{ .type = &asn_DEF_FANSAircraftType, .format = la_asn1_format_json_OCTET_STRING, .label = "ac_type" },
@@ -430,9 +428,5 @@ static la_asn_formatter const la_asn1_cpdlc_json_formatter_table[] = {
 	// { .type = &asn_DEF_FANSMinutesLatLon, .format = , .label = "minutes_lat_lon" },
 };
 
-static size_t la_asn1_cpdlc_json_formatter_table_len = sizeof(la_asn1_cpdlc_json_formatter_table) / sizeof(la_asn_formatter);
-
-void la_asn1_output_cpdlc_as_json(la_vstring *vstr, asn_TYPE_descriptor_t *td, const void *sptr, int indent) {
-	la_asn1_output(vstr, la_asn1_cpdlc_json_formatter_table, la_asn1_cpdlc_json_formatter_table_len,
-			td, sptr, indent, false);
-}
+static size_t la_asn1_cpdlc_json_formatter_table_len =
+sizeof(la_asn1_cpdlc_json_formatter_table) / sizeof(la_asn1_formatter);

@@ -70,7 +70,12 @@ void la_cpdlc_format_text(la_vstring *vstr, void const * const data, int indent)
 				LA_ISPRINTF(vstr, indent + 1, "");
 				asn_sprintf(vstr, msg->asn_type, msg->data, indent + 2);
 			}
-			la_asn1_output_cpdlc_as_text(vstr, msg->asn_type, msg->data, indent);
+			la_asn1_output_cpdlc_as_text((la_asn1_formatter_params){
+					.vstr = vstr,
+					.td = msg->asn_type,
+					.sptr = msg->data,
+					.indent = indent
+					});
 		} else {
 			LA_ISPRINTF(vstr, indent, "-- <empty PDU>\n");
 		}
@@ -88,7 +93,11 @@ void la_cpdlc_format_json(la_vstring *vstr, void const * const data) {
 	}
 	if(msg->asn_type != NULL) {
 		if(msg->data != NULL) {
-			la_asn1_output_cpdlc_as_json(vstr, msg->asn_type, msg->data, 0);
+			la_asn1_output_cpdlc_as_json((la_asn1_formatter_params){
+					.vstr = vstr,
+					.td = msg->asn_type,
+					.sptr = msg->data,
+					});
 		}
 	}
 }

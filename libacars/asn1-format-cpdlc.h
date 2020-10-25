@@ -6,16 +6,17 @@
 
 #ifndef LA_ASN1_FORMAT_CPDLC_H
 #define LA_ASN1_FORMAT_CPDLC_H 1
-#include <libacars/asn1/asn_application.h>    // asn_TYPE_descriptor_t
-#include <libacars/vstring.h>                 // la_vstring
-#include <libacars/util.h>                    // la_dict
+#include <libacars/asn1/asn_application.h>      // asn_TYPE_descriptor_t
+#include <libacars/vstring.h>                   // la_vstring
+#include <libacars/util.h>                      // la_dict
+#include <libacars/asn1-util.h>                 // LA_ASN1_FORMATTER_PROTOTYPE
 
 // asn1-format-cpdlc-text.c
-void la_asn1_output_cpdlc_as_text(la_vstring *vstr, asn_TYPE_descriptor_t *td, const void *sptr, int indent);
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_output_cpdlc_as_text);
 extern la_dict const FANSATCUplinkMsgElementId_labels[];
 extern la_dict const FANSATCDownlinkMsgElementId_labels[];
 
 // asn1-format-cpdlc-json.c
-void la_asn1_output_cpdlc_as_json(la_vstring *vstr, asn_TYPE_descriptor_t *td, const void *sptr, int indent);
+LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_output_cpdlc_as_json);
 
 #endif // !LA_ASN1_FORMAT_CPDLC_H

@@ -23,257 +23,242 @@ char const *la_value2enum(asn_TYPE_descriptor_t *td, long const value) {
 	return enum_map->enum_name;
 }
 
-void la_format_INTEGER_with_unit_as_text(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td,
-		void const *sptr, int indent, char const * const unit, double multiplier, int decimal_places) {
-	LA_UNUSED(td);
-	LA_CAST_PTR(val, long *, sptr);
-	LA_ISPRINTF(vstr, indent, "%s: %.*f%s\n", label, decimal_places, (double)(*val) * multiplier, unit);
+void la_format_INTEGER_with_unit_as_text(la_asn1_formatter_params p,
+		char const *unit, double multiplier, int decimal_places) {
+	long const *val = p.sptr;
+	LA_ISPRINTF(p.vstr, p.indent, "%s: %.*f%s\n", p.label, decimal_places, (double)(*val) * multiplier, unit);
 }
 
-void la_format_INTEGER_with_unit_as_json(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td,
-		void const *sptr, int indent, char const * const unit, double multiplier, int decimal_places) {
-	LA_UNUSED(td);
-	LA_UNUSED(indent);
-	LA_CAST_PTR(valptr, long *, sptr);
-	double val = (double)(*valptr) * multiplier;
-	la_json_object_start(vstr, label);
-	if(decimal_places > 0) {
-		la_json_append_double(vstr, "val", val);
-	} else {
-		la_json_append_long(vstr, "val", (long)val);
-	}
-	la_json_append_string(vstr, "unit", unit);
-	la_json_object_end(vstr);
+void la_format_INTEGER_with_unit_as_json(la_asn1_formatter_params p,
+		char const *unit, double multiplier) {
+	long const *val = p.sptr;
+	la_json_object_start(p.vstr, p.label);
+	la_json_append_double(p.vstr, "val", (double)(*val) * multiplier);
+	la_json_append_string(p.vstr, "unit", unit);
+	la_json_object_end(p.vstr);
 }
 
-void la_format_CHOICE_as_text(la_vstring *vstr, char const * const label, la_dict const * const choice_labels,
-		asn1_output_fun_t cb, asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
-
-	asn_CHOICE_specifics_t *specs = (asn_CHOICE_specifics_t *)td->specifics;
-	int present = _fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
-	if(label != NULL) {
-		LA_ISPRINTF(vstr, indent, "%s:\n", label);
-		indent++;
+void la_format_CHOICE_as_text(la_asn1_formatter_params p, la_dict const *choice_labels,
+		la_asn1_formatter_fun cb) {
+	asn_CHOICE_specifics_t *specs = p.td->specifics;
+	int present = _fetch_present_idx(p.sptr, specs->pres_offset, specs->pres_size);
+	if(p.label != NULL) {
+		LA_ISPRINTF(p.vstr, p.indent, "%s:\n", p.label);
+		p.indent++;
 	}
 	if(choice_labels != NULL) {
-		char *descr = la_dict_search(choice_labels, present);
+		char const *descr = la_dict_search(choice_labels, present);
 		if(descr != NULL) {
-			LA_ISPRINTF(vstr, indent, "%s\n", descr);
+			LA_ISPRINTF(p.vstr, p.indent, "%s\n", descr);
 		} else {
-			LA_ISPRINTF(vstr, indent, "<no description for CHOICE value %d>\n", present);
+			LA_ISPRINTF(p.vstr, p.indent, "<no description for CHOICE value %d>\n", present);
 		}
-		indent++;
+		p.indent++;
 	}
-	if(present > 0 && present <= td->elements_count) {
-		asn_TYPE_member_t *elm = &td->elements[present-1];
+	if(present > 0 && present <= p.td->elements_count) {
+		asn_TYPE_member_t *elm = &p.td->elements[present-1];
 		void const *memb_ptr;
 
 		if(elm->flags & ATF_POINTER) {
-			memb_ptr = *(const void * const *)((const char *)sptr + elm->memb_offset);
+			memb_ptr = *(void const * const *)((char const *)p.sptr + elm->memb_offset);
 			if(!memb_ptr) {
-				LA_ISPRINTF(vstr, indent, "%s: <not present>\n", elm->name);
+				LA_ISPRINTF(p.vstr, p.indent, "%s: <not present>\n", elm->name);
 				return;
 			}
 		} else {
-			memb_ptr = (const void *)((const char *)sptr + elm->memb_offset);
+			memb_ptr = (void const *)((char const *)p.sptr + elm->memb_offset);
 		}
 
-		cb(vstr, elm->type, memb_ptr, indent);
+		p.td = elm->type;
+		p.sptr = memb_ptr;
+		cb(p);
 	} else {
-		LA_ISPRINTF(vstr, indent, "-- %s: value %d out of range\n", td->name, present);
+		LA_ISPRINTF(p.vstr, p.indent, "-- %s: value %d out of range\n", p.td->name, present);
 	}
 }
 
-void la_format_CHOICE_as_json(la_vstring *vstr, char const * const label, la_dict const * const choice_labels,
-		asn1_output_fun_t cb, asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
-
-	asn_CHOICE_specifics_t *specs = (asn_CHOICE_specifics_t *)td->specifics;
-	int present = _fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
-	la_json_object_start(vstr, label);
+void la_format_CHOICE_as_json(la_asn1_formatter_params p, la_dict const *choice_labels,
+		la_asn1_formatter_fun cb) {
+	asn_CHOICE_specifics_t const *specs = p.td->specifics;
+	int present = _fetch_present_idx(p.sptr, specs->pres_offset, specs->pres_size);
+	la_json_object_start(p.vstr, p.label);
 	if(choice_labels != NULL) {
-		char *descr = la_dict_search(choice_labels, present);
-		la_json_append_string(vstr, "choice_label", descr != NULL ? descr : "");
+		char const *descr = la_dict_search(choice_labels, present);
+		la_json_append_string(p.vstr, "choice_label", descr != NULL ? descr : "");
 	}
-	if(present > 0 && present <= td->elements_count) {
-		asn_TYPE_member_t *elm = &td->elements[present-1];
+	if(present > 0 && present <= p.td->elements_count) {
+		asn_TYPE_member_t *elm = &p.td->elements[present-1];
 		void const *memb_ptr;
 
 		if(elm->flags & ATF_POINTER) {
-			memb_ptr = *(const void * const *)((const char *)sptr + elm->memb_offset);
+			memb_ptr = *(void const * const *)((char const *)p.sptr + elm->memb_offset);
 			if(!memb_ptr) {
 				goto end;
 			}
 		} else {
-			memb_ptr = (const void *)((const char *)sptr + elm->memb_offset);
+			memb_ptr = (void const *)((char const *)p.sptr + elm->memb_offset);
 		}
-		la_json_append_string(vstr, "choice", elm->name);
-		la_json_object_start(vstr, "data");
-		cb(vstr, elm->type, memb_ptr, indent);
-		la_json_object_end(vstr);
+		la_json_append_string(p.vstr, "choice", elm->name);
+		la_json_object_start(p.vstr, "data");
+		p.td = elm->type;
+		p.sptr = memb_ptr;
+		cb(p);
+		la_json_object_end(p.vstr);
 	}
 end:
-	la_json_object_end(vstr);
+	la_json_object_end(p.vstr);
 }
 
-void la_format_SEQUENCE_as_text(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
-		asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
-	if(label != NULL) {
-		LA_ISPRINTF(vstr, indent, "%s:\n", label);
-		indent++;
+void la_format_SEQUENCE_as_text(la_asn1_formatter_params p, la_asn1_formatter_fun cb) {
+	if(p.label != NULL) {
+		LA_ISPRINTF(p.vstr, p.indent, "%s:\n", p.label);
+		p.indent++;
 	}
-	for(int edx = 0; edx < td->elements_count; edx++) {
-		asn_TYPE_member_t *elm = &td->elements[edx];
-		const void *memb_ptr;
+	la_asn1_formatter_params cb_p = p;
+	for(int edx = 0; edx < p.td->elements_count; edx++) {
+		asn_TYPE_member_t *elm = &p.td->elements[edx];
+		void const *memb_ptr;
 
 		if(elm->flags & ATF_POINTER) {
-			memb_ptr = *(const void * const *)((const char *)sptr + elm->memb_offset);
+			memb_ptr = *(void const * const *)((char const *)p.sptr + elm->memb_offset);
 			if(!memb_ptr) {
 				continue;
 			}
 		} else {
-			memb_ptr = (const void *)((const char *)sptr + elm->memb_offset);
+			memb_ptr = (void const *)((char const *)p.sptr + elm->memb_offset);
 		}
-		cb(vstr, elm->type, memb_ptr, indent);
+		cb_p.td = elm->type;
+		cb_p.sptr = memb_ptr;
+		cb(cb_p);
 	}
 }
 
-void la_format_SEQUENCE_as_json(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
-		asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
-
-	la_json_array_start(vstr, label);
-	for(int edx = 0; edx < td->elements_count; edx++) {
-		asn_TYPE_member_t *elm = &td->elements[edx];
-		const void *memb_ptr;
+void la_format_SEQUENCE_as_json(la_asn1_formatter_params p, la_asn1_formatter_fun cb) {
+	la_asn1_formatter_params cb_p = p;
+	la_json_array_start(p.vstr, p.label);
+	for(int edx = 0; edx < p.td->elements_count; edx++) {
+		asn_TYPE_member_t *elm = &p.td->elements[edx];
+		void const *memb_ptr;
 
 		if(elm->flags & ATF_POINTER) {
-			memb_ptr = *(const void * const *)((const char *)sptr + elm->memb_offset);
+			memb_ptr = *(void const * const *)((char const *)p.sptr + elm->memb_offset);
 			if(!memb_ptr) {
 				continue;
 			}
 		} else {
-			memb_ptr = (const void *)((const char *)sptr + elm->memb_offset);
+			memb_ptr = (void const *)((char const *)p.sptr + elm->memb_offset);
 		}
-		la_json_object_start(vstr, NULL);
-		cb(vstr, elm->type, memb_ptr, indent);
-		la_json_object_end(vstr);
+		cb_p.td = elm->type;
+		cb_p.sptr = memb_ptr;
+		la_json_object_start(p.vstr, NULL);
+		cb(cb_p);
+		la_json_object_end(p.vstr);
 	}
-	la_json_array_end(vstr);
+	la_json_array_end(p.vstr);
 }
 
-
-void la_format_SEQUENCE_OF_as_text(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
-		asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
-	if(label != NULL) {
-		LA_ISPRINTF(vstr, indent, "%s:\n", label);
-		indent++;
+void la_format_SEQUENCE_OF_as_text(la_asn1_formatter_params p, la_asn1_formatter_fun cb) {
+	if(p.label != NULL) {
+		LA_ISPRINTF(p.vstr, p.indent, "%s:\n", p.label);
+		p.indent++;
 	}
-	asn_TYPE_member_t *elm = td->elements;
-	const asn_anonymous_set_ *list = _A_CSET_FROM_VOID(sptr);
+	asn_TYPE_member_t *elm = p.td->elements;
+	asn_anonymous_set_ const *list = _A_CSET_FROM_VOID(p.sptr);
 	for(int i = 0; i < list->count; i++) {
-		const void *memb_ptr = list->array[i];
+		void const *memb_ptr = list->array[i];
 		if(memb_ptr == NULL) {
 			continue;
 		}
-		cb(vstr, elm->type, memb_ptr, indent);
+		p.td = elm->type;
+		p.sptr = memb_ptr;
+		cb(p);
 	}
 }
 
-void la_format_SEQUENCE_OF_as_json(la_vstring *vstr, char const * const label, asn1_output_fun_t cb,
-		asn_TYPE_descriptor_t *td, void const *sptr, int indent) {
-	la_json_array_start(vstr, label);
-	asn_TYPE_member_t *elm = td->elements;
-	const asn_anonymous_set_ *list = _A_CSET_FROM_VOID(sptr);
+void la_format_SEQUENCE_OF_as_json(la_asn1_formatter_params p, la_asn1_formatter_fun cb) {
+	la_json_array_start(p.vstr, p.label);
+	asn_TYPE_member_t *elm = p.td->elements;
+	asn_anonymous_set_ const *list = _A_CSET_FROM_VOID(p.sptr);
 	for(int i = 0; i < list->count; i++) {
-		const void *memb_ptr = list->array[i];
+		void const *memb_ptr = list->array[i];
 		if(memb_ptr == NULL) {
 			continue;
 		}
-		la_json_object_start(vstr, NULL);
-		cb(vstr, elm->type, memb_ptr, indent);
-		la_json_object_end(vstr);
+		la_json_object_start(p.vstr, NULL);
+		p.td = elm->type;
+		p.sptr = memb_ptr;
+		cb(p);
+		la_json_object_end(p.vstr);
 	}
-	la_json_array_end(vstr);
+	la_json_array_end(p.vstr);
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_any) {
-	if(label != NULL) {
-		LA_ISPRINTF(vstr, indent, "%s: ", label);
+	if(p.label != NULL) {
+		LA_ISPRINTF(p.vstr, p.indent, "%s: ", p.label);
 	} else {
-		LA_ISPRINTF(vstr, indent, "");
+		LA_ISPRINTF(p.vstr, p.indent, "%s", "");
 	}
-	asn_sprintf(vstr, td, sptr, 1);
+	asn_sprintf(p.vstr, p.td, p.sptr, 1);
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_OCTET_STRING) {
-	LA_CAST_PTR(octstr, OCTET_STRING_t *, sptr);
+	LA_CAST_PTR(octstr, OCTET_STRING_t *, p.sptr);
 	// replace nulls with periods for printf() to work correctly
 	char *buf = (char *)octstr->buf;
 	for(int i = 0; i < octstr->size; i++) {
 		if(buf[i] == '\0') buf[i] = '.';
 	}
-	if(label != NULL) {
-		LA_ISPRINTF(vstr, indent, "%s: ", label);
+	if(p.label != NULL) {
+		LA_ISPRINTF(p.vstr, p.indent, "%s: ", p.label);
 	} else {
-		LA_ISPRINTF(vstr, indent, "");
+		LA_ISPRINTF(p.vstr, p.indent, "");
 	}
-	asn_sprintf(vstr, td, sptr, 1);
+	asn_sprintf(p.vstr, p.td, p.sptr, 1);
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_OCTET_STRING) {
-	LA_UNUSED(td);
-	LA_UNUSED(indent);
-	LA_CAST_PTR(octstr, OCTET_STRING_t *, sptr);
+	LA_CAST_PTR(octstr, OCTET_STRING_t *, p.sptr);
 	char *buf = (char *)octstr->buf;
 	int size = octstr->size;
 	char *string_buf = LA_XCALLOC(size + 1, sizeof(char));
 	memcpy(string_buf, buf, size);
 	string_buf[size] = '\0';
-	la_json_append_string(vstr, label, string_buf);
+	la_json_append_string(p.vstr, p.label, string_buf);
 	LA_XFREE(string_buf);
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_NULL) {
-	LA_UNUSED(vstr);
-	LA_UNUSED(label);
-	LA_UNUSED(td);
-	LA_UNUSED(sptr);
-	LA_UNUSED(indent);
+	LA_UNUSED(p);
 	// NOOP
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_ENUM) {
-	long const value = *(long const *)sptr;
-	char const *s = la_value2enum(td, value);
+	long const value = *(long const *)p.sptr;
+	char const *s = la_value2enum(p.td, value);
 	if(s != NULL) {
-		LA_ISPRINTF(vstr, indent, "%s: %s\n", label, s);
+		LA_ISPRINTF(p.vstr, p.indent, "%s: %s\n", p.label, s);
 	} else {
-		LA_ISPRINTF(vstr, indent, "%s: %ld\n", label, value);
+		LA_ISPRINTF(p.vstr, p.indent, "%s: %ld\n", p.label, value);
 	}
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_ENUM) {
-	LA_UNUSED(indent);
-	long const value = *(long const *)sptr;
-	char const *s = la_value2enum(td, value);
+	long const value = *(long const *)p.sptr;
+	char const *s = la_value2enum(p.td, value);
 	if(s != NULL) {
-		la_json_append_string(vstr, label, s);
+		la_json_append_string(p.vstr, p.label, s);
 	} else {
-		la_json_append_long(vstr, label, value);
+		la_json_append_long(p.vstr, p.label, value);
 	}
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_long) {
-	LA_UNUSED(td);
-	LA_UNUSED(indent);
-
-	LA_CAST_PTR(valptr, long *, sptr);
-	la_json_append_long(vstr, label, *valptr);
+	LA_CAST_PTR(valptr, long *, p.sptr);
+	la_json_append_long(p.vstr, p.label, *valptr);
 }
 
 LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_json_bool) {
-	LA_UNUSED(td);
-	LA_UNUSED(indent);
-
-	LA_CAST_PTR(valptr, BOOLEAN_t *, sptr);
-	la_json_append_bool(vstr, label, (*valptr) ? true : false);
+	LA_CAST_PTR(valptr, BOOLEAN_t *, p.sptr);
+	la_json_append_bool(p.vstr, p.label, (*valptr) ? true : false);
 }
