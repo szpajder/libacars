@@ -194,7 +194,7 @@ void la_format_SEQUENCE_OF_as_json(la_asn1_formatter_params p, la_asn1_formatter
 	la_json_array_end(p.vstr);
 }
 
-LA_ASN1_FORMATTER_FUN(la_asn1_format_text_any) {
+LA_ASN1_FORMATTER_FUN(la_asn1_format_any_as_text) {
 	if(p.label != NULL) {
 		LA_ISPRINTF(p.vstr, p.indent, "%s: ", p.label);
 	} else {
@@ -203,7 +203,7 @@ LA_ASN1_FORMATTER_FUN(la_asn1_format_text_any) {
 	asn_sprintf(p.vstr, p.td, p.sptr, 1);
 }
 
-LA_ASN1_FORMATTER_FUN(la_asn1_format_text_OCTET_STRING) {
+LA_ASN1_FORMATTER_FUN(la_asn1_format_OCTET_STRING_as_text) {
 	LA_CAST_PTR(octstr, OCTET_STRING_t *, p.sptr);
 	// replace nulls with periods for printf() to work correctly
 	char *buf = (char *)octstr->buf;
@@ -218,7 +218,7 @@ LA_ASN1_FORMATTER_FUN(la_asn1_format_text_OCTET_STRING) {
 	asn_sprintf(p.vstr, p.td, p.sptr, 1);
 }
 
-LA_ASN1_FORMATTER_FUN(la_asn1_format_json_OCTET_STRING) {
+LA_ASN1_FORMATTER_FUN(la_asn1_format_OCTET_STRING_as_json) {
 	LA_CAST_PTR(octstr, OCTET_STRING_t *, p.sptr);
 	char *buf = (char *)octstr->buf;
 	int size = octstr->size;
@@ -229,12 +229,12 @@ LA_ASN1_FORMATTER_FUN(la_asn1_format_json_OCTET_STRING) {
 	LA_XFREE(string_buf);
 }
 
-LA_ASN1_FORMATTER_FUN(la_asn1_format_text_NULL) {
+LA_ASN1_FORMATTER_FUN(la_asn1_format_NULL_as_text) {
 	LA_UNUSED(p);
 	// NOOP
 }
 
-LA_ASN1_FORMATTER_FUN(la_asn1_format_text_ENUM) {
+LA_ASN1_FORMATTER_FUN(la_asn1_format_ENUM_as_text) {
 	long const value = *(long const *)p.sptr;
 	char const *s = la_value2enum(p.td, value);
 	if(s != NULL) {
@@ -244,7 +244,7 @@ LA_ASN1_FORMATTER_FUN(la_asn1_format_text_ENUM) {
 	}
 }
 
-LA_ASN1_FORMATTER_FUN(la_asn1_format_json_ENUM) {
+LA_ASN1_FORMATTER_FUN(la_asn1_format_ENUM_as_json) {
 	long const value = *(long const *)p.sptr;
 	char const *s = la_value2enum(p.td, value);
 	if(s != NULL) {
@@ -254,12 +254,12 @@ LA_ASN1_FORMATTER_FUN(la_asn1_format_json_ENUM) {
 	}
 }
 
-LA_ASN1_FORMATTER_FUN(la_asn1_format_json_long) {
+LA_ASN1_FORMATTER_FUN(la_asn1_format_long_as_json) {
 	LA_CAST_PTR(valptr, long *, p.sptr);
 	la_json_append_long(p.vstr, p.label, *valptr);
 }
 
-LA_ASN1_FORMATTER_FUN(la_asn1_format_json_bool) {
+LA_ASN1_FORMATTER_FUN(la_asn1_format_bool_as_json) {
 	LA_CAST_PTR(valptr, BOOLEAN_t *, p.sptr);
 	la_json_append_bool(p.vstr, p.label, (*valptr) ? true : false);
 }

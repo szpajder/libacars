@@ -19,10 +19,10 @@ void la_format_CHOICE_as_text(la_asn1_formatter_params p, la_dict const *choice_
 void la_format_SEQUENCE_as_text(la_asn1_formatter_params p, la_asn1_formatter_fun cb);
 void la_format_SEQUENCE_OF_as_text(la_asn1_formatter_params p, la_asn1_formatter_fun cb);
 
-LA_ASN1_FORMATTER_FUN(la_asn1_format_text_any);
-LA_ASN1_FORMATTER_FUN(la_asn1_format_text_OCTET_STRING);
-LA_ASN1_FORMATTER_FUN(la_asn1_format_text_NULL);
-LA_ASN1_FORMATTER_FUN(la_asn1_format_text_ENUM);
+LA_ASN1_FORMATTER_FUN(la_asn1_format_any_as_text);
+LA_ASN1_FORMATTER_FUN(la_asn1_format_OCTET_STRING_as_text);
+LA_ASN1_FORMATTER_FUN(la_asn1_format_NULL_as_text);
+LA_ASN1_FORMATTER_FUN(la_asn1_format_ENUM_as_text);
 
 void la_format_INTEGER_with_unit_as_json(la_asn1_formatter_params p,
 		char const *unit, double multiplier);
@@ -31,9 +31,9 @@ void la_format_CHOICE_as_json(la_asn1_formatter_params p, la_dict const *choice_
 void la_format_SEQUENCE_as_json(la_asn1_formatter_params p, la_asn1_formatter_fun cb);
 void la_format_SEQUENCE_OF_as_json(la_asn1_formatter_params p, la_asn1_formatter_fun cb);
 
-LA_ASN1_FORMATTER_FUN(la_asn1_format_json_OCTET_STRING);
-LA_ASN1_FORMATTER_FUN(la_asn1_format_json_ENUM);
-LA_ASN1_FORMATTER_FUN(la_asn1_format_json_long);
-LA_ASN1_FORMATTER_FUN(la_asn1_format_json_bool);
+LA_ASN1_FORMATTER_FUN(la_asn1_format_OCTET_STRING_as_json);
+LA_ASN1_FORMATTER_FUN(la_asn1_format_ENUM_as_json);
+LA_ASN1_FORMATTER_FUN(la_asn1_format_long_as_json);
+LA_ASN1_FORMATTER_FUN(la_asn1_format_bool_as_json);
 
 #endif // !LA_ASN1_FORMAT_COMMON_H
