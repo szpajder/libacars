@@ -133,9 +133,12 @@ void la_format_SEQUENCE_as_text(la_asn1_formatter_params p, la_asn1_formatter_fu
 	}
 }
 
+// Prints ASN.1 SEQUENCE as JSON object.
+// All fields in the sequence must have unique types (and p.labels), otherwise
+// JSON keys will clash.
 void la_format_SEQUENCE_as_json(la_asn1_formatter_params p, la_asn1_formatter_fun cb) {
 	la_asn1_formatter_params cb_p = p;
-	la_json_array_start(p.vstr, p.label);
+	la_json_object_start(p.vstr, p.label);
 	for(int edx = 0; edx < p.td->elements_count; edx++) {
 		asn_TYPE_member_t *elm = &p.td->elements[edx];
 		void const *memb_ptr;
@@ -150,11 +153,9 @@ void la_format_SEQUENCE_as_json(la_asn1_formatter_params p, la_asn1_formatter_fu
 		}
 		cb_p.td = elm->type;
 		cb_p.sptr = memb_ptr;
-		la_json_object_start(p.vstr, NULL);
 		cb(cb_p);
-		la_json_object_end(p.vstr);
 	}
-	la_json_array_end(p.vstr);
+	la_json_object_end(p.vstr);
 }
 
 void la_format_SEQUENCE_OF_as_text(la_asn1_formatter_params p, la_asn1_formatter_fun cb) {
