@@ -20,28 +20,31 @@ static void la_json_trim_comma(la_vstring * const vstr) {
 	}
 }
 
-static char *la_json_escapechars(char const * const str) {
-	la_assert(str != NULL);
-	bool needs_escaping = false;
-	size_t orig_len = strlen(str);
-	size_t new_len = orig_len;
-	if(orig_len > 0) {
-		for(size_t i = 0; i < orig_len; i++) {
-			if(str[i] < ' ' || str[i] == '\"' || str[i] == '\\') {
-				needs_escaping = true;
+// Note: this function escapes raw ASCII bytes. It does not assume that the input
+// is valid Unicode, so it does not attempt to guess Unicode codepoints from
+// the input byte string.
+static char *la_json_escapechars(uint8_t const *buf, size_t len) {
+	la_assert(buf != NULL);
+	size_t new_len = len;
+	if(len > 0) {
+		for(size_t i = 0; i < len; i++) {
+			la_debug_print(D_INFO, "char: 0x%x\n", buf[i]);
+			if(buf[i] < ' ' || buf[i] > 0x7e || buf[i] == '\"' || buf[i] == '\\') {
+				la_debug_print(D_INFO, "char: 0x%x needs escaping\n", buf[i]);
 				new_len += 5;           // to fit the \uNNNN form
 			}
 		}
 	}
-	if(!needs_escaping) {
-		return strdup(str);
+	char *out = LA_XCALLOC(new_len + 1, sizeof(uint8_t));   // Add space for NULL terminator
+	if(new_len == len) {
+		memcpy(out, buf, len);
+		goto end;
 	}
-	char *ret = LA_XCALLOC(new_len + 1, sizeof(char));
-	char *outptr = ret;
-	for(size_t i = 0; i < orig_len; i++) {
-		if(str[i] < ' ' || str[i] == '\"' || str[i] == '\\') {
+	char *outptr = out;
+	for(size_t i = 0; i < len; i++) {
+		if(buf[i] < ' ' || buf[i] > 0x7e || buf[i] == '\"' || buf[i] == '\\') {
 			*outptr++ = '\\';
-			switch(str[i]) {
+			switch(buf[i]) {
 				case '\b':
 					*outptr++ = 'b';
 					break;
@@ -64,14 +67,16 @@ static char *la_json_escapechars(char const * const str) {
 					*outptr++ = '\\';
 					break;
 				default:
-					sprintf(outptr, "u%04x", (uint8_t)str[i]);
+					sprintf(outptr, "u%04x", buf[i]);
 					outptr += 5;
 			}
 		} else {
-			*outptr++ = str[i];
+			*outptr++ = buf[i];
 		}
 	}
-	return ret;
+end:
+	out[new_len] = '\0';
+	return out;
 }
 
 static inline void la_json_print_key(la_vstring * const vstr, char const * const key) {
@@ -101,13 +106,27 @@ void la_json_append_long(la_vstring * const vstr, char const * const key, long c
 	la_vstring_append_sprintf(vstr, "%ld,", val);
 }
 
+void la_json_append_octet_string_as_string(la_vstring * const vstr, char const
+		* const key, uint8_t const * const buf, size_t len) {
+	la_assert(vstr != NULL);
+	if(buf == NULL) {
+		return;
+	}
+	la_json_print_key(vstr, key);
+	char *escaped = la_json_escapechars(buf, len);
+	la_vstring_append_sprintf(vstr, "\"%s\",", escaped);
+	LA_XFREE(escaped);
+}
+
+// Note: this function does not handle NULL characters inside the string.
+// Whenever this might be an issue, la_json_append_octet_string_as_string shall be used instead.
 void la_json_append_string(la_vstring * const vstr, char const * const key, char const * const val) {
 	la_assert(vstr != NULL);
 	if(val == NULL) {
 		return;
 	}
 	la_json_print_key(vstr, key);
-	char *escaped = la_json_escapechars(val);
+	char *escaped = la_json_escapechars((uint8_t const *)val, strlen(val));
 	la_vstring_append_sprintf(vstr, "\"%s\",", escaped);
 	LA_XFREE(escaped);
 }

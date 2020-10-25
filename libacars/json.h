@@ -27,6 +27,8 @@ void la_json_append_char(la_vstring * const vstr, char const * const key, char c
 void la_json_append_string(la_vstring * const vstr, char const * const key, char const * const val);
 void la_json_append_octet_string(la_vstring * const vstr, char const * const key,
 		uint8_t const * const buf, size_t len);
+void la_json_append_octet_string_as_string(la_vstring * const vstr, char const *key,
+		uint8_t const * const buf, size_t len);
 void la_json_start(la_vstring * const vstr);
 void la_json_end(la_vstring * const vstr);
 
