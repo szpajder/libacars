@@ -29,7 +29,7 @@ typedef struct {
 	char const *label;
 } la_asn1_formatter;
 
-#define LA_ASN1_FORMATTER_PROTOTYPE(x) \
+#define LA_ASN1_FORMATTER_FUN(x) \
 	void x(la_asn1_formatter_params p)
 
 // asn1-util.c

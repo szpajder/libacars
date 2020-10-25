@@ -342,115 +342,115 @@ la_dict const FANSATCDownlinkMsgElementId_labels[] = {
  ************************/
 
 
-LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_output_cpdlc_as_text) {
+LA_ASN1_FORMATTER_FUN(la_asn1_output_cpdlc_as_text) {
 	la_asn1_output(p, la_asn1_cpdlc_text_formatter_table, la_asn1_cpdlc_text_formatter_table_len, true);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_CHOICE_cpdlc) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_CHOICE_cpdlc) {
 	la_format_CHOICE_as_text(p, NULL, la_asn1_output_cpdlc_as_text);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_SEQUENCE_cpdlc) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_SEQUENCE_cpdlc) {
 	la_format_SEQUENCE_as_text(p, la_asn1_output_cpdlc_as_text);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_SEQUENCE_OF_cpdlc) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_SEQUENCE_OF_cpdlc) {
 	la_format_SEQUENCE_OF_as_text(p, la_asn1_output_cpdlc_as_text);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSAltimeterEnglish) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSAltimeterEnglish) {
 	la_format_INTEGER_with_unit_as_text(p, " inHg", 0.01, 2);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSAltimeterMetric) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSAltimeterMetric) {
 	la_format_INTEGER_with_unit_as_text(p, " hPa", 0.1, 1);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSAltitudeGNSSFeet) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSAltitudeGNSSFeet) {
 	la_format_INTEGER_with_unit_as_text(p, " ft", 1, 0);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSAltitudeFlightLevelMetric) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSAltitudeFlightLevelMetric) {
 	la_format_INTEGER_with_unit_as_text(p, " m", 10, 0);
 }
 
-LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_Degrees) {
+LA_ASN1_FORMATTER_FUN(la_asn1_format_text_Degrees) {
 	la_format_INTEGER_with_unit_as_text(p, " deg", 1, 0);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSDistanceOffsetNm) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSDistanceOffsetNm) {
 	la_format_INTEGER_with_unit_as_text(p, " nm", 1, 0);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSDistanceMetric) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSDistanceMetric) {
 	la_format_INTEGER_with_unit_as_text(p, " km", 1, 0);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSFeetX10) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSFeetX10) {
 	la_format_INTEGER_with_unit_as_text(p, " ft", 10, 0);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSFrequencyhf) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSFrequencyhf) {
 	la_format_INTEGER_with_unit_as_text(p, " kHz", 1, 0);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSFrequencykHzToMHz) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSFrequencykHzToMHz) {
 	la_format_INTEGER_with_unit_as_text(p, " MHz", 0.001, 3);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSDistanceEnglish) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSDistanceEnglish) {
 	la_format_INTEGER_with_unit_as_text(p, " nm", 0.1, 1);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLegTime) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSLegTime) {
 	la_format_INTEGER_with_unit_as_text(p, " min", 0.1, 1);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSMeters) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSMeters) {
 	la_format_INTEGER_with_unit_as_text(p, " m", 1, 0);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSTemperatureC) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSTemperatureC) {
 	la_format_INTEGER_with_unit_as_text(p, " C", 1, 0);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSTemperatureF) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSTemperatureF) {
 	la_format_INTEGER_with_unit_as_text(p, " F", 1, 0);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSWindSpeedEnglish) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSWindSpeedEnglish) {
 	la_format_INTEGER_with_unit_as_text(p, " kts", 1, 0);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSWindSpeedMetric) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSWindSpeedMetric) {
 	la_format_INTEGER_with_unit_as_text(p, " km/h", 1, 0);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSRTATolerance) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSRTATolerance) {
 	la_format_INTEGER_with_unit_as_text(p, " min", 0.1, 1);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSSpeedEnglishX10) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSSpeedEnglishX10) {
 	la_format_INTEGER_with_unit_as_text(p, " kts", 10, 0);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSSpeedMetricX10) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSSpeedMetricX10) {
 	la_format_INTEGER_with_unit_as_text(p, " km/h", 10, 0);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSSpeedMach) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSSpeedMach) {
 	la_format_INTEGER_with_unit_as_text(p, "", 0.01, 2);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSVerticalRateEnglish) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSVerticalRateEnglish) {
 	la_format_INTEGER_with_unit_as_text(p, " ft/min", 100, 0);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSVerticalRateMetric) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSVerticalRateMetric) {
 	la_format_INTEGER_with_unit_as_text(p, " m/min", 10, 0);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSBeaconCode) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSBeaconCode) {
 	LA_CAST_PTR(code, FANSBeaconCode_t *, p.sptr);
 	long **cptr = code->list.array;
 	LA_ISPRINTF(p.vstr, p.indent, "%s: %ld%ld%ld%ld\n",
@@ -462,17 +462,17 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSBeaconCode) {
 			);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSTime) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSTime) {
 	LA_CAST_PTR(t, FANSTime_t *, p.sptr);
 	LA_ISPRINTF(p.vstr, p.indent, "%s: %02ld:%02ld\n", p.label, t->hours, t->minutes);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSTimestamp) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSTimestamp) {
 	LA_CAST_PTR(t, FANSTimestamp_t *, p.sptr);
 	LA_ISPRINTF(p.vstr, p.indent, "%s: %02ld:%02ld:%02ld\n", p.label, t->hours, t->minutes, t->seconds);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLatitude) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSLatitude) {
 	LA_CAST_PTR(lat, FANSLatitude_t *, p.sptr);
 	long const ldir = lat->latitudeDirection;
 	char const *ldir_name = la_value2enum(&asn_DEF_FANSLatitudeDirection, ldir);
@@ -492,7 +492,7 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLatitude) {
 	}
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLongitude) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSLongitude) {
 	LA_CAST_PTR(lat, FANSLongitude_t *, p.sptr);
 	long const ldir = lat->longitudeDirection;
 	char const *ldir_name = la_value2enum(&asn_DEF_FANSLongitudeDirection, ldir);
@@ -518,7 +518,7 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSLongitude) {
 // for that because the same type is used inside the SEQ-OF which would cause
 // the label to be printed for each element in the sequence). The same applies
 // to la_asn1_format_text_FANSATCDownlinkMessage.
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCUplinkMessage) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSATCUplinkMessage) {
 	LA_CAST_PTR(msg, FANSATCUplinkMessage_t *, p.sptr);
 	if(p.label != NULL) {
 		LA_ISPRINTF(p.vstr, p.indent, "%s:\n", p.label);
@@ -539,7 +539,7 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCUplinkMessage) {
 	}
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCDownlinkMessage) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSATCDownlinkMessage) {
 	LA_CAST_PTR(msg, FANSATCDownlinkMessage_t *, p.sptr);
 	if(p.label != NULL) {
 		LA_ISPRINTF(p.vstr, p.indent, "%s:\n", p.label);
@@ -560,11 +560,11 @@ static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCDownlinkMessage) {
 	}
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCDownlinkMsgElementId) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSATCDownlinkMsgElementId) {
 	la_format_CHOICE_as_text(p, FANSATCDownlinkMsgElementId_labels, la_asn1_output_cpdlc_as_text);
 }
 
-static LA_ASN1_FORMATTER_PROTOTYPE(la_asn1_format_text_FANSATCUplinkMsgElementId) {
+static LA_ASN1_FORMATTER_FUN(la_asn1_format_text_FANSATCUplinkMsgElementId) {
 	la_format_CHOICE_as_text(p, FANSATCUplinkMsgElementId_labels, la_asn1_output_cpdlc_as_text);
 }
 
