@@ -210,21 +210,6 @@ LA_ASN1_FORMATTER_FUN(la_asn1_format_any_as_string_as_json) {
 	la_vstring_destroy(tmp, true);
 }
 
-LA_ASN1_FORMATTER_FUN(la_asn1_format_OCTET_STRING_as_text) {
-	LA_CAST_PTR(octstr, OCTET_STRING_t *, p.sptr);
-	// replace nulls with periods for printf() to work correctly
-	char *buf = (char *)octstr->buf;
-	for(int i = 0; i < octstr->size; i++) {
-		if(buf[i] == '\0') buf[i] = '.';
-	}
-	if(p.label != NULL) {
-		LA_ISPRINTF(p.vstr, p.indent, "%s: ", p.label);
-	} else {
-		LA_ISPRINTF(p.vstr, p.indent, "");
-	}
-	asn_sprintf(p.vstr, p.td, p.sptr, 1);
-}
-
 LA_ASN1_FORMATTER_FUN(la_asn1_format_ENUM_as_text) {
 	long const value = *(long const *)p.sptr;
 	char const *s = la_value2enum(p.td, value);
