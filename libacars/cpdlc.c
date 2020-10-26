@@ -69,6 +69,7 @@ void la_cpdlc_format_text(la_vstring *vstr, void const * const data, int indent)
 				// asn_fprint does not indent the first line
 				LA_ISPRINTF(vstr, indent + 1, "");
 				asn_sprintf(vstr, msg->asn_type, msg->data, indent + 2);
+				LA_EOL(vstr);
 			}
 			la_asn1_output_cpdlc_as_text((la_asn1_formatter_params){
 					.vstr = vstr,

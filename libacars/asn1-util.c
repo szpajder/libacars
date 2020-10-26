@@ -56,6 +56,7 @@ void la_asn1_output(la_asn1_formatter_params p, la_asn1_formatter const *asn1_fo
 		LA_ISPRINTF(p.vstr, p.indent, "-- Formatter for type %s not found, ASN.1 dump follows:\n", p.td->name);
 		LA_ISPRINTF(p.vstr, p.indent, "%s", "");    // asn_sprintf does not indent the first line
 		asn_sprintf(p.vstr, p.td, p.sptr, p.indent+1);
+		LA_EOL(p.vstr);
 		LA_ISPRINTF(p.vstr, p.indent, "%s", "-- ASN.1 dump end\n");
 	}
 }

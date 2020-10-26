@@ -201,6 +201,7 @@ LA_ASN1_FORMATTER_FUN(la_asn1_format_any_as_text) {
 		LA_ISPRINTF(p.vstr, p.indent, "%s", "");
 	}
 	asn_sprintf(p.vstr, p.td, p.sptr, 1);
+	LA_EOL(p.vstr);
 }
 
 LA_ASN1_FORMATTER_FUN(la_asn1_format_any_as_string_as_json) {
