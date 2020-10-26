@@ -250,3 +250,17 @@ xmlBufferPtr la_prettify_xml(char *buf) {
 	return NULL;
 }
 #endif
+
+uint32_t la_reverse(uint32_t v, int numbits) {
+	uint32_t r = v;                         // r will be reversed bits of v; first get LSB of v
+	int s = sizeof(v) * CHAR_BIT - 1;       // extra shift needed at end
+
+	for (v >>= 1; v; v >>= 1) {
+		r <<= 1;
+		r |= v & 1;
+		s--;
+	}
+	r <<= s;                                // shift when v's highest bits are zero
+	r >>= 32 - numbits;
+	return r;
+}
