@@ -30,7 +30,7 @@ void la_format_CHOICE_as_json(la_asn1_formatter_params p, la_dict const *choice_
 void la_format_SEQUENCE_as_json(la_asn1_formatter_params p, la_asn1_formatter_fun cb);
 void la_format_SEQUENCE_OF_as_json(la_asn1_formatter_params p, la_asn1_formatter_fun cb);
 
-LA_ASN1_FORMATTER_FUN(la_asn1_format_OCTET_STRING_as_json);
+LA_ASN1_FORMATTER_FUN(la_asn1_format_any_as_string_as_json);
 LA_ASN1_FORMATTER_FUN(la_asn1_format_ENUM_as_json);
 LA_ASN1_FORMATTER_FUN(la_asn1_format_long_as_json);
 LA_ASN1_FORMATTER_FUN(la_asn1_format_bool_as_json);

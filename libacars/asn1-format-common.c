@@ -203,6 +203,13 @@ LA_ASN1_FORMATTER_FUN(la_asn1_format_any_as_text) {
 	asn_sprintf(p.vstr, p.td, p.sptr, 1);
 }
 
+LA_ASN1_FORMATTER_FUN(la_asn1_format_any_as_string_as_json) {
+	la_vstring *tmp = la_vstring_new();
+	asn_sprintf(tmp, p.td, p.sptr, 0);
+	la_json_append_octet_string_as_string(p.vstr, p.label, (uint8_t const *)tmp->str, tmp->len);
+	la_vstring_destroy(tmp, true);
+}
+
 LA_ASN1_FORMATTER_FUN(la_asn1_format_OCTET_STRING_as_text) {
 	LA_CAST_PTR(octstr, OCTET_STRING_t *, p.sptr);
 	// replace nulls with periods for printf() to work correctly
@@ -216,17 +223,6 @@ LA_ASN1_FORMATTER_FUN(la_asn1_format_OCTET_STRING_as_text) {
 		LA_ISPRINTF(p.vstr, p.indent, "");
 	}
 	asn_sprintf(p.vstr, p.td, p.sptr, 1);
-}
-
-LA_ASN1_FORMATTER_FUN(la_asn1_format_OCTET_STRING_as_json) {
-	LA_CAST_PTR(octstr, OCTET_STRING_t *, p.sptr);
-	char *buf = (char *)octstr->buf;
-	int size = octstr->size;
-	char *string_buf = LA_XCALLOC(size + 1, sizeof(char));
-	memcpy(string_buf, buf, size);
-	string_buf[size] = '\0';
-	la_json_append_string(p.vstr, p.label, string_buf);
-	LA_XFREE(string_buf);
 }
 
 LA_ASN1_FORMATTER_FUN(la_asn1_format_ENUM_as_text) {
