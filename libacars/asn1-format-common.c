@@ -17,7 +17,7 @@
 #include <libacars/vstring.h>                   // la_vstring, la_vstring_append_sprintf(), LA_ISPRINTF
 #include <libacars/json.h>                      // la_json_*()
 
-char const *la_value2enum(asn_TYPE_descriptor_t *td, long value) {
+char const *la_asn1_value2enum(asn_TYPE_descriptor_t *td, long value) {
 	if(td == NULL) return NULL;
 	asn_INTEGER_enum_map_t const *enum_map = INTEGER_map_value2enum(td->specifics, value);
 	if(enum_map == NULL) return NULL;
@@ -328,7 +328,7 @@ LA_ASN1_FORMATTER_FUN(la_asn1_format_label_only_as_json) {
 
 LA_ASN1_FORMATTER_FUN(la_asn1_format_ENUM_as_text) {
 	long const value = *(long const *)p.sptr;
-	char const *s = la_value2enum(p.td, value);
+	char const *s = la_asn1_value2enum(p.td, value);
 	if(s != NULL) {
 		LA_ISPRINTF(p.vstr, p.indent, "%s: %s\n", p.label, s);
 	} else {
@@ -338,7 +338,7 @@ LA_ASN1_FORMATTER_FUN(la_asn1_format_ENUM_as_text) {
 
 LA_ASN1_FORMATTER_FUN(la_asn1_format_ENUM_as_json) {
 	long const value = *(long const *)p.sptr;
-	char const *s = la_value2enum(p.td, value);
+	char const *s = la_asn1_value2enum(p.td, value);
 	if(s != NULL) {
 		la_json_append_string(p.vstr, p.label, s);
 	} else {

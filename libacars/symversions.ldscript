@@ -129,6 +129,8 @@ ACARS_2.1 {
     la_asn1_format_label_only_as_json;
     la_asn1_format_label_only_as_text;
     la_asn1_format_long_as_json;
+    la_asn1_value2enum;
+    la_format_BIT_STRING_as_json;
     la_format_BIT_STRING_as_text;
     la_format_CHOICE_as_json;
     la_format_CHOICE_as_text;
@@ -140,7 +142,6 @@ ACARS_2.1 {
     la_format_SEQUENCE_OF_as_text;
     la_format_SEQUENCE_as_json;
     la_format_SEQUENCE_as_text;
-    la_format_BIT_STRING_as_json;
     la_json_append_octet_string_as_string;
   local:
     *;

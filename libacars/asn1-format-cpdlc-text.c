@@ -475,7 +475,7 @@ static LA_ASN1_FORMATTER_FUN(la_asn1_format_FANSTimestamp_as_text) {
 static LA_ASN1_FORMATTER_FUN(la_asn1_format_FANSLatitude_as_text) {
 	FANSLatitude_t const *lat = p.sptr;
 	long const ldir = lat->latitudeDirection;
-	char const *ldir_name = la_value2enum(&asn_DEF_FANSLatitudeDirection, ldir);
+	char const *ldir_name = la_asn1_value2enum(&asn_DEF_FANSLatitudeDirection, ldir);
 	if(lat->minutesLatLon != NULL) {
 		LA_ISPRINTF(p.vstr, p.indent, "%s:   %02ld %04.1f' %s\n",
 				p.label,
@@ -495,7 +495,7 @@ static LA_ASN1_FORMATTER_FUN(la_asn1_format_FANSLatitude_as_text) {
 static LA_ASN1_FORMATTER_FUN(la_asn1_format_FANSLongitude_as_text) {
 	FANSLongitude_t const *lat = p.sptr;
 	long const ldir = lat->longitudeDirection;
-	char const *ldir_name = la_value2enum(&asn_DEF_FANSLongitudeDirection, ldir);
+	char const *ldir_name = la_asn1_value2enum(&asn_DEF_FANSLongitudeDirection, ldir);
 	if(lat->minutesLatLon != NULL) {
 		LA_ISPRINTF(p.vstr, p.indent, "%s: %03ld %04.1f' %s\n",
 				p.label,

@@ -173,7 +173,7 @@ static LA_ASN1_FORMATTER_FUN(la_asn1_format_FANSTimestamp_as_json) {
 static LA_ASN1_FORMATTER_FUN(la_asn1_format_FANSLatitude_as_json) {
 	FANSLatitude_t const *lat = p.sptr;
 	long const ldir = lat->latitudeDirection;
-	char const *ldir_name = la_value2enum(&asn_DEF_FANSLatitudeDirection, ldir);
+	char const *ldir_name = la_asn1_value2enum(&asn_DEF_FANSLatitudeDirection, ldir);
 	la_json_object_start(p.vstr, p.label);
 	la_json_append_long(p.vstr, "deg", lat->latitudeDegrees);
 	if(lat->minutesLatLon != NULL) {
@@ -186,7 +186,7 @@ static LA_ASN1_FORMATTER_FUN(la_asn1_format_FANSLatitude_as_json) {
 static LA_ASN1_FORMATTER_FUN(la_asn1_format_FANSLongitude_as_json) {
 	FANSLongitude_t const *lat = p.sptr;
 	long const ldir = lat->longitudeDirection;
-	char const *ldir_name = la_value2enum(&asn_DEF_FANSLongitudeDirection, ldir);
+	char const *ldir_name = la_asn1_value2enum(&asn_DEF_FANSLongitudeDirection, ldir);
 	la_json_object_start(p.vstr, p.label);
 	la_json_append_long(p.vstr, "deg", lat->longitudeDegrees);
 	if(lat->minutesLatLon != NULL) {

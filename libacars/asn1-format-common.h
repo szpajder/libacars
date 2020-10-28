@@ -11,7 +11,7 @@
 #include <libacars/util.h>                  // la_dict
 #include <libacars/vstring.h>               // la_vstring
 
-char const *la_value2enum(asn_TYPE_descriptor_t *td, long value);
+char const *la_asn1_value2enum(asn_TYPE_descriptor_t *td, long value);
 void la_format_INTEGER_with_unit_as_text(la_asn1_formatter_params p,
 		char const *unit, double multiplier, int decimal_places);
 void la_format_CHOICE_as_text(la_asn1_formatter_params p, la_dict const *choice_labels,
