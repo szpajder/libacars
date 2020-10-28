@@ -74,7 +74,7 @@ static bool la_config_option_set(char const *name, la_config_item const item) {
 	return la_hash_insert(config, new_name, new_item);
 }
 
-bool la_config_set_bool(char const *name, bool const value) {
+bool la_config_set_bool(char const *name, bool value) {
 	if(name == NULL) {
 		return false;
 	}
@@ -85,7 +85,7 @@ bool la_config_set_bool(char const *name, bool const value) {
 	return true;
 }
 
-bool la_config_set_int(char const *name, long int const value) {
+bool la_config_set_int(char const *name, long int value) {
 	if(name == NULL) {
 		return false;
 	}
@@ -96,7 +96,7 @@ bool la_config_set_int(char const *name, long int const value) {
 	return true;
 }
 
-bool la_config_set_double(char const *name, double const value) {
+bool la_config_set_double(char const *name, double value) {
 	if(name == NULL) {
 		return false;
 	}

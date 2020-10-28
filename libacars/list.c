@@ -8,7 +8,7 @@
 #include <libacars/list.h>      // la_list
 #include <libacars/util.h>      // LA_XCALLOC, LA_XFREE
 
-la_list *la_list_next(la_list const * const l) {
+la_list *la_list_next(la_list const *l) {
 	if(l == NULL) {
 		return NULL;
 	}

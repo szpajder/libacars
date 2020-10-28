@@ -20,7 +20,7 @@
 #include <libacars/vstring.h>                       // la_vstring, la_vstring_append_sprintf()
 #include <libacars/json.h>                          // la_json_append_bool()
 
-la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
+la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 	if(buf == NULL)
 		return NULL;
 
@@ -50,12 +50,12 @@ la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	return node;
 }
 
-void la_cpdlc_format_text(la_vstring *vstr, void const * const data, int indent) {
+void la_cpdlc_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_cpdlc_msg *, data);
+	LA_CAST_PTR(msg, la_cpdlc_msg const *, data);
 	if(msg->err == true) {
 		LA_ISPRINTF(vstr, indent, "-- Unparseable FANS-1/A message\n");
 		return;
@@ -83,11 +83,11 @@ void la_cpdlc_format_text(la_vstring *vstr, void const * const data, int indent)
 	}
 }
 
-void la_cpdlc_format_json(la_vstring *vstr, void const * const data) {
+void la_cpdlc_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, la_cpdlc_msg *, data);
+	LA_CAST_PTR(msg, la_cpdlc_msg const *, data);
 	la_json_append_bool(vstr, "err", msg->err);
 	if(msg->err == true) {
 		return;

@@ -29,14 +29,14 @@ typedef enum {
 } la_arinc_app_type;
 
 typedef struct {
-	char const * const imi_string;
+	char const *imi_string;
 	la_arinc_imi imi;
 } la_arinc_imi_map;
 
 typedef struct {
 	la_arinc_app_type app_type;
-	char const * const description;
-	char const * const json_key;
+	char const *description;
+	char const *json_key;
 } la_arinc_imi_props;
 
 static la_arinc_imi_map const imi_map[LA_ARINC_IMI_CNT] = {
@@ -151,7 +151,7 @@ complete:
 	return imi_ptr + 1;
 }
 
-static bool la_is_crc_ok(char const * const text_part, uint8_t const * const binary_part, size_t const binary_part_len) {
+static bool la_is_crc_ok(char const *text_part, uint8_t const *binary_part, size_t binary_part_len) {
 	// compute CRC over IMI+air_reg+binary_part_with_CRC
 	size_t buflen = LA_ARINC_IMI_LEN + LA_ARINC_AIR_REG_LEN + binary_part_len;
 	uint8_t *buf = LA_XCALLOC(buflen, sizeof(uint8_t));
@@ -163,7 +163,7 @@ static bool la_is_crc_ok(char const * const text_part, uint8_t const * const bin
 	return result;
 }
 
-la_proto_node *la_arinc_parse(char const *txt, la_msg_dir const msg_dir) {
+la_proto_node *la_arinc_parse(char const *txt, la_msg_dir msg_dir) {
 	if(txt == NULL) {
 		return NULL;
 	}
@@ -218,23 +218,23 @@ cleanup:
 	return NULL;
 }
 
-void la_arinc_format_text(la_vstring * const vstr, void const * const data, int indent) {
+void la_arinc_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_arinc_msg *, data);
+	LA_CAST_PTR(msg, la_arinc_msg const *, data);
 	LA_ISPRINTF(vstr, indent, "%s:\n", imi_props[msg->imi].description);
 	if(!msg->crc_ok) {
 		LA_ISPRINTF(vstr, indent + 1, "-- CRC check failed\n");
 	}
 }
 
-void la_arinc_format_json(la_vstring * const vstr, void const * const data) {
+void la_arinc_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, la_arinc_msg *, data);
+	LA_CAST_PTR(msg, la_arinc_msg const *, data);
 	la_json_append_string(vstr, "msg_type", imi_props[msg->imi].json_key);
 	if(msg->imi == ARINC_MSG_UNKNOWN) {
 		return;

@@ -17,7 +17,7 @@
 #include <libacars/vstring.h>                   // la_vstring, la_vstring_append_sprintf(), LA_ISPRINTF
 #include <libacars/json.h>                      // la_json_*()
 
-char const *la_value2enum(asn_TYPE_descriptor_t *td, long const value) {
+char const *la_value2enum(asn_TYPE_descriptor_t *td, long value) {
 	if(td == NULL) return NULL;
 	asn_INTEGER_enum_map_t const *enum_map = INTEGER_map_value2enum(td->specifics, value);
 	if(enum_map == NULL) return NULL;
@@ -347,12 +347,12 @@ LA_ASN1_FORMATTER_FUN(la_asn1_format_ENUM_as_json) {
 }
 
 LA_ASN1_FORMATTER_FUN(la_asn1_format_long_as_json) {
-	LA_CAST_PTR(valptr, long *, p.sptr);
+	LA_CAST_PTR(valptr, long const *, p.sptr);
 	la_json_append_long(p.vstr, p.label, *valptr);
 }
 
 LA_ASN1_FORMATTER_FUN(la_asn1_format_bool_as_json) {
-	LA_CAST_PTR(valptr, BOOLEAN_t *, p.sptr);
+	LA_CAST_PTR(valptr, BOOLEAN_t const *, p.sptr);
 	la_json_append_bool(p.vstr, p.label, (*valptr) ? true : false);
 }
 

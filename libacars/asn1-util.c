@@ -12,12 +12,12 @@
 #include <libacars/vstring.h>               // la_vstring
 #include "config.h"                         // LFIND_NMEMB_SIZE_SIZE_T, LFIND_NMEMB_SIZE_UINT
 
-static int la_compare_fmtr(const void *k, const void *m) {
-	LA_CAST_PTR(memb, la_asn1_formatter *, m);
+static int la_compare_fmtr(void const *k, void const *m) {
+	LA_CAST_PTR(memb, la_asn1_formatter const *, m);
 	return(k == memb->type ? 0 : 1);
 }
 
-int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t *buf, int size) {
+int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t const *buf, int size) {
 	asn_dec_rval_t rval;
 	rval = uper_decode_complete(0, td, struct_ptr, buf, size);
 	if(rval.code != RC_OK) {

@@ -76,8 +76,8 @@ static uint32_t la_acars_key_hash(void const *key) {
 }
 
 static bool la_acars_key_compare(void const *key1, void const *key2) {
-	LA_CAST_PTR(k1, la_acars_key *, key1);
-	LA_CAST_PTR(k2, la_acars_key *, key2);
+	LA_CAST_PTR(k1, la_acars_key const *, key1);
+	LA_CAST_PTR(k2, la_acars_key const *, key2);
 	return (!strcmp(k1->reg, k2->reg) &&
 			!strcmp(k1->label, k2->label) &&
 			!strcmp(k1->msg_num, k2->msg_num));
@@ -97,17 +97,17 @@ static void la_acars_key_destroy(void *ptr) {
 
 static void *la_acars_tmp_key_get(void const *msg) {
 	la_assert(msg != NULL);
-	LA_CAST_PTR(amsg, la_acars_msg *, msg);
+	LA_CAST_PTR(amsg, la_acars_msg const *, msg);
 	LA_NEW(la_acars_key, key);
-	key->reg = amsg->reg;
-	key->label = amsg->label;
-	key->msg_num = amsg->msg_num;
+	key->reg = (char *)amsg->reg;
+	key->label = (char *)amsg->label;
+	key->msg_num = (char *)amsg->msg_num;
 	return (void *)key;
 }
 
 static void *la_acars_key_get(void const *msg) {
 	la_assert(msg != NULL);
-	LA_CAST_PTR(amsg, la_acars_msg *, msg);
+	LA_CAST_PTR(amsg, la_acars_msg const *, msg);
 	LA_NEW(la_acars_key, key);
 	key->reg = strdup(amsg->reg);
 	key->label = strdup(amsg->label);
@@ -124,8 +124,8 @@ static la_reasm_table_funcs acars_reasm_funcs = {
 	.destroy_key = la_acars_key_destroy
 };
 
-la_proto_node *la_acars_apps_parse_and_reassemble(char const * const reg,
-		char const * const label, char const * const txt, la_msg_dir const msg_dir,
+la_proto_node *la_acars_apps_parse_and_reassemble(char const *reg,
+		char const *label, char const *txt, la_msg_dir const msg_dir,
 		la_reasm_ctx *rtables,struct timeval const rx_time) {
 	la_proto_node *ret = NULL;
 	if(label == NULL || txt == NULL) {
@@ -187,8 +187,8 @@ end:
 	return ret;
 }
 
-la_proto_node *la_acars_decode_apps(char const * const label,
-		char const * const txt, la_msg_dir const msg_dir) {
+la_proto_node *la_acars_decode_apps(char const *label,
+		char const *txt, la_msg_dir msg_dir) {
 	return la_acars_apps_parse_and_reassemble(NULL, label, txt, msg_dir,
 			NULL, (struct timeval){ .tv_sec = 0, .tv_usec = 0 });
 }
@@ -203,8 +203,8 @@ la_proto_node *la_acars_decode_apps(char const * const label,
 		memset((p), 0, (l)); \
 	} } while(0)
 
-int la_acars_extract_sublabel_and_mfi(char const * const label, la_msg_dir const msg_dir,
-		char const * const txt, int const len, char *sublabel, char *mfi) {
+int la_acars_extract_sublabel_and_mfi(char const *label, la_msg_dir msg_dir,
+		char const *txt, int len, char *sublabel, char *mfi) {
 
 	if(txt == NULL || label == NULL || strlen(label) < 2) {
 		return -1;
@@ -483,12 +483,12 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
 			(struct timeval){ .tv_sec = 0, .tv_usec = 0 });
 }
 
-void la_acars_format_text(la_vstring *vstr, void const * const data, int indent) {
+void la_acars_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_acars_msg *, data);
+	LA_CAST_PTR(msg, la_acars_msg const *, data);
 	if(msg->err) {
 		LA_ISPRINTF(vstr, indent, "-- Unparseable ACARS message\n");
 		return;
@@ -541,11 +541,11 @@ void la_acars_format_text(la_vstring *vstr, void const * const data, int indent)
 	}
 }
 
-void la_acars_format_json(la_vstring *vstr, void const * const data) {
+void la_acars_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, la_acars_msg *, data);
+	LA_CAST_PTR(msg, la_acars_msg const *, data);
 	la_json_append_bool(vstr, "err", msg->err);
 	if(msg->err) {
 		return;

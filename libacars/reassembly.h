@@ -82,11 +82,11 @@ typedef enum {
 la_reasm_ctx *la_reasm_ctx_new();
 void la_reasm_ctx_destroy(void *ctx);
 la_reasm_table *la_reasm_table_new(la_reasm_ctx *rctx, void const *table_id,
-		la_reasm_table_funcs funcs, int const cleanup_interval);
+		la_reasm_table_funcs funcs, int cleanup_interval);
 la_reasm_table *la_reasm_table_lookup(la_reasm_ctx *rctx, void const *table_id);
 la_reasm_status la_reasm_fragment_add(la_reasm_table *rtable, la_reasm_fragment_info const *finfo);
 int la_reasm_payload_get(la_reasm_table *rtable, void const *msg_info, uint8_t **result);
-char const *la_reasm_status_name_get(la_reasm_status const status);
+char const *la_reasm_status_name_get(la_reasm_status status);
 
 #ifdef __cplusplus
 }

@@ -27,7 +27,7 @@
 /* in the FTP archive "ftp.adelaide.edu.au/pub/rocksoft".        */
 /*                                                               */
 /*****************************************************************/
-uint16_t la_crc16_arinc(uint8_t const *data, uint32_t len, uint16_t const crc_init) {
+uint16_t la_crc16_arinc(uint8_t const *data, uint32_t len, uint16_t crc_init) {
 	static uint16_t const crctable[256] =
 	{
 		0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7,
@@ -70,7 +70,7 @@ uint16_t la_crc16_arinc(uint8_t const *data, uint32_t len, uint16_t const crc_in
 	return crc;
 }
 
-uint16_t la_crc16_ccitt(uint8_t const *data, uint32_t len, uint16_t const crc_init) {
+uint16_t la_crc16_ccitt(uint8_t const *data, uint32_t len, uint16_t crc_init) {
 	/* CRC-16-CCITT, poly: 0x1021 */
 	static uint16_t const crctable[256] =
 	{
@@ -114,7 +114,7 @@ uint16_t la_crc16_ccitt(uint8_t const *data, uint32_t len, uint16_t const crc_in
 	return crc;
 }
 
-uint32_t la_crc32_arinc665(uint8_t const *data, uint32_t len, uint32_t const crc_init) {
+uint32_t la_crc32_arinc665(uint8_t const *data, uint32_t len, uint32_t crc_init) {
 	// Width   : 4 bytes
 	// Poly    : 0x04C11DB7L
 	// Reverse : FALSE

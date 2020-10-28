@@ -33,7 +33,7 @@ typedef struct {
 	void x(la_asn1_formatter_params p)
 
 // asn1-util.c
-int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t *buf, int size);
+int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t const *buf, int size);
 void la_asn1_output(la_asn1_formatter_params p, la_asn1_formatter const *asn1_formatter_table,
 		size_t asn1_formatter_table_len, bool dump_unknown_types);
 #endif // !LA_ASN1_UTIL_H

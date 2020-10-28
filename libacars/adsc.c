@@ -119,7 +119,7 @@ static double la_adsc_temperature_parse(uint32_t t) {
 	return -1; \
 }
 #define LA_ADSC_PARSER_PROTOTYPE(x) static int x(void *dest, uint8_t *buf, uint32_t len)
-#define LA_ADSC_FORMATTER_PROTOTYPE(x) static void x(la_adsc_formatter_ctx_t * const ctx, char const * const label, void const * const data)
+#define LA_ADSC_FORMATTER_PROTOTYPE(x) static void x(la_adsc_formatter_ctx_t * const ctx, char const *label, void const *data)
 
 static int la_adsc_tag_parse(la_adsc_tag_t *t, la_dict const *tag_descriptor_table, uint8_t *buf, uint32_t len);
 
@@ -538,7 +538,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_noncomp_notify_parse) {
 }
 
 LA_ADSC_PARSER_PROTOTYPE(la_adsc_basic_report_parse) {
-	const uint32_t tag_len = 10;
+	uint32_t tag_len = 10;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
 	LA_NEW(la_adsc_basic_report_t, r);
@@ -570,7 +570,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_basic_report_parse) {
 }
 
 LA_ADSC_PARSER_PROTOTYPE(la_adsc_flight_id_parse) {
-	const uint32_t tag_len = 6;
+	uint32_t tag_len = 6;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
 	LA_NEW(la_adsc_flight_id_t, f);
@@ -598,7 +598,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_flight_id_parse) {
 }
 
 LA_ADSC_PARSER_PROTOTYPE(la_adsc_predicted_route_parse) {
-	const uint32_t tag_len = 17;
+	uint32_t tag_len = 17;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
 	LA_NEW(la_adsc_predicted_route_t, r);
@@ -631,7 +631,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_predicted_route_parse) {
 }
 
 LA_ADSC_PARSER_PROTOTYPE(la_adsc_earth_air_ref_parse) {
-	const uint32_t tag_len = 5;
+	uint32_t tag_len = 5;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
 	LA_NEW(la_adsc_earth_air_ref_t, r);
@@ -657,7 +657,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_earth_air_ref_parse) {
 }
 
 LA_ADSC_PARSER_PROTOTYPE(la_adsc_intermediate_projection_parse) {
-	const uint32_t tag_len = 8;
+	uint32_t tag_len = 8;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
 	LA_NEW(la_adsc_intermediate_projection_t, p);
@@ -686,7 +686,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_intermediate_projection_parse) {
 }
 
 LA_ADSC_PARSER_PROTOTYPE(la_adsc_fixed_projection_parse) {
-	const uint32_t tag_len = 9;
+	uint32_t tag_len = 9;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
 	LA_NEW(la_adsc_fixed_projection_t, p);
@@ -713,7 +713,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_fixed_projection_parse) {
 }
 
 LA_ADSC_PARSER_PROTOTYPE(la_adsc_meteo_parse) {
-	const uint32_t tag_len = 4;
+	uint32_t tag_len = 4;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
 	LA_NEW(la_adsc_meteo_t, m);
@@ -739,7 +739,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_meteo_parse) {
 }
 
 LA_ADSC_PARSER_PROTOTYPE(la_adsc_airframe_id_parse) {
-	const uint32_t tag_len = 3;
+	uint32_t tag_len = 3;
 	LA_CAST_PTR(t, la_adsc_tag_t *, dest);
 	LA_ADSC_CHECK_LEN(t->tag, len, tag_len);
 	LA_NEW(la_adsc_airframe_id_t, a);
@@ -754,7 +754,7 @@ LA_ADSC_PARSER_PROTOTYPE(la_adsc_airframe_id_parse) {
  *************************/
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_nack_format_text) {
-	static const char *reason_code_table[LA_ADSC_NACK_MAX_REASON_CODE+1] = {
+	static char const *reason_code_table[LA_ADSC_NACK_MAX_REASON_CODE+1] = {
 		[0] = NULL,
 		[1] = "Duplicate group tag",
 		[2] = "Duplicate reporting interval tag",
@@ -770,7 +770,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_nack_format_text) {
 		[12] = "Aircraft intent projection time is 0",
 		[13] = "Lateral deviation threshold is 0"
 	};
-	LA_CAST_PTR(n, la_adsc_nack_t *, data);
+	LA_CAST_PTR(n, la_adsc_nack_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Contract request number: %u\n", n->contract_req_num);
@@ -785,7 +785,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_nack_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_nack_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(n, la_adsc_nack_t *, data);
+	LA_CAST_PTR(n, la_adsc_nack_t const *, data);
 	la_json_append_long(ctx->vstr, "contract_req_num", n->contract_req_num);
 	la_json_append_long(ctx->vstr, "reason", n->reason);
 	if(n->reason == 1 || n->reason == 2) {
@@ -803,7 +803,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_dis_reason_code_format_text) {
 		{ 8, "normal disconnect" },
 		{ 0, NULL }
 	};
-	LA_CAST_PTR(rc, uint8_t *, data);
+	LA_CAST_PTR(rc, uint8_t const *, data);
 	int reason = (int)(*rc >> 4);
 	char *descr = la_dict_search(dis_reason_code_table, reason);
 	if(descr) {
@@ -815,14 +815,14 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_dis_reason_code_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_dis_reason_code_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(rc, uint8_t *, data);
+	LA_CAST_PTR(rc, uint8_t const *, data);
 	int reason = (int)(*rc >> 4);
 	la_json_append_long(ctx->vstr, "reason_code", reason);
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_group_format_text) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(g, la_adsc_noncomp_group_t *, data);
+	LA_CAST_PTR(g, la_adsc_noncomp_group_t const *, data);
 
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Tag %u:\n", g->noncomp_tag);
 	ctx->indent++;
@@ -841,7 +841,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_group_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_group_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(g, la_adsc_noncomp_group_t *, data);
+	LA_CAST_PTR(g, la_adsc_noncomp_group_t const *, data);
 
 	la_json_append_long(ctx->vstr, "noncomp_tag", g->noncomp_tag);
 	la_json_append_string(ctx->vstr, "noncomp_cause",
@@ -859,7 +859,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_group_format_json) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_notify_format_text) {
-	LA_CAST_PTR(n, la_adsc_noncomp_notify_t *, data);
+	LA_CAST_PTR(n, la_adsc_noncomp_notify_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Contract number: %u\n", n->contract_req_num);
@@ -873,7 +873,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_notify_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_notify_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(n, la_adsc_noncomp_notify_t *, data);
+	LA_CAST_PTR(n, la_adsc_noncomp_notify_t const *, data);
 	la_json_append_long(ctx->vstr, "contract_req_num", n->contract_req_num);
 	la_json_array_start(ctx->vstr, "msg_groups");
 	if(n->group_cnt > 0) {
@@ -887,7 +887,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_noncomp_notify_format_json) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_basic_report_format_text) {
-	static const char *accuracy_table[] = {
+	static char const *accuracy_table[] = {
 		[0] = "none (NAV capability lost)",
 		[1] = "<30 nm",
 		[2] = "<15 nm",
@@ -897,15 +897,15 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_basic_report_format_text) {
 		[6] = "<0.25 nm",
 		[7] = "<0.05 nm"
 	};
-	static const char *redundancy_state_table[] = {
+	static char const *redundancy_state_table[] = {
 		[0] = "lost",
 		[1] = "OK"
 	};
-	static const char *tcas_state_table[] = {
+	static char const *tcas_state_table[] = {
 		[0] = "not available to ADS",
 		[1] = "OK"
 	};
-	LA_CAST_PTR(r, la_adsc_basic_report_t *, data);
+	LA_CAST_PTR(r, la_adsc_basic_report_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Lat: %.7f\n", r->lat);
@@ -924,7 +924,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_basic_report_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_basic_report_format_json) {
 	LA_UNUSED(label);
-	static const float accuracy_table[] = {
+	static float const accuracy_table[] = {
 		[0] = -1.0f,    // NAV capability lost
 		[1] = 30.0f,    // less than 30 nm
 		[2] = 15.0f,    // ... etc.
@@ -934,15 +934,15 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_basic_report_format_json) {
 		[6] = 0.25f,
 		[7] = 0.05f
 	};
-	static const bool redundancy_state_table[] = {
+	static bool const redundancy_state_table[] = {
 		[0] = false,
 		[1] = true
 	};
-	static const char tcas_state_table[] = {
+	static char const tcas_state_table[] = {
 		[0] = false,
 		[1] = true
 	};
-	LA_CAST_PTR(r, la_adsc_basic_report_t *, data);
+	LA_CAST_PTR(r, la_adsc_basic_report_t const *, data);
 
 	la_json_append_double(ctx->vstr, "lat", r->lat);
 	la_json_append_double(ctx->vstr, "lon", r->lon);
@@ -954,7 +954,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_basic_report_format_json) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_flight_id_format_text) {
-	LA_CAST_PTR(f, la_adsc_flight_id_t *, data);
+	LA_CAST_PTR(f, la_adsc_flight_id_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Flight ID: %s\n", f->id);
@@ -963,12 +963,12 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_flight_id_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_flight_id_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(f, la_adsc_flight_id_t *, data);
+	LA_CAST_PTR(f, la_adsc_flight_id_t const *, data);
 	la_json_append_string(ctx->vstr, "flight_id", f->id);
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_predicted_route_format_text) {
-	LA_CAST_PTR(r, la_adsc_predicted_route_t *, data);
+	LA_CAST_PTR(r, la_adsc_predicted_route_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Next waypoint:\n");
@@ -989,7 +989,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_predicted_route_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_predicted_route_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(r, la_adsc_predicted_route_t *, data);
+	LA_CAST_PTR(r, la_adsc_predicted_route_t const *, data);
 	la_json_object_start(ctx->vstr, "next_wpt");
 	la_json_append_double(ctx->vstr, "lat", r->lat_next);
 	la_json_append_double(ctx->vstr, "lon", r->lon_next);
@@ -1004,7 +1004,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_predicted_route_format_json) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_earth_ref_format_text) {
-	LA_CAST_PTR(r, la_adsc_earth_air_ref_t *, data);
+	LA_CAST_PTR(r, la_adsc_earth_air_ref_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "True track: %.1f deg%s\n", r->heading, r->heading_invalid ? " (invalid)" : "");
@@ -1015,7 +1015,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_earth_ref_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_earth_ref_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(r, la_adsc_earth_air_ref_t *, data);
+	LA_CAST_PTR(r, la_adsc_earth_air_ref_t const *, data);
 	la_json_append_double(ctx->vstr, "true_trk_deg", r->heading);
 	la_json_append_bool(ctx->vstr, "true_trk_valid", r->heading_invalid ? false : true);
 	la_json_append_double(ctx->vstr, "gnd_spd_kts", r->speed);
@@ -1023,7 +1023,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_earth_ref_format_json) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_air_ref_format_text) {
-	LA_CAST_PTR(r, la_adsc_earth_air_ref_t *, data);
+	LA_CAST_PTR(r, la_adsc_earth_air_ref_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "True heading: %.1f deg%s\n", r->heading, r->heading_invalid ? " (invalid)" : "");
@@ -1034,7 +1034,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_air_ref_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_air_ref_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(r, la_adsc_earth_air_ref_t *, data);
+	LA_CAST_PTR(r, la_adsc_earth_air_ref_t const *, data);
 	la_json_append_double(ctx->vstr, "true_hdg_deg", r->heading);
 	la_json_append_bool(ctx->vstr, "true_hdg_valid", r->heading_invalid ? false : true);
 	la_json_append_double(ctx->vstr, "spd_mach", r->speed / 1000.0);
@@ -1042,7 +1042,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_air_ref_format_json) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_intermediate_projection_format_text) {
-	LA_CAST_PTR(p, la_adsc_intermediate_projection_t *, data);
+	LA_CAST_PTR(p, la_adsc_intermediate_projection_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Distance: %.3f nm\n", p->distance);
@@ -1054,7 +1054,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_intermediate_projection_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_intermediate_projection_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(p, la_adsc_intermediate_projection_t *, data);
+	LA_CAST_PTR(p, la_adsc_intermediate_projection_t const *, data);
 	la_json_append_double(ctx->vstr, "dist_nm", p->distance);
 	la_json_append_double(ctx->vstr, "true_trk_deg", p->track);
 	la_json_append_bool(ctx->vstr, "true_trk_valid", p->track_invalid ? false : true);
@@ -1063,7 +1063,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_intermediate_projection_format_json) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_fixed_projection_format_text) {
-	LA_CAST_PTR(p, la_adsc_fixed_projection_t *, data);
+	LA_CAST_PTR(p, la_adsc_fixed_projection_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Lat: %.7f\n", p->lat);
@@ -1075,7 +1075,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_fixed_projection_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_fixed_projection_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(p, la_adsc_fixed_projection_t *, data);
+	LA_CAST_PTR(p, la_adsc_fixed_projection_t const *, data);
 	la_json_append_double(ctx->vstr, "lat", p->lat);
 	la_json_append_double(ctx->vstr, "lon", p->lon);
 	la_json_append_long(ctx->vstr, "alt", p->alt);
@@ -1083,7 +1083,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_fixed_projection_format_json) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_meteo_format_text) {
-	LA_CAST_PTR(m, la_adsc_meteo_t *, data);
+	LA_CAST_PTR(m, la_adsc_meteo_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Wind speed: %.1f kt\n", m->wind_speed);
@@ -1094,7 +1094,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_meteo_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_meteo_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(m, la_adsc_meteo_t *, data);
+	LA_CAST_PTR(m, la_adsc_meteo_t const *, data);
 	la_json_append_double(ctx->vstr, "wind_spd_kts", m->wind_speed);
 	la_json_append_double(ctx->vstr, "wind_dir_true_deg", m->wind_dir);
 	la_json_append_bool(ctx->vstr, "wind_dir_valid", m->wind_dir_invalid ? false : true);
@@ -1102,7 +1102,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_meteo_format_json) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_airframe_id_format_text) {
-	LA_CAST_PTR(a, la_adsc_airframe_id_t *, data);
+	LA_CAST_PTR(a, la_adsc_airframe_id_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "ICAO ID: %02X%02X%02X\n", a->icao_hex[0], a->icao_hex[1], a->icao_hex[2]);
@@ -1111,7 +1111,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_airframe_id_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_airframe_id_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(a, la_adsc_airframe_id_t *, data);
+	LA_CAST_PTR(a, la_adsc_airframe_id_t const *, data);
 	la_json_append_long(ctx->vstr, "icao_id",
 			((long)(a->icao_hex[0]) << 16) |
 			((long)(a->icao_hex[1]) << 8)  |
@@ -1404,31 +1404,31 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_modulus_format_json) {
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_reporting_interval_format_text) {
-	LA_CAST_PTR(t, la_adsc_report_interval_req_t const * const, data);
+	LA_CAST_PTR(t, la_adsc_report_interval_req_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: %d seconds\n", label, (int)(t->scaling_factor) * (int)(t->rate));
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_reporting_interval_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(t, la_adsc_report_interval_req_t const * const, data);
+	LA_CAST_PTR(t, la_adsc_report_interval_req_t const *, data);
 	la_json_append_long(ctx->vstr, "interval_secs", (int)(t->scaling_factor) * (int)(t->rate));
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_acft_intent_group_format_text) {
-	LA_CAST_PTR(t, la_adsc_acft_intent_group_req_t const * const, data);
+	LA_CAST_PTR(t, la_adsc_acft_intent_group_req_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: every %u reports, projection time: %u minutes\n",
 			label, t->modulus, t->acft_intent_projection_time);
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_acft_intent_group_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(t, la_adsc_acft_intent_group_req_t const * const, data);
+	LA_CAST_PTR(t, la_adsc_acft_intent_group_req_t const *, data);
 	la_json_append_long(ctx->vstr, "modulus", t->modulus);
 	la_json_append_long(ctx->vstr, "proj_time_mins", t->acft_intent_projection_time);
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_lat_dev_change_format_text) {
-	LA_CAST_PTR(e, la_adsc_lat_dev_chg_event_t const * const, data);
+	LA_CAST_PTR(e, la_adsc_lat_dev_chg_event_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent,
 			"%s: %.3f nm\n",
 			label,
@@ -1438,12 +1438,12 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_lat_dev_change_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_lat_dev_change_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(e, la_adsc_lat_dev_chg_event_t const * const, data);
+	LA_CAST_PTR(e, la_adsc_lat_dev_chg_event_t const *, data);
 	la_json_append_double(ctx->vstr, "lat_dev_treshold_nm", e->lat_dev_threshold);
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_vspd_change_format_text) {
-	LA_CAST_PTR(e, la_adsc_vspd_chg_event_t const * const, data);
+	LA_CAST_PTR(e, la_adsc_vspd_chg_event_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent,
 			"%s: %c%d ft/min\n",
 			label,
@@ -1454,13 +1454,13 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_vspd_change_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_vspd_change_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(e, la_adsc_vspd_chg_event_t const * const, data);
+	LA_CAST_PTR(e, la_adsc_vspd_chg_event_t const *, data);
 	la_json_append_long(ctx->vstr, "vspd_ftmin_threshold", abs(e->vspd_threshold));
 	la_json_append_bool(ctx->vstr, "higher_than", e->vspd_threshold >= 0 ? true : false);
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_alt_range_format_text) {
-	LA_CAST_PTR(e, la_adsc_alt_range_event_t const * const, data);
+	LA_CAST_PTR(e, la_adsc_alt_range_event_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent,
 			"%s: %d-%d ft\n",
 			label,
@@ -1471,13 +1471,13 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_alt_range_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_alt_range_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(e, la_adsc_alt_range_event_t const * const, data);
+	LA_CAST_PTR(e, la_adsc_alt_range_event_t const *, data);
 	la_json_append_long(ctx->vstr, "floor_alt", e->floor_alt);
 	la_json_append_long(ctx->vstr, "ceiling_alt", e->ceiling_alt);
 }
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_contract_request_format_text) {
-	LA_CAST_PTR(r, la_adsc_req_t const * const, data);
+	LA_CAST_PTR(r, la_adsc_req_t const *, data);
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s:\n", label);
 	ctx->indent++;
 	LA_ISPRINTF(ctx->vstr, ctx->indent, "Contract number: %u\n", r->contract_num);
@@ -1500,7 +1500,7 @@ LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_contract_request_format_text) {
 
 LA_ADSC_FORMATTER_PROTOTYPE(la_adsc_contract_request_format_json) {
 	LA_UNUSED(label);
-	LA_CAST_PTR(r, la_adsc_req_t const * const, data);
+	LA_CAST_PTR(r, la_adsc_req_t const *, data);
 	la_json_append_long(ctx->vstr, "contract_num", r->contract_num);
 
 	size_t len = la_list_length(r->req_tag_list);
@@ -1726,11 +1726,11 @@ la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc
 	return node;
 }
 
-static void la_adsc_tag_output_text(void const * const p, void *ctx) {
+static void la_adsc_tag_output_text(void const *p, void *ctx) {
 	la_assert(p);
 	la_assert(ctx);
 
-	LA_CAST_PTR(t, la_adsc_tag_t *, p);
+	LA_CAST_PTR(t, la_adsc_tag_t const *, p);
 	LA_CAST_PTR(c, la_adsc_formatter_ctx_t *, ctx);
 	if(!t->type) {
 		LA_ISPRINTF(c->vstr, c->indent, "-- Unparseable tag %u\n", t->tag);
@@ -1741,11 +1741,11 @@ static void la_adsc_tag_output_text(void const * const p, void *ctx) {
 	}
 }
 
-static void la_adsc_tag_output_json(void const * const p, void *ctx) {
+static void la_adsc_tag_output_json(void const *p, void *ctx) {
 	la_assert(p);
 	la_assert(ctx);
 
-	LA_CAST_PTR(t, la_adsc_tag_t *, p);
+	LA_CAST_PTR(t, la_adsc_tag_t const *, p);
 	LA_CAST_PTR(c, la_adsc_formatter_ctx_t *, ctx);
 	if(!t->type) {
 		return;
@@ -1762,12 +1762,12 @@ static void la_adsc_tag_output_json(void const * const p, void *ctx) {
 	}
 }
 
-void la_adsc_format_text(la_vstring * const vstr, void const * const data, int indent) {
+void la_adsc_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_adsc_msg_t *, data);
+	LA_CAST_PTR(msg, la_adsc_msg_t const *, data);
 	la_adsc_formatter_ctx_t ctx = {
 		.vstr = vstr,
 		.indent = indent
@@ -1782,11 +1782,11 @@ void la_adsc_format_text(la_vstring * const vstr, void const * const data, int i
 	}
 }
 
-void la_adsc_format_json(la_vstring * const vstr, void const * const data) {
+void la_adsc_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, la_adsc_msg_t *, data);
+	LA_CAST_PTR(msg, la_adsc_msg_t const *, data);
 	if(msg->tag_list == NULL) {
 		return;
 	}

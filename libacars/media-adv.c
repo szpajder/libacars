@@ -15,8 +15,8 @@
 #include <libacars/util.h>          // LA_XCALLOC(), ATOI2()
 
 typedef struct {
-	char const code;
-	char const * const description;
+	char code;
+	char const *description;
 } la_media_adv_link_type_map;
 
 static la_media_adv_link_type_map const link_type_map[LA_MEDIA_ADV_LINK_TYPE_CNT] = {
@@ -133,12 +133,12 @@ la_proto_node *la_media_adv_parse(char const *txt) {
 	return node;
 }
 
-void la_media_adv_format_text(la_vstring * const vstr, void const * const data, int indent) {
+void la_media_adv_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_media_adv_msg *, data);
+	LA_CAST_PTR(msg, la_media_adv_msg const *, data);
 
 	if(msg->err == true) {
 		LA_ISPRINTF(vstr, indent, "-- Unparseable Media Advisory message\n");
@@ -160,7 +160,7 @@ void la_media_adv_format_text(la_vstring * const vstr, void const * const data, 
 	LA_ISPRINTF(vstr, indent, "Available links: ");
 	size_t count = strlen(msg->available_links);
 	for(size_t i = 0; i < count; i++) {
-		const char *link = get_link_description(msg->available_links[i]);
+		char const *link = get_link_description(msg->available_links[i]);
 		if(i == count - 1) {
 			la_vstring_append_sprintf(vstr, "%s\n", link);
 		} else {
@@ -174,11 +174,11 @@ void la_media_adv_format_text(la_vstring * const vstr, void const * const data, 
 	}
 }
 
-void la_media_adv_format_json(la_vstring * const vstr, void const * const data) {
+void la_media_adv_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, la_media_adv_msg *, data);
+	LA_CAST_PTR(msg, la_media_adv_msg const *, data);
 
 	la_json_append_bool(vstr, "err", msg->err);
 	if(msg->err == true) {

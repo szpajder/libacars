@@ -13,7 +13,7 @@
 #include <libacars/json.h>
 #include <libacars/util.h>          // LA_XCALLOC, LA_XFREE
 
-static void la_proto_node_format_text(la_vstring * const vstr, la_proto_node const * const node, int indent) {
+static void la_proto_node_format_text(la_vstring *vstr, la_proto_node const *node, int indent) {
 	la_assert(indent >= 0);
 	if(node->data != NULL) {
 		la_assert(node->td);
@@ -24,7 +24,7 @@ static void la_proto_node_format_text(la_vstring * const vstr, la_proto_node con
 	}
 }
 
-static void la_proto_node_format_json(la_vstring * const vstr, la_proto_node const * const node) {
+static void la_proto_node_format_json(la_vstring *vstr, la_proto_node const *node) {
 	if(node->td != NULL) {
 		if(node->td->json_key != NULL) {
 			la_json_object_start(vstr, node->td->json_key);
@@ -49,7 +49,7 @@ la_proto_node *la_proto_node_new() {
 	return node;
 }
 
-la_vstring *la_proto_tree_format_text(la_vstring *vstr, la_proto_node const * const root) {
+la_vstring *la_proto_tree_format_text(la_vstring *vstr, la_proto_node const *root) {
 	la_assert(root);
 
 	if(vstr == NULL) {
@@ -59,7 +59,7 @@ la_vstring *la_proto_tree_format_text(la_vstring *vstr, la_proto_node const * co
 	return vstr;
 }
 
-la_vstring *la_proto_tree_format_json(la_vstring *vstr, la_proto_node const * const root) {
+la_vstring *la_proto_tree_format_json(la_vstring *vstr, la_proto_node const *root) {
 	la_assert(root);
 
 	if(vstr == NULL) {
@@ -86,7 +86,7 @@ void la_proto_tree_destroy(la_proto_node *root) {
 	LA_XFREE(root);
 }
 
-la_proto_node *la_proto_tree_find_protocol(la_proto_node *root, la_type_descriptor const * const td) {
+la_proto_node *la_proto_tree_find_protocol(la_proto_node *root, la_type_descriptor const *td) {
 	while(root != NULL) {
 		if(root->td == td) {
 			return root;

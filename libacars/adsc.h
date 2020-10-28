@@ -24,12 +24,12 @@ typedef struct {
 } la_adsc_formatter_ctx_t;
 
 typedef int(la_adsc_parse_type_f)(void *dest, uint8_t *buf, uint32_t len);
-typedef void(la_adsc_format_type_f)(la_adsc_formatter_ctx_t * const ctx, char const * const label, void const * const data);
+typedef void(la_adsc_format_type_f)(la_adsc_formatter_ctx_t * const ctx, char const *label, void const *data);
 typedef void(la_adsc_destroy_type_f)(void *data);
 
 typedef struct {
-	char const * const label;
-	char const * const json_key;
+	char const *label;
+	char const *json_key;
 	la_adsc_parse_type_f *parse;
 	la_adsc_format_type_f *format_text;
 	la_adsc_format_type_f *format_json;
@@ -183,8 +183,8 @@ typedef struct {
 // adsc.c
 extern la_type_descriptor const la_DEF_adsc_message;
 la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc_imi imi);
-void la_adsc_format_text(la_vstring * const vstr, void const * const data, int indent);
-void la_adsc_format_json(la_vstring * const vstr, void const * const data);
+void la_adsc_format_text(la_vstring *vstr, void const *data, int indent);
+void la_adsc_format_json(la_vstring *vstr, void const *data);
 void la_adsc_destroy(void *data);
 la_proto_node *la_proto_tree_find_adsc(la_proto_node *root);
 

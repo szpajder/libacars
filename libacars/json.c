@@ -11,7 +11,7 @@
 #include <libacars/vstring.h>           // la_vstring
 #include <libacars/util.h>              // LA_XCALLOC(), LA_XFREE()
 
-static void la_json_trim_comma(la_vstring * const vstr) {
+static void la_json_trim_comma(la_vstring *vstr) {
 	la_assert(vstr != NULL);
 	size_t len = vstr->len;
 	if(len > 0 && vstr->str[len-1] == ',') {
@@ -79,7 +79,7 @@ end:
 	return out;
 }
 
-static inline void la_json_print_key(la_vstring * const vstr, char const * const key) {
+static inline void la_json_print_key(la_vstring *vstr, char const *key) {
 	la_assert(vstr != NULL);
 	if(key != NULL && key[0] != '\0') {
 		// Warning: no character escaping is performed here. For libacars this is fine
@@ -88,26 +88,26 @@ static inline void la_json_print_key(la_vstring * const vstr, char const * const
 	}
 }
 
-void la_json_append_bool(la_vstring * const vstr, char const * const key, bool const val) {
+void la_json_append_bool(la_vstring *vstr, char const *key, bool val) {
 	la_assert(vstr != NULL);
 	la_json_print_key(vstr, key);
 	la_vstring_append_sprintf(vstr, "%s,", (val == true ? "true" : "false"));
 }
 
-void la_json_append_double(la_vstring * const vstr, char const * const key, double const val) {
+void la_json_append_double(la_vstring *vstr, char const *key, double val) {
 	la_assert(vstr != NULL);
 	la_json_print_key(vstr, key);
 	la_vstring_append_sprintf(vstr, "%f,", val);
 }
 
-void la_json_append_long(la_vstring * const vstr, char const * const key, long const val) {
+void la_json_append_long(la_vstring *vstr, char const *key, long val) {
 	la_assert(vstr != NULL);
 	la_json_print_key(vstr, key);
 	la_vstring_append_sprintf(vstr, "%ld,", val);
 }
 
-void la_json_append_octet_string_as_string(la_vstring * const vstr, char const
-		* const key, uint8_t const * const buf, size_t len) {
+void la_json_append_octet_string_as_string(la_vstring *vstr, char const *key,
+		uint8_t const *buf, size_t len) {
 	la_assert(vstr != NULL);
 	if(buf == NULL) {
 		return;
@@ -120,40 +120,40 @@ void la_json_append_octet_string_as_string(la_vstring * const vstr, char const
 
 // Note: this function does not handle NULL characters inside the string.
 // Whenever this might be an issue, la_json_append_octet_string_as_string shall be used instead.
-void la_json_append_string(la_vstring * const vstr, char const * const key, char const * const val) {
+void la_json_append_string(la_vstring *vstr, char const *key, char const *val) {
 	la_json_append_octet_string_as_string(vstr, key, (uint8_t const *)val, strlen(val));
 }
 
-void la_json_append_char(la_vstring * const vstr, char const * const key, char const val) {
+void la_json_append_char(la_vstring *vstr, char const *key, char val) {
 	la_json_append_octet_string_as_string(vstr, key, (uint8_t * const)&val, 1);
 }
 
-void la_json_object_start(la_vstring * const vstr, char const * const key) {
+void la_json_object_start(la_vstring *vstr, char const *key) {
 	la_assert(vstr != NULL);
 	la_json_print_key(vstr, key);
 	la_vstring_append_sprintf(vstr, "%s", "{");
 }
 
-void la_json_object_end(la_vstring * const vstr) {
+void la_json_object_end(la_vstring *vstr) {
 	la_assert(vstr != NULL);
 	la_json_trim_comma(vstr);
 	la_vstring_append_sprintf(vstr, "%s", "},");
 }
 
-void la_json_array_start(la_vstring * const vstr, char const * const key) {
+void la_json_array_start(la_vstring *vstr, char const *key) {
 	la_assert(vstr != NULL);
 	la_json_print_key(vstr, key);
 	la_vstring_append_sprintf(vstr, "%s", "[");
 }
 
-void la_json_array_end(la_vstring * const vstr) {
+void la_json_array_end(la_vstring *vstr) {
 	la_assert(vstr != NULL);
 	la_json_trim_comma(vstr);
 	la_vstring_append_sprintf(vstr, "%s", "],");
 }
 
-void la_json_append_octet_string(la_vstring * const vstr, char const * const key,
-		uint8_t const * const buf, size_t len) {
+void la_json_append_octet_string(la_vstring *vstr, char const *key,
+		uint8_t const *buf, size_t len) {
 	la_assert(vstr != NULL);
 	la_json_array_start(vstr, key);
 	if(buf != NULL && len > 0) {
@@ -164,12 +164,12 @@ void la_json_append_octet_string(la_vstring * const vstr, char const * const key
 	la_json_array_end(vstr);
 }
 
-void la_json_start(la_vstring * const vstr) {
+void la_json_start(la_vstring *vstr) {
 	la_assert(vstr != NULL);
 	la_json_object_start(vstr, NULL);
 }
 
-void la_json_end(la_vstring * const vstr) {
+void la_json_end(la_vstring *vstr) {
 	la_assert(vstr != NULL);
 	la_json_object_end(vstr);
 	la_json_trim_comma(vstr);
