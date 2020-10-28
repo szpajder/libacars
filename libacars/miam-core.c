@@ -453,7 +453,7 @@ static void v1v2_alo_alr_format_text(la_vstring *vstr, void const *data, int ind
 		return;
 	}
 
-	LA_CAST_PTR(pdu, la_miam_core_v1v2_alo_alr_pdu const *, data);
+	la_miam_core_v1v2_alo_alr_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_HDR, indent);
 		return;
@@ -479,7 +479,7 @@ static void v1v2_alo_alr_format_json(la_vstring *vstr, void const *data,
 		return;
 	}
 
-	LA_CAST_PTR(pdu, la_miam_core_v1v2_alo_alr_pdu const *, data);
+	la_miam_core_v1v2_alo_alr_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
@@ -526,7 +526,7 @@ void la_miam_core_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(pdu, la_miam_core_pdu const *, data);
+	la_miam_core_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_HDR, indent);
 		return;
@@ -541,7 +541,7 @@ void la_miam_core_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(pdu, la_miam_core_pdu const *, data);
+	la_miam_core_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
@@ -762,7 +762,7 @@ static void la_miam_core_v1_data_format_text(la_vstring *vstr, void const *data,
 		{ .id = 0x0,                            .val = NULL }
 	};
 
-	LA_CAST_PTR(pdu, la_miam_core_v1_data_pdu const *, data);
+	la_miam_core_v1_data_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_HDR, indent);
 		return;
@@ -861,7 +861,7 @@ static void la_miam_core_v1_data_format_json(la_vstring *vstr, void const *data)
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 
-	LA_CAST_PTR(pdu, la_miam_core_v1_data_pdu const *, data);
+	la_miam_core_v1_data_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
@@ -930,7 +930,7 @@ static void la_miam_core_v1_ack_format_text(la_vstring *vstr, void const *data, 
 		{ .id = 0x0, .val = NULL }
 	};
 
-	LA_CAST_PTR(pdu, la_miam_core_v1_ack_pdu const *, data);
+	la_miam_core_v1_ack_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_HDR, indent);
 		return;
@@ -951,7 +951,7 @@ static void la_miam_core_v1_ack_format_json(la_vstring *vstr, void const *data) 
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 
-	LA_CAST_PTR(pdu, la_miam_core_v1_ack_pdu const *, data);
+	la_miam_core_v1_ack_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
@@ -968,7 +968,7 @@ static void la_miam_core_v1_data_destroy(void *data) {
 	if(data == NULL) {
 		return;
 	}
-	LA_CAST_PTR(pdu, la_miam_core_v1_data_pdu *, data);
+	la_miam_core_v1_data_pdu *pdu = data;
 	LA_XFREE(pdu->data);
 	LA_XFREE(pdu);
 }
@@ -1160,7 +1160,7 @@ static void la_miam_core_v2_data_format_text(la_vstring *vstr, void const *data,
 		{ .id = 0x0,                            .val = NULL }
 	};
 
-	LA_CAST_PTR(pdu, la_miam_core_v2_data_pdu const *, data);
+	la_miam_core_v2_data_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_HDR, indent);
 		return;
@@ -1262,7 +1262,7 @@ static void la_miam_core_v2_data_format_json(la_vstring *vstr, void const *data)
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 
-	LA_CAST_PTR(pdu, la_miam_core_v2_data_pdu const *, data);
+	la_miam_core_v2_data_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
@@ -1335,7 +1335,7 @@ static void la_miam_core_v2_ack_format_text(la_vstring *vstr, void const *data, 
 		{ .id = 0x0, .val = NULL }
 	};
 
-	LA_CAST_PTR(pdu, la_miam_core_v2_ack_pdu const *, data);
+	la_miam_core_v2_ack_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_HDR, indent);
 		return;
@@ -1354,7 +1354,7 @@ static void la_miam_core_v2_ack_format_json(la_vstring *vstr, void const *data) 
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 
-	LA_CAST_PTR(pdu, la_miam_core_v2_ack_pdu const *, data);
+	la_miam_core_v2_ack_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
@@ -1369,7 +1369,7 @@ static void la_miam_core_v2_data_destroy(void *data) {
 	if(data == NULL) {
 		return;
 	}
-	LA_CAST_PTR(pdu, la_miam_core_v2_data_pdu *, data);
+	la_miam_core_v2_data_pdu *pdu = data;
 	LA_XFREE(pdu->data);
 	LA_XFREE(pdu);
 }

@@ -8,12 +8,12 @@
 #include <search.h>                         // lfind()
 #include <libacars/asn1/asn_application.h>  // asn_TYPE_descriptor_t
 #include <libacars/asn1-util.h>             // la_asn1_formatter
-#include <libacars/macros.h>                // LA_CAST_PTR, LA_ISPRINTF, la_debug_print
+#include <libacars/macros.h>                // LA_ISPRINTF, la_debug_print
 #include <libacars/vstring.h>               // la_vstring
 #include "config.h"                         // LFIND_NMEMB_SIZE_SIZE_T, LFIND_NMEMB_SIZE_UINT
 
 static int la_compare_fmtr(void const *k, void const *m) {
-	LA_CAST_PTR(memb, la_asn1_formatter const *, m);
+	la_asn1_formatter const *memb = m;
 	return(k == memb->type ? 0 : 1);
 }
 

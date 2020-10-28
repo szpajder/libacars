@@ -199,7 +199,7 @@ void la_octet_string_destroy(void *ostring_ptr) {
 	if(ostring_ptr == NULL) {
 		return;
 	}
-	LA_CAST_PTR(ostring, la_octet_string *, ostring_ptr);
+	la_octet_string *ostring = ostring_ptr;
 	LA_XFREE(ostring->buf);
 	LA_XFREE(ostring);
 }

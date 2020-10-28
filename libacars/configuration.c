@@ -175,7 +175,7 @@ static void la_config_item_destroy(void *data) {
 	if(data == NULL) {
 		return;
 	}
-	LA_CAST_PTR(item, la_config_item *, data);
+	la_config_item *item = data;
 	if(item->type == LA_CONFVAR_STRING) {
 		LA_XFREE(item->value._str);
 	}

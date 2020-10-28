@@ -223,7 +223,7 @@ void la_arinc_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_arinc_msg const *, data);
+	la_arinc_msg const *msg = data;
 	LA_ISPRINTF(vstr, indent, "%s:\n", imi_props[msg->imi].description);
 	if(!msg->crc_ok) {
 		LA_ISPRINTF(vstr, indent + 1, "-- CRC check failed\n");
@@ -234,7 +234,7 @@ void la_arinc_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, la_arinc_msg const *, data);
+	la_arinc_msg const *msg = data;
 	la_json_append_string(vstr, "msg_type", imi_props[msg->imi].json_key);
 	if(msg->imi == ARINC_MSG_UNKNOWN) {
 		return;

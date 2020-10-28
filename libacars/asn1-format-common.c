@@ -12,7 +12,7 @@
 #include <libacars/asn1/constr_CHOICE.h>        // _fetch_present_idx()
 #include <libacars/asn1/asn_SET_OF.h>           // _A_CSET_FROM_VOID()
 #include <libacars/asn1-util.h>                 // LA_ASN1_FORMATTER_FUN
-#include <libacars/macros.h>                    // LA_CAST_PTR
+#include <libacars/macros.h>                    // la_debug_print
 #include <libacars/util.h>                      // la_dict_search
 #include <libacars/vstring.h>                   // la_vstring, la_vstring_append_sprintf(), LA_ISPRINTF
 #include <libacars/json.h>                      // la_json_*()
@@ -347,12 +347,12 @@ LA_ASN1_FORMATTER_FUN(la_asn1_format_ENUM_as_json) {
 }
 
 LA_ASN1_FORMATTER_FUN(la_asn1_format_long_as_json) {
-	LA_CAST_PTR(valptr, long const *, p.sptr);
+	long const *valptr = p.sptr;
 	la_json_append_long(p.vstr, p.label, *valptr);
 }
 
 LA_ASN1_FORMATTER_FUN(la_asn1_format_bool_as_json) {
-	LA_CAST_PTR(valptr, BOOLEAN_t const *, p.sptr);
+	BOOLEAN_t const *valptr = p.sptr;
 	la_json_append_bool(p.vstr, p.label, (*valptr) ? true : false);
 }
 

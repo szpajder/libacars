@@ -55,7 +55,7 @@ static void la_reasm_table_entry_destroy(void *rt_ptr) {
 	if(rt_ptr == NULL) {
 		return;
 	}
-	LA_CAST_PTR(rt_entry, la_reasm_table_entry *, rt_ptr);
+	la_reasm_table_entry *rt_entry = rt_ptr;
 	la_list_free_full(rt_entry->fragment_list, la_octet_string_destroy);
 	LA_XFREE(rt_entry);
 }
@@ -64,7 +64,7 @@ static void la_reasm_table_destroy(void *table) {
 	if(table == NULL) {
 		return;
 	}
-	LA_CAST_PTR(rtable, la_reasm_table *, table);
+	la_reasm_table *rtable = table;
 	la_hash_destroy(rtable->fragment_table);
 	LA_XFREE(rtable);
 }
@@ -73,7 +73,7 @@ void la_reasm_ctx_destroy(void *ctx) {
 	if(ctx == NULL) {
 		return;
 	}
-	LA_CAST_PTR(rctx, la_reasm_ctx *, ctx);
+	la_reasm_ctx *rctx = ctx;
 	la_list_free_full(rctx->rtables, la_reasm_table_destroy);
 	LA_XFREE(rctx);
 }
@@ -83,7 +83,7 @@ la_reasm_table *la_reasm_table_lookup(la_reasm_ctx *rctx, void const *table_id) 
 	la_assert(table_id != NULL);
 
 	for(la_list *l = rctx->rtables; l != NULL; l = la_list_next(l)) {
-		LA_CAST_PTR(rt, la_reasm_table *, l->data);
+		la_reasm_table *rt = l->data;
 		if(rt->key == table_id) {
 			return rt;
 		}
@@ -147,8 +147,8 @@ static bool is_rt_entry_expired(void const *keyptr, void const *valptr, void *ct
 	la_assert(valptr != NULL);
 	la_assert(ctx != NULL);
 
-	LA_CAST_PTR(rt_entry, la_reasm_table_entry const *, valptr);
-	LA_CAST_PTR(now, struct timeval *, ctx);
+	la_reasm_table_entry const *rt_entry = valptr;
+	struct timeval *now = ctx;
 	return la_reasm_timed_out(*now, rt_entry->first_frag_rx_time, rt_entry->reasm_timeout);
 }
 
@@ -350,7 +350,7 @@ int la_reasm_payload_get(la_reasm_table *rtable, void const *msg_info, uint8_t *
 	uint8_t *reasm_buf = LA_XCALLOC(rt_entry->frags_collected_total_len + 1, sizeof(uint8_t));
 	uint8_t *ptr = reasm_buf;
 	for(la_list *l = rt_entry->fragment_list; l != NULL; l = la_list_next(l)) {
-		LA_CAST_PTR(ostring, la_octet_string *, l->data);
+		la_octet_string *ostring = l->data;
 		memcpy(ptr, ostring->buf, ostring->len);
 		ptr += ostring->len;
 	}

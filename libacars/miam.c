@@ -67,22 +67,22 @@ typedef struct {
 } la_miam_file_key;
 
 static uint32_t la_miam_file_key_hash(void const *key) {
-	LA_CAST_PTR(k, la_miam_file_key const *, key);
+	la_miam_file_key const *k = key;
 	uint32_t h = la_hash_string(k->reg, LA_HASH_INIT);
 	h += k->file_id;
 	return h;
 }
 
 static bool la_miam_file_key_compare(void const *key1, void const *key2) {
-	LA_CAST_PTR(k1, la_miam_file_key const *, key1);
-	LA_CAST_PTR(k2, la_miam_file_key const *, key2);
+	la_miam_file_key const *k1 = key1;
+	la_miam_file_key const *k2 = key2;
 	return (!strcmp(k1->reg, k2->reg) &&
 			(k1->file_id == k2->file_id));
 }
 
 static void *la_miam_file_key_get(void const *msg_info) {
 	la_assert(msg_info != NULL);
-	LA_CAST_PTR(msg, la_miam_file_key const *, msg_info);
+	la_miam_file_key const *msg = msg_info;
 	LA_NEW(la_miam_file_key, key);
 	key->reg = strdup(msg->reg);
 	key->file_id = msg->file_id;
@@ -92,7 +92,7 @@ static void *la_miam_file_key_get(void const *msg_info) {
 
 static void *la_miam_file_tmp_key_get(void const *msg_info) {
 	la_assert(msg_info != NULL);
-	LA_CAST_PTR(msg, la_miam_file_key const *, msg_info);
+	la_miam_file_key const *msg = msg_info;
 	LA_NEW(la_miam_file_key, key);
 	key->reg = (char *)msg->reg;
 	key->file_id = msg->file_id;
@@ -103,7 +103,7 @@ static void la_miam_file_key_destroy(void *ptr) {
 	if(ptr == NULL) {
 		return;
 	}
-	LA_CAST_PTR(key, la_miam_file_key *, ptr);
+	la_miam_file_key *key = ptr;
 	la_debug_print(D_INFO, "DESTROY KEY %s %d\n", key->reg, key->file_id);
 	LA_XFREE(key->reg);
 	LA_XFREE(key);
@@ -348,7 +348,7 @@ static void la_miam_file_segment_destroy(void *data) {
 	if(data == NULL) {
 		return;
 	}
-	LA_CAST_PTR(msg, la_miam_file_segment_msg *, data);
+	la_miam_file_segment_msg *msg = data;
 	LA_XFREE(msg->txt);
 	LA_XFREE(msg);
 }
@@ -547,7 +547,7 @@ static void la_miam_file_transfer_request_format_text(la_vstring *vstr, void con
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_miam_file_transfer_request_msg const *, data);
+	la_miam_file_transfer_request_msg const *msg = data;
 	indent++;
 	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	LA_ISPRINTF(vstr, indent, "File size: %zu bytes\n", msg->file_size);
@@ -563,7 +563,7 @@ static void la_miam_file_transfer_request_format_json(la_vstring *vstr, void con
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, la_miam_file_transfer_request_msg const *, data);
+	la_miam_file_transfer_request_msg const *msg = data;
 	la_json_append_long(vstr, "file_id", msg->file_id);
 	la_json_append_long(vstr, "file_size", msg->file_size);
 	struct tm const *t = &msg->validity_time;
@@ -586,7 +586,7 @@ static void la_miam_file_transfer_accept_format_text(la_vstring *vstr, void cons
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_miam_file_transfer_accept_msg const *, data);
+	la_miam_file_transfer_accept_msg const *msg = data;
 	indent++;
 	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	LA_ISPRINTF(vstr, indent, "Segment size: %u\n", msg->segment_size);
@@ -598,7 +598,7 @@ static void la_miam_file_transfer_accept_format_json(la_vstring *vstr, void cons
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, la_miam_file_transfer_accept_msg const *, data);
+	la_miam_file_transfer_accept_msg const *msg = data;
 	la_json_append_long(vstr, "file_id", msg->file_id);
 	la_json_append_long(vstr, "segment_size", msg->segment_size);
 	la_json_append_long(vstr, "on_ground_seg_temp_secs", msg->onground_segment_tempo);
@@ -610,7 +610,7 @@ static void la_miam_file_segment_format_text(la_vstring *vstr, void const *data,
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_miam_file_segment_msg const *, data);
+	la_miam_file_segment_msg const *msg = data;
 	indent++;
 	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	LA_ISPRINTF(vstr, indent, "Segment ID: %u\n", msg->segment_id);
@@ -621,7 +621,7 @@ static void la_miam_file_segment_format_json(la_vstring *vstr, void const *data)
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, la_miam_file_segment_msg const *, data);
+	la_miam_file_segment_msg const *msg = data;
 	la_json_append_long(vstr, "file_id", msg->file_id);
 	la_json_append_long(vstr, "segment_id", msg->segment_id);
 }
@@ -639,7 +639,7 @@ static void la_miam_file_transfer_abort_format_text(la_vstring *vstr, void const
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_miam_file_transfer_abort_msg const *, data);
+	la_miam_file_transfer_abort_msg const *msg = data;
 	indent++;
 	LA_ISPRINTF(vstr, indent, "File ID: %u\n", msg->file_id);
 	char *descr = la_dict_search(abort_reasons, msg->reason);
@@ -651,7 +651,7 @@ static void la_miam_file_transfer_abort_format_json(la_vstring *vstr, void const
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, la_miam_file_transfer_abort_msg const *, data);
+	la_miam_file_transfer_abort_msg const *msg = data;
 	la_json_append_long(vstr, "file_id", msg->file_id);
 	la_json_append_long(vstr, "reason", msg->reason);
 }
@@ -661,7 +661,7 @@ static void la_miam_xoff_ind_format_text(la_vstring *vstr, void const *data, int
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_miam_xoff_ind_msg const *, data);
+	la_miam_xoff_ind_msg const *msg = data;
 	indent++;
 	if(msg->file_id == 0xFFF) {
 		LA_ISPRINTF(vstr, indent, "File ID: 0xFFF (all)\n");
@@ -674,7 +674,7 @@ static void la_miam_xoff_ind_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, la_miam_xoff_ind_msg const *, data);
+	la_miam_xoff_ind_msg const *msg = data;
 	la_json_append_bool(vstr, "all_files", msg->file_id == 0xFFF);
 	if(msg->file_id != 0xFFF) {
 		la_json_append_long(vstr, "file_id", msg->file_id);
@@ -686,7 +686,7 @@ static void la_miam_xon_ind_format_text(la_vstring *vstr, void const *data, int 
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_miam_xon_ind_msg const *, data);
+	la_miam_xon_ind_msg const *msg = data;
 	indent++;
 	if(msg->file_id == 0xFFF) {
 		LA_ISPRINTF(vstr, indent, "File ID: 0xFFF (all)\n");
@@ -701,7 +701,7 @@ static void la_miam_xon_ind_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, la_miam_xon_ind_msg const *, data);
+	la_miam_xon_ind_msg const *msg = data;
 	la_json_append_bool(vstr, "all_files", msg->file_id == 0xFFF);
 	if(msg->file_id != 0xFFF) {
 		la_json_append_long(vstr, "file_id", msg->file_id);
@@ -715,7 +715,7 @@ void la_miam_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_miam_msg const *, data);
+	la_miam_msg const *msg = data;
 	char *frame_name = la_dict_search(la_miam_frame_names, msg->frame_id);
 	la_assert(frame_name != NULL);
 	LA_ISPRINTF(vstr, indent, "MIAM:\n");

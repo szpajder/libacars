@@ -138,7 +138,7 @@ void la_media_adv_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_media_adv_msg const *, data);
+	la_media_adv_msg const *msg = data;
 
 	if(msg->err == true) {
 		LA_ISPRINTF(vstr, indent, "-- Unparseable Media Advisory message\n");
@@ -178,7 +178,7 @@ void la_media_adv_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, la_media_adv_msg const *, data);
+	la_media_adv_msg const *msg = data;
 
 	la_json_append_bool(vstr, "err", msg->err);
 	if(msg->err == true) {

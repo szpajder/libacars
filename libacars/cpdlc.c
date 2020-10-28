@@ -16,7 +16,8 @@
 #include <libacars/asn1-format-cpdlc.h>             // la_asn1_output_cpdlc_as_*()
 #include <libacars/cpdlc.h>                         // la_cpdlc_msg
 #include <libacars/libacars.h>                      // la_proto_node, la_config_get_bool, la_proto_tree_find_protocol
-#include <libacars/util.h>                          // la_debug_print, LA_CAST_PTR
+#include <libacars/macros.h>                        // la_debug_print
+#include <libacars/util.h>                          // LA_XFREE
 #include <libacars/vstring.h>                       // la_vstring, la_vstring_append_sprintf()
 #include <libacars/json.h>                          // la_json_append_bool()
 
@@ -55,7 +56,7 @@ void la_cpdlc_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_cpdlc_msg const *, data);
+	la_cpdlc_msg const *msg = data;
 	if(msg->err == true) {
 		LA_ISPRINTF(vstr, indent, "-- Unparseable FANS-1/A message\n");
 		return;
@@ -87,7 +88,7 @@ void la_cpdlc_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, la_cpdlc_msg const *, data);
+	la_cpdlc_msg const *msg = data;
 	la_json_append_bool(vstr, "err", msg->err);
 	if(msg->err == true) {
 		return;
@@ -107,7 +108,7 @@ void la_cpdlc_destroy(void *data) {
 	if(data == NULL) {
 		return;
 	}
-	LA_CAST_PTR(msg, la_cpdlc_msg *, data);
+	la_cpdlc_msg *msg = data;
 	if(msg->asn_type != NULL) {
 		msg->asn_type->free_struct(msg->asn_type, msg->data, 0);
 	}
