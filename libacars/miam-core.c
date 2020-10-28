@@ -83,7 +83,7 @@ typedef struct {
 
 #define MAX_INFLATED_LEN (1<<20)
 
-static la_inflate_result la_inflate(uint8_t const *buf, int const in_len) {
+static la_inflate_result la_inflate(uint8_t const *buf, int in_len) {
 	la_assert(buf != NULL);
 	la_assert(in_len > 0);
 
@@ -224,7 +224,7 @@ static bool is_printable(uint8_t const *buf, uint32_t data_len) {
 // MIAM CORE v1/v2 common parsers
 
 static la_proto_node *v1v2_alo_alr_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf,
-		int bodylen, la_miam_core_pdu_type const pdu_type) {
+		int bodylen, la_miam_core_pdu_type pdu_type) {
 	LA_UNUSED(bodybuf);
 	LA_UNUSED(bodylen);
 
@@ -376,7 +376,7 @@ end:
 
 // MIAM CORE v1/v2 common formatters
 
-static void la_miam_errors_format_text(la_vstring * const vstr, uint32_t err, int indent) {
+static void la_miam_errors_format_text(la_vstring *vstr, uint32_t err, int indent) {
 	static la_dict const la_miam_error_messages[] = {
 		{ .id = LA_MIAM_ERR_SUCCESS,                    .val = "No error" },
 		{ .id = LA_MIAM_ERR_HDR_PDU_TYPE_UNKNOWN,       .val = "Unknown PDU type" },
@@ -403,13 +403,13 @@ static void la_miam_errors_format_text(la_vstring * const vstr, uint32_t err, in
 	}
 }
 
-static void la_miam_errors_format_json(la_vstring * const vstr, uint32_t err) {
+static void la_miam_errors_format_json(la_vstring *vstr, uint32_t err) {
 	la_assert(vstr != NULL);
 	la_json_append_long(vstr, "err", err);
 }
 
-static void la_miam_bitmask_format_text(la_vstring * const vstr, uint8_t const bitmask,
-		la_dict const * const dict, int indent) {
+static void la_miam_bitmask_format_text(la_vstring *vstr, uint8_t bitmask,
+		la_dict const *dict, int indent) {
 	la_assert(vstr != NULL);
 	la_assert(dict != NULL);
 	la_assert(indent >= 0);
@@ -426,8 +426,8 @@ static void la_miam_bitmask_format_text(la_vstring * const vstr, uint8_t const b
 	}
 }
 
-static void la_miam_bitmask_format_json(la_vstring * const vstr, uint8_t const bitmask,
-		la_dict const * const dict) {
+static void la_miam_bitmask_format_json(la_vstring *vstr, uint8_t bitmask,
+		la_dict const *dict) {
 	la_assert(vstr != NULL);
 	la_assert(dict != NULL);
 
@@ -443,8 +443,8 @@ static void la_miam_bitmask_format_json(la_vstring * const vstr, uint8_t const b
 	}
 }
 
-static void v1v2_alo_alr_format_text(la_vstring * const vstr, void const * const data, int indent,
-		la_miam_core_pdu_type const pdu_type) {
+static void v1v2_alo_alr_format_text(la_vstring *vstr, void const *data, int indent,
+		la_miam_core_pdu_type pdu_type) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 	la_assert(indent >= 0);
@@ -453,7 +453,7 @@ static void v1v2_alo_alr_format_text(la_vstring * const vstr, void const * const
 		return;
 	}
 
-	LA_CAST_PTR(pdu, la_miam_core_v1v2_alo_alr_pdu *, data);
+	la_miam_core_v1v2_alo_alr_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_HDR, indent);
 		return;
@@ -470,8 +470,8 @@ static void v1v2_alo_alr_format_text(la_vstring * const vstr, void const * const
 	// Not checking for body errors here, as there is no body in ALO and ALR PDUs
 }
 
-static void v1v2_alo_alr_format_json(la_vstring * const vstr, void const * const data,
-		la_miam_core_pdu_type const pdu_type) {
+static void v1v2_alo_alr_format_json(la_vstring *vstr, void const *data,
+		la_miam_core_pdu_type pdu_type) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 
@@ -479,7 +479,7 @@ static void v1v2_alo_alr_format_json(la_vstring * const vstr, void const * const
 		return;
 	}
 
-	LA_CAST_PTR(pdu, la_miam_core_v1v2_alo_alr_pdu *, data);
+	la_miam_core_v1v2_alo_alr_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
@@ -497,24 +497,24 @@ static void v1v2_alo_alr_format_json(la_vstring * const vstr, void const * const
 	la_json_array_end(vstr);
 }
 
-static void la_miam_core_v1v2_alo_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_core_v1v2_alo_format_text(la_vstring *vstr, void const *data, int indent) {
 	v1v2_alo_alr_format_text(vstr, data, indent, LA_MIAM_CORE_PDU_ALO);
 }
 
-static void la_miam_core_v1v2_alo_format_json(la_vstring * const vstr, void const * const data) {
+static void la_miam_core_v1v2_alo_format_json(la_vstring *vstr, void const *data) {
 	v1v2_alo_alr_format_json(vstr, data, LA_MIAM_CORE_PDU_ALO);
 }
 
-static void la_miam_core_v1v2_alr_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_core_v1v2_alr_format_text(la_vstring *vstr, void const *data, int indent) {
 	v1v2_alo_alr_format_text(vstr, data, indent, LA_MIAM_CORE_PDU_ALR);
 }
 
-static void la_miam_core_v1v2_alr_format_json(la_vstring * const vstr, void const * const data) {
+static void la_miam_core_v1v2_alr_format_json(la_vstring *vstr, void const *data) {
 	v1v2_alo_alr_format_json(vstr, data, LA_MIAM_CORE_PDU_ALR);
 }
 
-void la_miam_core_format_text(la_vstring * const vstr, void const * const data, int indent) {
-	static char const * const la_miam_core_pdu_type_names[] = {
+void la_miam_core_format_text(la_vstring *vstr, void const *data, int indent) {
+	static char const *la_miam_core_pdu_type_names[] = {
 		[LA_MIAM_CORE_PDU_DATA] = "Data",
 		[LA_MIAM_CORE_PDU_ACK] = "Ack",
 		[LA_MIAM_CORE_PDU_ALO] = "Aloha",
@@ -526,7 +526,7 @@ void la_miam_core_format_text(la_vstring * const vstr, void const * const data, 
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(pdu, la_miam_core_pdu *, data);
+	la_miam_core_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_HDR, indent);
 		return;
@@ -537,11 +537,11 @@ void la_miam_core_format_text(la_vstring * const vstr, void const * const data, 
 	indent++;
 }
 
-void la_miam_core_format_json(la_vstring * const vstr, void const * const data) {
+void la_miam_core_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(pdu, la_miam_core_pdu *, data);
+	la_miam_core_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
@@ -745,7 +745,7 @@ end:
 
 // MIAM Core v1-specific formatters
 
-static void la_miam_core_v1_data_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_core_v1_data_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 	la_assert(indent >= 0);
@@ -762,7 +762,7 @@ static void la_miam_core_v1_data_format_text(la_vstring * const vstr, void const
 		{ .id = 0x0,                            .val = NULL }
 	};
 
-	LA_CAST_PTR(pdu, la_miam_core_v1_data_pdu *, data);
+	la_miam_core_v1_data_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_HDR, indent);
 		return;
@@ -857,11 +857,11 @@ static void la_miam_core_v1_data_format_text(la_vstring * const vstr, void const
 	}
 }
 
-static void la_miam_core_v1_data_format_json(la_vstring * const vstr, void const * const data) {
+static void la_miam_core_v1_data_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 
-	LA_CAST_PTR(pdu, la_miam_core_v1_data_pdu *, data);
+	la_miam_core_v1_data_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
@@ -880,16 +880,16 @@ static void la_miam_core_v1_data_format_json(la_vstring * const vstr, void const
 		case LA_MIAM_CORE_V1_APP_ACARS_6CHAR:
 			la_json_object_start(vstr, "acars");
 			la_json_append_string(vstr, "label",
-					(char const * const)(&((char[]){pdu->app_id[0], pdu->app_id[1], '\0'})));
+					(char const *)(&((char[]){pdu->app_id[0], pdu->app_id[1], '\0'})));
 			if(pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_4CHAR ||
 					pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_6CHAR) {
 				la_json_append_string(vstr, "sublabel",
-						(char const * const)(&((char[]){pdu->app_id[2], pdu->app_id[3], '\0'})));
+						(char const *)(&((char[]){pdu->app_id[2], pdu->app_id[3], '\0'})));
 
 			}
 			if(pdu->app_type == LA_MIAM_CORE_V1_APP_ACARS_6CHAR) {
 				la_json_append_string(vstr, "mfi",
-						(char const * const)(&((char[]){pdu->app_id[4], pdu->app_id[5], '\0'})));
+						(char const *)(&((char[]){pdu->app_id[4], pdu->app_id[5], '\0'})));
 			}
 			break;
 		case LA_MIAM_CORE_V1_APP_NONACARS_6CHAR:
@@ -916,7 +916,7 @@ static void la_miam_core_v1_data_format_json(la_vstring * const vstr, void const
 	la_json_object_end(vstr);   // acars / non_acars / unknown_payload_type
 }
 
-static void la_miam_core_v1_ack_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_core_v1_ack_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 	la_assert(indent >= 0);
@@ -930,7 +930,7 @@ static void la_miam_core_v1_ack_format_text(la_vstring * const vstr, void const 
 		{ .id = 0x0, .val = NULL }
 	};
 
-	LA_CAST_PTR(pdu, la_miam_core_v1_ack_pdu *, data);
+	la_miam_core_v1_ack_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_HDR, indent);
 		return;
@@ -947,11 +947,11 @@ static void la_miam_core_v1_ack_format_text(la_vstring * const vstr, void const 
 	// Not checking for body errors here, as there is no body in an ack PDU
 }
 
-static void la_miam_core_v1_ack_format_json(la_vstring * const vstr, void const * const data) {
+static void la_miam_core_v1_ack_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 
-	LA_CAST_PTR(pdu, la_miam_core_v1_ack_pdu *, data);
+	la_miam_core_v1_ack_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
@@ -968,7 +968,7 @@ static void la_miam_core_v1_data_destroy(void *data) {
 	if(data == NULL) {
 		return;
 	}
-	LA_CAST_PTR(pdu, la_miam_core_v1_data_pdu *, data);
+	la_miam_core_v1_data_pdu *pdu = data;
 	LA_XFREE(pdu->data);
 	LA_XFREE(pdu);
 }
@@ -1143,7 +1143,7 @@ end:
 
 // MIAM CORE v2-specific formatters
 
-static void la_miam_core_v2_data_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_core_v2_data_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 	la_assert(indent >= 0);
@@ -1160,7 +1160,7 @@ static void la_miam_core_v2_data_format_text(la_vstring * const vstr, void const
 		{ .id = 0x0,                            .val = NULL }
 	};
 
-	LA_CAST_PTR(pdu, la_miam_core_v2_data_pdu *, data);
+	la_miam_core_v2_data_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_HDR, indent);
 		return;
@@ -1258,11 +1258,11 @@ static void la_miam_core_v2_data_format_text(la_vstring * const vstr, void const
 	}
 }
 
-static void la_miam_core_v2_data_format_json(la_vstring * const vstr, void const * const data) {
+static void la_miam_core_v2_data_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 
-	LA_CAST_PTR(pdu, la_miam_core_v2_data_pdu *, data);
+	la_miam_core_v2_data_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
@@ -1279,16 +1279,16 @@ static void la_miam_core_v2_data_format_json(la_vstring * const vstr, void const
 		case LA_MIAM_CORE_V2_APP_ACARS_6CHAR:
 			la_json_object_start(vstr, "acars");
 			la_json_append_string(vstr, "label",
-					(char const * const)(&((char[]){pdu->app_id[0], pdu->app_id[1], '\0'})));
+					(char const *)(&((char[]){pdu->app_id[0], pdu->app_id[1], '\0'})));
 			if(pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_4CHAR ||
 					pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_6CHAR) {
 				la_json_append_string(vstr, "sublabel",
-						(char const * const)(&((char[]){pdu->app_id[2], pdu->app_id[3], '\0'})));
+						(char const *)(&((char[]){pdu->app_id[2], pdu->app_id[3], '\0'})));
 
 			}
 			if(pdu->app_type == LA_MIAM_CORE_V2_APP_ACARS_6CHAR) {
 				la_json_append_string(vstr, "mfi",
-						(char const * const)(&((char[]){pdu->app_id[4], pdu->app_id[5], '\0'})));
+						(char const *)(&((char[]){pdu->app_id[4], pdu->app_id[5], '\0'})));
 			}
 			break;
 		case 0x4:
@@ -1320,7 +1320,7 @@ static void la_miam_core_v2_data_format_json(la_vstring * const vstr, void const
 	la_json_object_end(vstr);   // acars / non_acars
 }
 
-static void la_miam_core_v2_ack_format_text(la_vstring * const vstr, void const * const data, int indent) {
+static void la_miam_core_v2_ack_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 	la_assert(indent >= 0);
@@ -1335,7 +1335,7 @@ static void la_miam_core_v2_ack_format_text(la_vstring * const vstr, void const 
 		{ .id = 0x0, .val = NULL }
 	};
 
-	LA_CAST_PTR(pdu, la_miam_core_v2_ack_pdu *, data);
+	la_miam_core_v2_ack_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_text(vstr, pdu->err & LA_MIAM_ERR_HDR, indent);
 		return;
@@ -1350,11 +1350,11 @@ static void la_miam_core_v2_ack_format_text(la_vstring * const vstr, void const 
 	// Not checking for body errors here, as there is no body in an ack PDU
 }
 
-static void la_miam_core_v2_ack_format_json(la_vstring * const vstr, void const * const data) {
+static void la_miam_core_v2_ack_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 
-	LA_CAST_PTR(pdu, la_miam_core_v2_ack_pdu *, data);
+	la_miam_core_v2_ack_pdu const *pdu = data;
 	if(pdu->err & LA_MIAM_ERR_HDR) {
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
@@ -1369,7 +1369,7 @@ static void la_miam_core_v2_data_destroy(void *data) {
 	if(data == NULL) {
 		return;
 	}
-	LA_CAST_PTR(pdu, la_miam_core_v2_data_pdu *, data);
+	la_miam_core_v2_data_pdu *pdu = data;
 	LA_XFREE(pdu->data);
 	LA_XFREE(pdu);
 }

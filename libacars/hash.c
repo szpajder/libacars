@@ -37,7 +37,7 @@ uint32_t la_hash_string(char const *str, uint32_t h) {
 
 uint32_t la_hash_key_str(void const *k) {
 	la_assert(k != NULL);
-	LA_CAST_PTR(str, char const *, k);
+	char const *str = k;
 	return la_hash_string(str, LA_HASH_INIT);
 }
 
@@ -109,7 +109,7 @@ void *la_hash_lookup(la_hash const *h, void const *key) {
 	if(list_node == NULL) {
 		return NULL;
 	}
-	LA_CAST_PTR(elem, la_hash_element *, list_node->data);
+	la_hash_element *elem = list_node->data;
 	return (void *)elem->value;
 }
 
@@ -127,7 +127,7 @@ bool la_hash_insert(la_hash *h, void *key, void *value) {
 	if(list_node != NULL) {
 		// Key already exists - insert the new value, free the old value,
 		// preserve the old key, free the new key
-		LA_CAST_PTR(elem, la_hash_element *, list_node->data);
+		la_hash_element *elem = list_node->data;
 		la_hash_destroy_key(h, key);
 		la_hash_destroy_value(h, elem->value);
 		elem->value = value;
@@ -164,7 +164,7 @@ bool la_hash_remove(la_hash *h, void *key) {
 	}
 	list_node->next = NULL;
 	// Now free the key and value
-	LA_CAST_PTR(elem, la_hash_element *, list_node->data);
+	la_hash_element *elem = list_node->data;
 	la_hash_destroy_key(h, elem->key);
 	la_hash_destroy_value(h, elem->value);
 	// This will free elem too
@@ -188,7 +188,7 @@ int la_hash_foreach_remove(la_hash *h, la_hash_if_func *if_func, void *if_func_c
 	int num_keys_deleted = 0;
 	for(size_t i = 0; i < LA_HASH_SIZE; i++) {
 		for(la_list *l = h->buckets[i]; l != NULL; l = la_list_next(l)) {
-			LA_CAST_PTR(elem, la_hash_element *, l->data);
+			la_hash_element *elem = l->data;
 			if(if_func(elem->key, elem->value, if_func_ctx) == true) {
 				keys_to_delete = la_list_append(keys_to_delete, elem->key);
 				num_keys_deleted++;
@@ -209,8 +209,8 @@ static void la_hash_element_destroy(void *elemptr, void *hashptr) {
 	if(elemptr == NULL) {
 		return;
 	}
-	LA_CAST_PTR(h, la_hash *, hashptr);
-	LA_CAST_PTR(elem, la_hash_element *, elemptr);
+	la_hash *h = hashptr;
+	la_hash_element *elem = elemptr;
 	la_hash_destroy_key(h, elem->key);
 	la_hash_destroy_value(h, elem->value);
 	LA_XFREE(elem);

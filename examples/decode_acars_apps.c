@@ -63,7 +63,8 @@ void parse(char *label, char *txt, la_msg_dir msg_dir) {
 		} else {
 			vstr = la_proto_tree_format_text(NULL, node);
 		}
-		printf("%s\n", vstr->str);
+		fwrite(vstr->str, sizeof(char), vstr->len, stdout);
+		fputc('\n', stdout);
 		la_vstring_destroy(vstr, true);
 	}
 	la_proto_tree_destroy(node);

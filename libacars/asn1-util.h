@@ -11,21 +11,29 @@
 #include <libacars/asn1/asn_application.h>  // asn_TYPE_descriptor_t
 #include <libacars/vstring.h>               // la_vstring
 
+// Parameters to the formatter function
+typedef struct {
+	la_vstring *vstr;
+	char const *label;
+	asn_TYPE_descriptor_t *td;
+	void const *sptr;
+	int indent;
+} la_asn1_formatter_params;
+
+// Formatter function prototype
+typedef void (*la_asn1_formatter_fun)(la_asn1_formatter_params);
+
 typedef struct {
 	asn_TYPE_descriptor_t *type;
-	// FIXME: typedef?
-	void (*format)(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *, const void *, int);
-	char const * const label;
-} la_asn_formatter;
+	la_asn1_formatter_fun format;
+	char const *label;
+} la_asn1_formatter;
 
-typedef void (*asn1_output_fun_t)(la_vstring *, asn_TYPE_descriptor_t *, const void *, int);
-
-#define LA_ASN1_FORMATTER_PROTOTYPE(x) void x(la_vstring *vstr, char const * const label, asn_TYPE_descriptor_t *td, void const *sptr, int indent)
+#define LA_ASN1_FORMATTER_FUN(x) \
+	void x(la_asn1_formatter_params p)
 
 // asn1-util.c
-int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t *buf, int size);
-void la_asn1_output(la_vstring *vstr, la_asn_formatter const * const asn1_formatter_table,
-		size_t asn1_formatter_table_len, asn_TYPE_descriptor_t *td, const void *sptr, int indent,
-		bool const dump_unknown_types);
-
+int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t const *buf, int size);
+void la_asn1_output(la_asn1_formatter_params p, la_asn1_formatter const *asn1_formatter_table,
+		size_t asn1_formatter_table_len, bool dump_unknown_types);
 #endif // !LA_ASN1_UTIL_H

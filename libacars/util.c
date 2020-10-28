@@ -19,7 +19,7 @@
 #include <libacars/macros.h>    // la_debug_print()
 #include <libacars/util.h>
 
-void *la_xcalloc(size_t nmemb, size_t size, const char *file, const int line, const char *func) {
+void *la_xcalloc(size_t nmemb, size_t size, char const *file, int line, char const *func) {
 	void *ptr = calloc(nmemb, size);
 	if(ptr == NULL) {
 		fprintf(stderr, "%s:%d: %s(): calloc(%zu, %zu) failed: %s\n",
@@ -29,7 +29,7 @@ void *la_xcalloc(size_t nmemb, size_t size, const char *file, const int line, co
 	return ptr;
 }
 
-void *la_xrealloc(void *ptr, size_t size, const char *file, const int line, const char *func) {
+void *la_xrealloc(void *ptr, size_t size, char const *file, int line, char const *func) {
 	ptr = realloc(ptr, size);
 	if(ptr == NULL) {
 		fprintf(stderr, "%s:%d: %s(): realloc(%zu) failed: %s\n",
@@ -39,7 +39,7 @@ void *la_xrealloc(void *ptr, size_t size, const char *file, const int line, cons
 	return ptr;
 }
 
-void *la_dict_search(const la_dict *list, int id) {
+void *la_dict_search(la_dict const *list, int id) {
 	if(list == NULL) return NULL;
 	la_dict *ptr;
 	for(ptr = (la_dict *)list; ; ptr++) {
@@ -78,7 +78,7 @@ size_t la_slurp_hexstring(char* string, uint8_t **buf) {
 }
 
 char *la_hexdump(uint8_t *data, size_t len) {
-	static const char hex[] = "0123456789abcdef";
+	static char const hex[] = "0123456789abcdef";
 	if(data == NULL) return strdup("<undef>");
 	if(len == 0) return strdup("<none>");
 
@@ -130,7 +130,7 @@ char *la_hexdump(uint8_t *data, size_t len) {
 	return buf;
 }
 
-int la_strntouint16_t(char const *txt, int const charcnt) {
+int la_strntouint16_t(char const *txt, int charcnt) {
 	if(txt == NULL ||
 			charcnt < 1 ||
 			charcnt > 9 ||      // prevent overflowing int
@@ -199,7 +199,7 @@ void la_octet_string_destroy(void *ostring_ptr) {
 	if(ostring_ptr == NULL) {
 		return;
 	}
-	LA_CAST_PTR(ostring, la_octet_string *, ostring_ptr);
+	la_octet_string *ostring = ostring_ptr;
 	LA_XFREE(ostring->buf);
 	LA_XFREE(ostring);
 }
@@ -221,7 +221,7 @@ char *la_strsep(char **stringp, char const *delim) {
 #endif
 
 #ifdef WITH_LIBXML2
-void la_xml_errfunc_noop(void * ctx, const char * msg, ...) {
+void la_xml_errfunc_noop(void * ctx, char const *msg, ...) {
 	(void)ctx;
 	(void)msg;
 }
@@ -250,3 +250,17 @@ xmlBufferPtr la_prettify_xml(char *buf) {
 	return NULL;
 }
 #endif
+
+uint32_t la_reverse(uint32_t v, int numbits) {
+	uint32_t r = v;                         // r will be reversed bits of v; first get LSB of v
+	int s = sizeof(v) * CHAR_BIT - 1;       // extra shift needed at end
+
+	for (v >>= 1; v; v >>= 1) {
+		r <<= 1;
+		r |= v & 1;
+		s--;
+	}
+	r <<= s;                                // shift when v's highest bits are zero
+	r >>= 32 - numbits;
+	return r;
+}

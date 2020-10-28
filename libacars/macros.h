@@ -80,7 +80,6 @@ extern uint32_t Debug;
 #define la_debug_print_buf_hex(level, buf, len, fmt, ...) la_nop()
 #endif
 
-#define LA_CAST_PTR(x, t, y) t x = (t)(y)
 #define LA_NEW(type, x) type *(x) = LA_XCALLOC(1, sizeof(type))
 #define LA_UNUSED(x) (void)(x)
 

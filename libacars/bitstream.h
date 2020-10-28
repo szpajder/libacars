@@ -17,6 +17,6 @@ typedef struct {
 
 la_bitstream_t *la_bitstream_init(uint32_t len);
 void la_bitstream_destroy(la_bitstream_t *bs);
-int la_bitstream_append_msbfirst(la_bitstream_t *bs, uint8_t const *v, uint32_t const numbytes, uint32_t const numbits);
-int la_bitstream_read_word_msbfirst(la_bitstream_t *bs, uint32_t *ret, uint32_t const numbits);
+int la_bitstream_append_msbfirst(la_bitstream_t *bs, uint8_t const *v, uint32_t numbytes, uint32_t numbits);
+int la_bitstream_read_word_msbfirst(la_bitstream_t *bs, uint32_t *ret, uint32_t numbits);
 #endif // !_LA_BITSTREAM_H

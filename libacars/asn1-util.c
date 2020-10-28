@@ -7,17 +7,17 @@
 #include <stdint.h>
 #include <search.h>                         // lfind()
 #include <libacars/asn1/asn_application.h>  // asn_TYPE_descriptor_t
-#include <libacars/asn1-util.h>             // la_asn_formatter
-#include <libacars/macros.h>                // LA_CAST_PTR, LA_ISPRINTF, la_debug_print
+#include <libacars/asn1-util.h>             // la_asn1_formatter
+#include <libacars/macros.h>                // LA_ISPRINTF, la_debug_print
 #include <libacars/vstring.h>               // la_vstring
 #include "config.h"                         // LFIND_NMEMB_SIZE_SIZE_T, LFIND_NMEMB_SIZE_UINT
 
-static int la_compare_fmtr(const void *k, const void *m) {
-	LA_CAST_PTR(memb, la_asn_formatter *, m);
+static int la_compare_fmtr(void const *k, void const *m) {
+	la_asn1_formatter const *memb = m;
 	return(k == memb->type ? 0 : 1);
 }
 
-int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t *buf, int size) {
+int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t const *buf, int size) {
 	asn_dec_rval_t rval;
 	rval = uper_decode_complete(0, td, struct_ptr, buf, size);
 	if(rval.code != RC_OK) {
@@ -36,23 +36,27 @@ int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t *buf
 	return 0;
 }
 
-void la_asn1_output(la_vstring *vstr, la_asn_formatter const * const asn1_formatter_table,
-		size_t asn1_formatter_table_len, asn_TYPE_descriptor_t *td, const void *sptr, int indent,
-		bool const dump_unknown_types) {
-	if(td == NULL || sptr == NULL) return;
+void la_asn1_output(la_asn1_formatter_params p, la_asn1_formatter const *asn1_formatter_table,
+		size_t asn1_formatter_table_len, bool dump_unknown_types) {
+	if(p.td == NULL || p.sptr == NULL) return;
 #if defined LFIND_NMEMB_SIZE_SIZE_T
 	size_t table_len = asn1_formatter_table_len;
 #elif defined LFIND_NMEMB_SIZE_UINT
 	unsigned int table_len = (unsigned int)asn1_formatter_table_len;
 #endif
-	la_asn_formatter *formatter = lfind(td, asn1_formatter_table, &table_len,
-			sizeof(la_asn_formatter), &la_compare_fmtr);
+	la_asn1_formatter *formatter = lfind(p.td, asn1_formatter_table, &table_len,
+			sizeof(la_asn1_formatter), &la_compare_fmtr);
 	if(formatter != NULL) {
-		formatter->format(vstr, formatter->label, td, sptr, indent);
+		// NULL formatting routine is allowed - it means the type should be silently omitted
+		if(formatter->format != NULL) {
+			p.label = formatter->label;
+			(*formatter->format)(p);
+		}
 	} else if(dump_unknown_types) {
-		LA_ISPRINTF(vstr, indent, "-- Formatter for type %s not found, ASN.1 dump follows:\n", td->name);
-		LA_ISPRINTF(vstr, indent, "");  // asn_fprint does not indent the first line
-		asn_sprintf(vstr, td, sptr, indent+1);
-		LA_ISPRINTF(vstr, indent, "-- ASN.1 dump end\n");
+		LA_ISPRINTF(p.vstr, p.indent, "-- Formatter for type %s not found, ASN.1 dump follows:\n", p.td->name);
+		LA_ISPRINTF(p.vstr, p.indent, "%s", "");    // asn_sprintf does not indent the first line
+		asn_sprintf(p.vstr, p.td, p.sptr, p.indent+1);
+		LA_EOL(p.vstr);
+		LA_ISPRINTF(p.vstr, p.indent, "%s", "-- ASN.1 dump end\n");
 	}
 }

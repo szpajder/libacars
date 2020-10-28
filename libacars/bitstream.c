@@ -22,7 +22,7 @@ void la_bitstream_destroy(la_bitstream_t *bs) {
 	LA_XFREE(bs);
 }
 
-int la_bitstream_append_msbfirst(la_bitstream_t *bs, uint8_t const *v, uint32_t const numbytes, uint32_t const numbits) {
+int la_bitstream_append_msbfirst(la_bitstream_t *bs, uint8_t const *v, uint32_t numbytes, uint32_t numbits) {
 	if(bs->end + numbits * numbytes > bs->len)
 		return -1;
 	for(uint32_t i = 0; i < numbytes; i++) {
@@ -33,7 +33,7 @@ int la_bitstream_append_msbfirst(la_bitstream_t *bs, uint8_t const *v, uint32_t 
 	return 0;
 }
 
-int la_bitstream_read_word_msbfirst(la_bitstream_t *bs, uint32_t *ret, uint32_t const numbits) {
+int la_bitstream_read_word_msbfirst(la_bitstream_t *bs, uint32_t *ret, uint32_t numbits) {
 	if(bs->start + numbits > bs->end)
 		return -1;
 	*ret = 0;

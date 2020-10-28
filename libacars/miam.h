@@ -114,9 +114,9 @@ typedef struct {
 
 la_proto_node *la_miam_parse(char const *txt);
 la_proto_node *la_miam_parse_and_reassemble(char const *reg, char const *txt,
-		la_reasm_ctx *rtables, struct timeval const rx_time);
-void la_miam_format_text(la_vstring * const vstr, void const * const data, int indent);
-void la_miam_format_json(la_vstring * const vstr, void const * const data);
+		la_reasm_ctx *rtables, struct timeval rx_time);
+void la_miam_format_text(la_vstring *vstr, void const *data, int indent);
+void la_miam_format_json(la_vstring *vstr, void const *data);
 
 extern la_type_descriptor const la_DEF_miam_message;
 extern la_type_descriptor const la_DEF_miam_single_transfer_message;

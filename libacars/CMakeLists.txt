@@ -183,6 +183,8 @@ install(FILES
 	acars.h
 	adsc.h
 	arinc.h
+	asn1-format-common.h
+	asn1-util.h
 	cpdlc.h
 	hash.h
 	json.h
