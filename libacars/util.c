@@ -39,15 +39,6 @@ void *la_xrealloc(void *ptr, size_t size, char const *file, int line, char const
 	return ptr;
 }
 
-void *la_dict_search(la_dict const *list, int id) {
-	if(list == NULL) return NULL;
-	la_dict *ptr;
-	for(ptr = (la_dict *)list; ; ptr++) {
-		if(ptr->val == NULL) return NULL;
-		if(ptr->id == id) return ptr->val;
-	}
-}
-
 size_t la_slurp_hexstring(char* string, uint8_t **buf) {
 	if(string == NULL)
 		return 0;

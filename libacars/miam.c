@@ -13,8 +13,8 @@
 #include <libacars/libacars.h>      /* la_proto_node, la_type_descriptor */
 #include <libacars/vstring.h>       /* la_vstring */
 #include <libacars/json.h>          /* la_json_append_*() */
-#include <libacars/util.h>          /* la_dict, la_dict_search(),
-                                       la_strntouint16_t(), la_simple_strptime() */
+#include <libacars/util.h>          /* la_strntouint16_t(), la_simple_strptime() */
+#include <libacars/dict.h>          /* la_dict, la_dict_search() */
 #include <libacars/reassembly.h>
 #include <libacars/miam-core.h>     /* la_miam_core_pdu_parse(), la_miam_core_format_*() */
 #include <libacars/miam.h>

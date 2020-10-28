@@ -13,7 +13,8 @@
 #include <libacars/asn1/asn_SET_OF.h>           // _A_CSET_FROM_VOID()
 #include <libacars/asn1-util.h>                 // LA_ASN1_FORMATTER_FUN
 #include <libacars/macros.h>                    // la_debug_print
-#include <libacars/util.h>                      // la_dict_search
+#include <libacars/dict.h>                      // la_dict_search
+#include <libacars/util.h>                      // la_reverse
 #include <libacars/vstring.h>                   // la_vstring, la_vstring_append_sprintf(), LA_ISPRINTF
 #include <libacars/json.h>                      // la_json_*()
 

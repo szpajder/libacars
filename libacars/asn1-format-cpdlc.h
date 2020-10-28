@@ -8,7 +8,7 @@
 #define LA_ASN1_FORMAT_CPDLC_H 1
 #include <libacars/asn1/asn_application.h>      // asn_TYPE_descriptor_t
 #include <libacars/vstring.h>                   // la_vstring
-#include <libacars/util.h>                      // la_dict
+#include <libacars/dict.h>                      // la_dict
 #include <libacars/asn1-util.h>                 // LA_ASN1_FORMATTER_FUN
 
 // asn1-format-cpdlc-text.c

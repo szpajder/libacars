@@ -18,7 +18,8 @@
 #include <libacars/libacars.h>      // la_proto_node
 #include <libacars/vstring.h>       // la_vstring, LA_ISPRINTF, la_isprintf_multiline_text()
 #include <libacars/json.h>          // la_json_append_*()
-#include <libacars/util.h>          // la_dict, la_dict_search(), XCALLOC(), la_hexdump()
+#include <libacars/dict.h>          // la_dict, la_dict_search()
+#include <libacars/util.h>          // XCALLOC(), la_hexdump()
 #include <libacars/crc.h>           // la_crc16_arinc(), la_crc32_arinc665()
 #include <libacars/miam-core.h>
 

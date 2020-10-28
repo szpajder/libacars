@@ -8,7 +8,7 @@
 #define LA_ASN1_FORMAT_COMMON_H 1
 #include <libacars/asn1/asn_application.h>  // asn_TYPE_descriptor_t
 #include <libacars/asn1-util.h>             // LA_ASN1_FORMATTER_FUN, la_asn1_formatter_params
-#include <libacars/util.h>                  // la_dict
+#include <libacars/dict.h>                  // la_dict
 #include <libacars/vstring.h>               // la_vstring
 
 char const *la_asn1_value2enum(asn_TYPE_descriptor_t *td, long value);

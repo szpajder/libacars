@@ -140,6 +140,7 @@ add_library (acars_core OBJECT
 	configuration.c
 	cpdlc.c
 	crc.c
+	dict.c
 	hash.c
 	json.c
 	libacars.c
@@ -186,6 +187,7 @@ install(FILES
 	asn1-format-common.h
 	asn1-util.h
 	cpdlc.h
+	dict.h
 	hash.h
 	json.h
 	libacars.h

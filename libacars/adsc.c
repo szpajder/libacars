@@ -8,6 +8,7 @@
 #include <string.h>                 // memcpy()
 #include <math.h>                   // pow(), trunc()
 #include <libacars/macros.h>        // la_debug_print
+#include <libacars/dict.h>          // la_dict
 #include <libacars/bitstream.h>     // la_bitstream_*
 #include <libacars/libacars.h>      // la_msg_dir, la_proto_node, la_proto_tree_find_protocol
 #include <libacars/arinc.h>         // la_arinc_imi
