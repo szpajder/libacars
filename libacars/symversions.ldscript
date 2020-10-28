@@ -129,6 +129,7 @@ ACARS_2.1 {
     la_asn1_format_label_only_as_json;
     la_asn1_format_label_only_as_text;
     la_asn1_format_long_as_json;
+    la_asn1_output;
     la_asn1_value2enum;
     la_dict_search;
     la_format_BIT_STRING_as_json;
