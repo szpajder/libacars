@@ -23,17 +23,17 @@ typedef struct {
 	int indent;
 } la_adsc_formatter_ctx_t;
 
-typedef int(la_adsc_parse_type_f)(void *dest, uint8_t *buf, uint32_t len);
-typedef void(la_adsc_format_type_f)(la_adsc_formatter_ctx_t *ctx, char const *label, void const *data);
-typedef void(la_adsc_destroy_type_f)(void *data);
+typedef int(la_adsc_parser_fun)(void *dest, uint8_t *buf, uint32_t len);
+typedef void(la_adsc_formatter_fun)(la_adsc_formatter_ctx_t *ctx, char const *label, void const *data);
+typedef void(la_adsc_destructor_fun)(void *data);
 
 typedef struct {
 	char const *label;
 	char const *json_key;
-	la_adsc_parse_type_f *parse;
-	la_adsc_format_type_f *format_text;
-	la_adsc_format_type_f *format_json;
-	la_adsc_destroy_type_f *destroy;
+	la_adsc_parser_fun *parse;
+	la_adsc_formatter_fun *format_text;
+	la_adsc_formatter_fun *format_json;
+	la_adsc_destructor_fun *destroy;
 	// reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
