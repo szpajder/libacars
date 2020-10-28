@@ -125,8 +125,8 @@ static la_reasm_table_funcs acars_reasm_funcs = {
 };
 
 la_proto_node *la_acars_apps_parse_and_reassemble(char const *reg,
-		char const *label, char const *txt, la_msg_dir const msg_dir,
-		la_reasm_ctx *rtables,struct timeval const rx_time) {
+		char const *label, char const *txt, la_msg_dir msg_dir,
+		la_reasm_ctx *rtables, struct timeval rx_time) {
 	la_proto_node *ret = NULL;
 	if(label == NULL || txt == NULL) {
 		goto end;

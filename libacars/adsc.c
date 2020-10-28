@@ -119,7 +119,7 @@ static double la_adsc_temperature_parse(uint32_t t) {
 	return -1; \
 }
 #define LA_ADSC_PARSER_PROTOTYPE(x) static int x(void *dest, uint8_t *buf, uint32_t len)
-#define LA_ADSC_FORMATTER_PROTOTYPE(x) static void x(la_adsc_formatter_ctx_t * const ctx, char const *label, void const *data)
+#define LA_ADSC_FORMATTER_PROTOTYPE(x) static void x(la_adsc_formatter_ctx_t *ctx, char const *label, void const *data)
 
 static int la_adsc_tag_parse(la_adsc_tag_t *t, la_dict const *tag_descriptor_table, uint8_t *buf, uint32_t len);
 
