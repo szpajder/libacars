@@ -54,6 +54,7 @@ ACARS_2.0 {
     la_json_append_bool;
     la_json_append_char;
     la_json_append_double;
+    la_json_append_int64;
     la_json_append_long;
     la_json_append_octet_string;
     la_json_append_string;

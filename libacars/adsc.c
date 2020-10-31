@@ -787,12 +787,12 @@ LA_ADSC_FORMATTER_FUN(la_adsc_nack_format_text) {
 LA_ADSC_FORMATTER_FUN(la_adsc_nack_format_json) {
 	LA_UNUSED(label);
 	la_adsc_nack_t const *n = data;
-	la_json_append_long(ctx->vstr, "contract_req_num", n->contract_req_num);
-	la_json_append_long(ctx->vstr, "reason", n->reason);
+	la_json_append_int64(ctx->vstr, "contract_req_num", n->contract_req_num);
+	la_json_append_int64(ctx->vstr, "reason", n->reason);
 	if(n->reason == 1 || n->reason == 2) {
-		la_json_append_long(ctx->vstr, "err_octet", n->ext_data);
+		la_json_append_int64(ctx->vstr, "err_octet", n->ext_data);
 	} else if(n->reason == 7) {
-		la_json_append_long(ctx->vstr, "err_tag", n->ext_data);
+		la_json_append_int64(ctx->vstr, "err_tag", n->ext_data);
 	}
 }
 
@@ -818,7 +818,7 @@ LA_ADSC_FORMATTER_FUN(la_adsc_dis_reason_code_format_json) {
 	LA_UNUSED(label);
 	uint8_t const *rc = data;
 	int reason = (int)(*rc >> 4);
-	la_json_append_long(ctx->vstr, "reason_code", reason);
+	la_json_append_int64(ctx->vstr, "reason_code", reason);
 }
 
 LA_ADSC_FORMATTER_FUN(la_adsc_noncomp_group_format_text) {
@@ -844,7 +844,7 @@ LA_ADSC_FORMATTER_FUN(la_adsc_noncomp_group_format_json) {
 	LA_UNUSED(label);
 	la_adsc_noncomp_group_t const *g = data;
 
-	la_json_append_long(ctx->vstr, "noncomp_tag", g->noncomp_tag);
+	la_json_append_int64(ctx->vstr, "noncomp_tag", g->noncomp_tag);
 	la_json_append_string(ctx->vstr, "noncomp_cause",
 			g->is_unrecognized ? "group_unrecognized" :
 			(g->is_whole_group_unavail ? "group_unavailable" : "params_unavailable"));
@@ -852,7 +852,7 @@ LA_ADSC_FORMATTER_FUN(la_adsc_noncomp_group_format_json) {
 		la_json_array_start(ctx->vstr, "params");
 		if(g->param_cnt > 0) {
 			for(int i = 0; i < g->param_cnt; i++) {
-				la_json_append_long(ctx->vstr, NULL, g->params[i]);
+				la_json_append_int64(ctx->vstr, NULL, g->params[i]);
 			}
 		}
 		la_json_array_end(ctx->vstr);
@@ -875,7 +875,7 @@ LA_ADSC_FORMATTER_FUN(la_adsc_noncomp_notify_format_text) {
 LA_ADSC_FORMATTER_FUN(la_adsc_noncomp_notify_format_json) {
 	LA_UNUSED(label);
 	la_adsc_noncomp_notify_t const *n = data;
-	la_json_append_long(ctx->vstr, "contract_req_num", n->contract_req_num);
+	la_json_append_int64(ctx->vstr, "contract_req_num", n->contract_req_num);
 	la_json_array_start(ctx->vstr, "msg_groups");
 	if(n->group_cnt > 0) {
 		for(int i = 0; i < n->group_cnt; i++) {
@@ -947,7 +947,7 @@ LA_ADSC_FORMATTER_FUN(la_adsc_basic_report_format_json) {
 
 	la_json_append_double(ctx->vstr, "lat", r->lat);
 	la_json_append_double(ctx->vstr, "lon", r->lon);
-	la_json_append_long(ctx->vstr, "alt", r->alt);
+	la_json_append_int64(ctx->vstr, "alt", r->alt);
 	la_json_append_double(ctx->vstr, "ts_sec", r->timestamp);
 	la_json_append_double(ctx->vstr, "pos_accuracy_nm", accuracy_table[r->accuracy]);
 	la_json_append_bool(ctx->vstr, "nav_redundancy", redundancy_state_table[r->redundancy]);
@@ -994,13 +994,13 @@ LA_ADSC_FORMATTER_FUN(la_adsc_predicted_route_format_json) {
 	la_json_object_start(ctx->vstr, "next_wpt");
 	la_json_append_double(ctx->vstr, "lat", r->lat_next);
 	la_json_append_double(ctx->vstr, "lon", r->lon_next);
-	la_json_append_long(ctx->vstr, "alt", r->alt_next);
-	la_json_append_long(ctx->vstr, "eta_sec", r->eta_next);
+	la_json_append_int64(ctx->vstr, "alt", r->alt_next);
+	la_json_append_int64(ctx->vstr, "eta_sec", r->eta_next);
 	la_json_object_end(ctx->vstr);
 	la_json_object_start(ctx->vstr, "next_next_wpt");
 	la_json_append_double(ctx->vstr, "lat", r->lat_next_next);
 	la_json_append_double(ctx->vstr, "lon", r->lon_next_next);
-	la_json_append_long(ctx->vstr, "alt", r->alt_next_next);
+	la_json_append_int64(ctx->vstr, "alt", r->alt_next_next);
 	la_json_object_end(ctx->vstr);
 }
 
@@ -1020,7 +1020,7 @@ LA_ADSC_FORMATTER_FUN(la_adsc_earth_ref_format_json) {
 	la_json_append_double(ctx->vstr, "true_trk_deg", r->heading);
 	la_json_append_bool(ctx->vstr, "true_trk_valid", r->heading_invalid ? false : true);
 	la_json_append_double(ctx->vstr, "gnd_spd_kts", r->speed);
-	la_json_append_long(ctx->vstr, "vspd_ftmin", r->vert_speed);
+	la_json_append_int64(ctx->vstr, "vspd_ftmin", r->vert_speed);
 }
 
 LA_ADSC_FORMATTER_FUN(la_adsc_air_ref_format_text) {
@@ -1059,8 +1059,8 @@ LA_ADSC_FORMATTER_FUN(la_adsc_intermediate_projection_format_json) {
 	la_json_append_double(ctx->vstr, "dist_nm", p->distance);
 	la_json_append_double(ctx->vstr, "true_trk_deg", p->track);
 	la_json_append_bool(ctx->vstr, "true_trk_valid", p->track_invalid ? false : true);
-	la_json_append_long(ctx->vstr, "alt", p->alt);
-	la_json_append_long(ctx->vstr, "eta_sec", p->eta);
+	la_json_append_int64(ctx->vstr, "alt", p->alt);
+	la_json_append_int64(ctx->vstr, "eta_sec", p->eta);
 }
 
 LA_ADSC_FORMATTER_FUN(la_adsc_fixed_projection_format_text) {
@@ -1079,8 +1079,8 @@ LA_ADSC_FORMATTER_FUN(la_adsc_fixed_projection_format_json) {
 	la_adsc_fixed_projection_t const *p = data;
 	la_json_append_double(ctx->vstr, "lat", p->lat);
 	la_json_append_double(ctx->vstr, "lon", p->lon);
-	la_json_append_long(ctx->vstr, "alt", p->alt);
-	la_json_append_long(ctx->vstr, "eta_sec", p->eta);
+	la_json_append_int64(ctx->vstr, "alt", p->alt);
+	la_json_append_int64(ctx->vstr, "eta_sec", p->eta);
 }
 
 LA_ADSC_FORMATTER_FUN(la_adsc_meteo_format_text) {
@@ -1113,7 +1113,7 @@ LA_ADSC_FORMATTER_FUN(la_adsc_airframe_id_format_text) {
 LA_ADSC_FORMATTER_FUN(la_adsc_airframe_id_format_json) {
 	LA_UNUSED(label);
 	la_adsc_airframe_id_t const *a = data;
-	la_json_append_long(ctx->vstr, "icao_id",
+	la_json_append_int64(ctx->vstr, "icao_id",
 			((long)(a->icao_hex[0]) << 16) |
 			((long)(a->icao_hex[1]) << 8)  |
 			(long)(a->icao_hex[2])
@@ -1392,7 +1392,7 @@ LA_ADSC_FORMATTER_FUN(la_adsc_tag_with_contract_number_format_text) {
 
 LA_ADSC_FORMATTER_FUN(la_adsc_tag_with_contract_number_format_json) {
 	LA_UNUSED(label);
-	la_json_append_long(ctx->vstr, "contract_num", *(uint8_t *)data);
+	la_json_append_int64(ctx->vstr, "contract_num", *(uint8_t *)data);
 }
 
 LA_ADSC_FORMATTER_FUN(la_adsc_modulus_format_text) {
@@ -1401,7 +1401,7 @@ LA_ADSC_FORMATTER_FUN(la_adsc_modulus_format_text) {
 
 LA_ADSC_FORMATTER_FUN(la_adsc_modulus_format_json) {
 	LA_UNUSED(label);
-	la_json_append_long(ctx->vstr, "modulus", *(uint8_t *)data);
+	la_json_append_int64(ctx->vstr, "modulus", *(uint8_t *)data);
 }
 
 LA_ADSC_FORMATTER_FUN(la_adsc_reporting_interval_format_text) {
@@ -1412,7 +1412,7 @@ LA_ADSC_FORMATTER_FUN(la_adsc_reporting_interval_format_text) {
 LA_ADSC_FORMATTER_FUN(la_adsc_reporting_interval_format_json) {
 	LA_UNUSED(label);
 	la_adsc_report_interval_req_t const *t = data;
-	la_json_append_long(ctx->vstr, "interval_secs", (int)(t->scaling_factor) * (int)(t->rate));
+	la_json_append_int64(ctx->vstr, "interval_secs", (int)(t->scaling_factor) * (int)(t->rate));
 }
 
 LA_ADSC_FORMATTER_FUN(la_adsc_acft_intent_group_format_text) {
@@ -1424,8 +1424,8 @@ LA_ADSC_FORMATTER_FUN(la_adsc_acft_intent_group_format_text) {
 LA_ADSC_FORMATTER_FUN(la_adsc_acft_intent_group_format_json) {
 	LA_UNUSED(label);
 	la_adsc_acft_intent_group_req_t const *t = data;
-	la_json_append_long(ctx->vstr, "modulus", t->modulus);
-	la_json_append_long(ctx->vstr, "proj_time_mins", t->acft_intent_projection_time);
+	la_json_append_int64(ctx->vstr, "modulus", t->modulus);
+	la_json_append_int64(ctx->vstr, "proj_time_mins", t->acft_intent_projection_time);
 }
 
 LA_ADSC_FORMATTER_FUN(la_adsc_lat_dev_change_format_text) {
@@ -1456,7 +1456,7 @@ LA_ADSC_FORMATTER_FUN(la_adsc_vspd_change_format_text) {
 LA_ADSC_FORMATTER_FUN(la_adsc_vspd_change_format_json) {
 	LA_UNUSED(label);
 	la_adsc_vspd_chg_event_t const *e = data;
-	la_json_append_long(ctx->vstr, "vspd_ftmin_threshold", abs(e->vspd_threshold));
+	la_json_append_int64(ctx->vstr, "vspd_ftmin_threshold", abs(e->vspd_threshold));
 	la_json_append_bool(ctx->vstr, "higher_than", e->vspd_threshold >= 0 ? true : false);
 }
 
@@ -1473,8 +1473,8 @@ LA_ADSC_FORMATTER_FUN(la_adsc_alt_range_format_text) {
 LA_ADSC_FORMATTER_FUN(la_adsc_alt_range_format_json) {
 	LA_UNUSED(label);
 	la_adsc_alt_range_event_t const *e = data;
-	la_json_append_long(ctx->vstr, "floor_alt", e->floor_alt);
-	la_json_append_long(ctx->vstr, "ceiling_alt", e->ceiling_alt);
+	la_json_append_int64(ctx->vstr, "floor_alt", e->floor_alt);
+	la_json_append_int64(ctx->vstr, "ceiling_alt", e->ceiling_alt);
 }
 
 LA_ADSC_FORMATTER_FUN(la_adsc_contract_request_format_text) {
@@ -1502,7 +1502,7 @@ LA_ADSC_FORMATTER_FUN(la_adsc_contract_request_format_text) {
 LA_ADSC_FORMATTER_FUN(la_adsc_contract_request_format_json) {
 	LA_UNUSED(label);
 	la_adsc_req_t const *r = data;
-	la_json_append_long(ctx->vstr, "contract_num", r->contract_num);
+	la_json_append_int64(ctx->vstr, "contract_num", r->contract_num);
 
 	size_t len = la_list_length(r->req_tag_list);
 	if(len == 0) {

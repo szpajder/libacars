@@ -184,15 +184,15 @@ void la_media_adv_format_json(la_vstring *vstr, void const *data) {
 	if(msg->err == true) {
 		return;
 	}
-	la_json_append_long(vstr, "version", msg->version);
+	la_json_append_int64(vstr, "version", msg->version);
 	la_json_object_start(vstr, "current_link");
 	la_json_append_char(vstr, "code", msg->current_link);
 	la_json_append_string(vstr, "descr", get_link_description(msg->current_link));
 	la_json_append_bool(vstr, "established", (msg->state == 'E') ? true : false);
 	la_json_object_start(vstr, "time");
-	la_json_append_long(vstr, "hour", msg->hour);
-	la_json_append_long(vstr, "min", msg->minute);
-	la_json_append_long(vstr, "sec", msg->second);
+	la_json_append_int64(vstr, "hour", msg->hour);
+	la_json_append_int64(vstr, "min", msg->minute);
+	la_json_append_int64(vstr, "sec", msg->second);
 	la_json_object_end(vstr);
 	la_json_object_end(vstr);
 

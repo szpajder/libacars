@@ -53,7 +53,7 @@ void la_format_INTEGER_as_ENUM_as_text(la_asn1_formatter_params p, la_dict const
 void la_format_INTEGER_as_ENUM_as_json(la_asn1_formatter_params p, la_dict const *value_labels) {
 	long const *val = p.sptr;
 	la_json_object_start(p.vstr, p.label);
-	la_json_append_long(p.vstr, "value", (int)(*val));
+	la_json_append_int64(p.vstr, "value", (int)(*val));
 	char const *val_label = la_dict_search(value_labels, (int)(*val));
 	if(val_label != NULL) {
 		la_json_append_string(p.vstr, "value_descr", val_label);
@@ -343,13 +343,13 @@ LA_ASN1_FORMATTER_FUN(la_asn1_format_ENUM_as_json) {
 	if(s != NULL) {
 		la_json_append_string(p.vstr, p.label, s);
 	} else {
-		la_json_append_long(p.vstr, p.label, value);
+		la_json_append_int64(p.vstr, p.label, value);
 	}
 }
 
 LA_ASN1_FORMATTER_FUN(la_asn1_format_long_as_json) {
 	long const *valptr = p.sptr;
-	la_json_append_long(p.vstr, p.label, *valptr);
+	la_json_append_int64(p.vstr, p.label, *valptr);
 }
 
 LA_ASN1_FORMATTER_FUN(la_asn1_format_bool_as_json) {

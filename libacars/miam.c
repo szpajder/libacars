@@ -564,19 +564,19 @@ static void la_miam_file_transfer_request_format_json(la_vstring *vstr, void con
 	la_assert(data);
 
 	la_miam_file_transfer_request_msg const *msg = data;
-	la_json_append_long(vstr, "file_id", msg->file_id);
-	la_json_append_long(vstr, "file_size", msg->file_size);
+	la_json_append_int64(vstr, "file_id", msg->file_id);
+	la_json_append_int64(vstr, "file_size", msg->file_size);
 	struct tm const *t = &msg->validity_time;
 	la_json_object_start(vstr, "complete_until_datetime");
 	la_json_object_start(vstr, "date");
-	la_json_append_long(vstr, "year", t->tm_year + 1900);
-	la_json_append_long(vstr, "month", t->tm_mon + 1);
-	la_json_append_long(vstr, "day", t->tm_mday);
+	la_json_append_int64(vstr, "year", t->tm_year + 1900);
+	la_json_append_int64(vstr, "month", t->tm_mon + 1);
+	la_json_append_int64(vstr, "day", t->tm_mday);
 	la_json_object_end(vstr);
 	la_json_object_start(vstr, "time");
-	la_json_append_long(vstr, "hour", t->tm_hour);
-	la_json_append_long(vstr, "minute", t->tm_min);
-	la_json_append_long(vstr, "second", t->tm_sec);
+	la_json_append_int64(vstr, "hour", t->tm_hour);
+	la_json_append_int64(vstr, "minute", t->tm_min);
+	la_json_append_int64(vstr, "second", t->tm_sec);
 	la_json_object_end(vstr);
 	la_json_object_end(vstr);
 }
@@ -599,10 +599,10 @@ static void la_miam_file_transfer_accept_format_json(la_vstring *vstr, void cons
 	la_assert(data);
 
 	la_miam_file_transfer_accept_msg const *msg = data;
-	la_json_append_long(vstr, "file_id", msg->file_id);
-	la_json_append_long(vstr, "segment_size", msg->segment_size);
-	la_json_append_long(vstr, "on_ground_seg_temp_secs", msg->onground_segment_tempo);
-	la_json_append_long(vstr, "in_flight_seg_temp_secs", msg->inflight_segment_tempo);
+	la_json_append_int64(vstr, "file_id", msg->file_id);
+	la_json_append_int64(vstr, "segment_size", msg->segment_size);
+	la_json_append_int64(vstr, "on_ground_seg_temp_secs", msg->onground_segment_tempo);
+	la_json_append_int64(vstr, "in_flight_seg_temp_secs", msg->inflight_segment_tempo);
 }
 
 static void la_miam_file_segment_format_text(la_vstring *vstr, void const *data, int indent) {
@@ -622,8 +622,8 @@ static void la_miam_file_segment_format_json(la_vstring *vstr, void const *data)
 	la_assert(data);
 
 	la_miam_file_segment_msg const *msg = data;
-	la_json_append_long(vstr, "file_id", msg->file_id);
-	la_json_append_long(vstr, "segment_id", msg->segment_id);
+	la_json_append_int64(vstr, "file_id", msg->file_id);
+	la_json_append_int64(vstr, "segment_id", msg->segment_id);
 }
 
 static void la_miam_file_transfer_abort_format_text(la_vstring *vstr, void const *data, int indent) {
@@ -652,8 +652,8 @@ static void la_miam_file_transfer_abort_format_json(la_vstring *vstr, void const
 	la_assert(data);
 
 	la_miam_file_transfer_abort_msg const *msg = data;
-	la_json_append_long(vstr, "file_id", msg->file_id);
-	la_json_append_long(vstr, "reason", msg->reason);
+	la_json_append_int64(vstr, "file_id", msg->file_id);
+	la_json_append_int64(vstr, "reason", msg->reason);
 }
 
 static void la_miam_xoff_ind_format_text(la_vstring *vstr, void const *data, int indent) {
@@ -677,7 +677,7 @@ static void la_miam_xoff_ind_format_json(la_vstring *vstr, void const *data) {
 	la_miam_xoff_ind_msg const *msg = data;
 	la_json_append_bool(vstr, "all_files", msg->file_id == 0xFFF);
 	if(msg->file_id != 0xFFF) {
-		la_json_append_long(vstr, "file_id", msg->file_id);
+		la_json_append_int64(vstr, "file_id", msg->file_id);
 	}
 }
 
@@ -704,10 +704,10 @@ static void la_miam_xon_ind_format_json(la_vstring *vstr, void const *data) {
 	la_miam_xon_ind_msg const *msg = data;
 	la_json_append_bool(vstr, "all_files", msg->file_id == 0xFFF);
 	if(msg->file_id != 0xFFF) {
-		la_json_append_long(vstr, "file_id", msg->file_id);
+		la_json_append_int64(vstr, "file_id", msg->file_id);
 	}
-	la_json_append_long(vstr, "on_ground_seg_temp_secs", msg->onground_segment_tempo);
-	la_json_append_long(vstr, "in_flight_seg_temp_secs", msg->inflight_segment_tempo);
+	la_json_append_int64(vstr, "on_ground_seg_temp_secs", msg->onground_segment_tempo);
+	la_json_append_int64(vstr, "in_flight_seg_temp_secs", msg->inflight_segment_tempo);
 }
 
 void la_miam_format_text(la_vstring *vstr, void const *data, int indent) {

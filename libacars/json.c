@@ -4,6 +4,7 @@
  *  Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
  */
 
+#include <inttypes.h>                   // PRI* macros
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>                     // strlen()
@@ -100,10 +101,14 @@ void la_json_append_double(la_vstring *vstr, char const *key, double val) {
 	la_vstring_append_sprintf(vstr, "%f,", val);
 }
 
-void la_json_append_long(la_vstring *vstr, char const *key, long val) {
+void la_json_append_int64(la_vstring *vstr, char const *key, int64_t val) {
 	la_assert(vstr != NULL);
 	la_json_print_key(vstr, key);
-	la_vstring_append_sprintf(vstr, "%ld,", val);
+	la_vstring_append_sprintf(vstr, "%" PRId64 ",", val);
+}
+
+void la_json_append_long(la_vstring *vstr, char const *key, long val) {
+	la_json_append_int64(vstr, key, val);
 }
 
 void la_json_append_octet_string_as_string(la_vstring *vstr, char const *key,

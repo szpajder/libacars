@@ -406,7 +406,7 @@ static void la_miam_errors_format_text(la_vstring *vstr, uint32_t err, int inden
 
 static void la_miam_errors_format_json(la_vstring *vstr, uint32_t err) {
 	la_assert(vstr != NULL);
-	la_json_append_long(vstr, "err", err);
+	la_json_append_int64(vstr, "err", err);
 }
 
 static void la_miam_bitmask_format_text(la_vstring *vstr, uint8_t bitmask,
@@ -438,7 +438,7 @@ static void la_miam_bitmask_format_json(la_vstring *vstr, uint8_t bitmask,
 			if(name != NULL) {
 				la_json_append_string(vstr, NULL, name);
 			} else {
-				la_json_append_long(vstr, NULL, 1 << i);
+				la_json_append_int64(vstr, NULL, 1 << i);
 			}
 		}
 	}
@@ -485,7 +485,7 @@ static void v1v2_alo_alr_format_json(la_vstring *vstr, void const *data,
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
 	}
-	la_json_append_long(vstr, "pdu_len", pdu->pdu_len);
+	la_json_append_int64(vstr, "pdu_len", pdu->pdu_len);
 	la_json_append_string(vstr, "aircraft_id", pdu->aircraft_id);
 	la_json_array_start(vstr,
 			pdu_type == LA_MIAM_CORE_PDU_ALO ? "comp_supported" : "comp_selected");
@@ -547,8 +547,8 @@ void la_miam_core_format_json(la_vstring *vstr, void const *data) {
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
 	}
-	la_json_append_long(vstr, "version", pdu->version);
-	la_json_append_long(vstr, "pdu_type", pdu->pdu_type);
+	la_json_append_int64(vstr, "version", pdu->version);
+	la_json_append_int64(vstr, "pdu_type", pdu->pdu_type);
 }
 
 // MIAM CORE v1/v2 common type descriptors
@@ -867,13 +867,13 @@ static void la_miam_core_v1_data_format_json(la_vstring *vstr, void const *data)
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
 	}
-	la_json_append_long(vstr, "pdu_len", pdu->pdu_len);
+	la_json_append_int64(vstr, "pdu_len", pdu->pdu_len);
 	la_json_append_string(vstr, "aircraft_id", pdu->aircraft_id);
-	la_json_append_long(vstr, "msg_num", pdu->msg_num);
+	la_json_append_int64(vstr, "msg_num", pdu->msg_num);
 	la_json_append_bool(vstr, "ack_required", pdu->ack_option == 1 ? true : false);
-	la_json_append_long(vstr, "compression", pdu->compression);
-	la_json_append_long(vstr, "encoding", pdu->encoding);
-	la_json_append_long(vstr, "app_type", pdu->app_type);
+	la_json_append_int64(vstr, "compression", pdu->compression);
+	la_json_append_int64(vstr, "encoding", pdu->encoding);
+	la_json_append_int64(vstr, "app_type", pdu->app_type);
 
 	switch(pdu->app_type) {
 		case LA_MIAM_CORE_V1_APP_ACARS_2CHAR:
@@ -957,10 +957,10 @@ static void la_miam_core_v1_ack_format_json(la_vstring *vstr, void const *data) 
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
 	}
-	la_json_append_long(vstr, "pdu_len", pdu->pdu_len);
+	la_json_append_int64(vstr, "pdu_len", pdu->pdu_len);
 	la_json_append_string(vstr, "aircraft_id", pdu->aircraft_id);
-	la_json_append_long(vstr, "msg_ack_num", pdu->msg_ack_num);
-	la_json_append_long(vstr, "ack_xfer_result", pdu->ack_xfer_result);
+	la_json_append_int64(vstr, "msg_ack_num", pdu->msg_ack_num);
+	la_json_append_int64(vstr, "ack_xfer_result", pdu->ack_xfer_result);
 }
 
 // MIAM Core v1-specific destructors
@@ -1268,11 +1268,11 @@ static void la_miam_core_v2_data_format_json(la_vstring *vstr, void const *data)
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
 	}
-	la_json_append_long(vstr, "msg_num", pdu->msg_num);
+	la_json_append_int64(vstr, "msg_num", pdu->msg_num);
 	la_json_append_bool(vstr, "ack_required", pdu->ack_option == 1 ? true : false);
-	la_json_append_long(vstr, "compression", pdu->compression);
-	la_json_append_long(vstr, "encoding", pdu->encoding);
-	la_json_append_long(vstr, "app_type", pdu->app_type);
+	la_json_append_int64(vstr, "compression", pdu->compression);
+	la_json_append_int64(vstr, "encoding", pdu->encoding);
+	la_json_append_int64(vstr, "app_type", pdu->app_type);
 
 	switch(pdu->app_type) {
 		case LA_MIAM_CORE_V2_APP_ACARS_2CHAR:
@@ -1360,8 +1360,8 @@ static void la_miam_core_v2_ack_format_json(la_vstring *vstr, void const *data) 
 		la_miam_errors_format_json(vstr, pdu->err & LA_MIAM_ERR_HDR);
 		return;
 	}
-	la_json_append_long(vstr, "msg_ack_num", pdu->msg_ack_num);
-	la_json_append_long(vstr, "ack_xfer_result", pdu->ack_xfer_result);
+	la_json_append_int64(vstr, "msg_ack_num", pdu->msg_ack_num);
+	la_json_append_int64(vstr, "ack_xfer_result", pdu->ack_xfer_result);
 }
 
 // MIAM CORE v2-specific destructors
