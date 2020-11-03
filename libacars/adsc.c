@@ -119,10 +119,11 @@ static double la_adsc_temperature_parse(uint32_t t) {
 	la_debug_print(D_ERROR, "Truncated tag %u: len: %u < %u\n", (t), (l), (m)); \
 	return -1; \
 }
-#define LA_ADSC_PARSER_FUN(x) static int x(void *dest, uint8_t *buf, uint32_t len)
+#define LA_ADSC_PARSER_FUN(x) static int x(void *dest, uint8_t const *buf, uint32_t len)
 #define LA_ADSC_FORMATTER_FUN(x) static void x(la_adsc_formatter_ctx_t *ctx, char const *label, void const *data)
 
-static int la_adsc_tag_parse(la_adsc_tag_t *t, la_dict const *tag_descriptor_table, uint8_t *buf, uint32_t len);
+static int la_adsc_tag_parse(la_adsc_tag_t *t, la_dict const
+		*tag_descriptor_table, uint8_t const *buf, uint32_t len);
 
 /***************************************************
  * Prototypes of functions used in descriptor tables
@@ -1640,7 +1641,8 @@ LA_ADSC_PARSER_FUN(la_adsc_contract_request_parse) {
 	return tag_len;
 }
 
-static int la_adsc_tag_parse(la_adsc_tag_t *t, la_dict const *tag_descriptor_table, uint8_t *buf, uint32_t len) {
+static int la_adsc_tag_parse(la_adsc_tag_t *t, la_dict const
+		*tag_descriptor_table, uint8_t const *buf, uint32_t len) {
 	uint32_t tag_len = 1;
 	if(len < tag_len) {
 		la_debug_print(D_INFO, "Buffer len is 0\n");
@@ -1668,7 +1670,7 @@ end:
 	return tag_len;
 }
 
-la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc_imi imi) {
+la_proto_node *la_adsc_parse(uint8_t const *buf, int len, la_msg_dir msg_dir, la_arinc_imi imi) {
 	if(buf == NULL)
 		return NULL;
 

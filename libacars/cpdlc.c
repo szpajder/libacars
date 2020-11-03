@@ -21,7 +21,7 @@
 #include <libacars/vstring.h>                       // la_vstring, la_vstring_append_sprintf()
 #include <libacars/json.h>                          // la_json_append_bool()
 
-la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
+la_proto_node *la_cpdlc_parse(uint8_t const *buf, int len, la_msg_dir msg_dir) {
 	if(buf == NULL)
 		return NULL;
 

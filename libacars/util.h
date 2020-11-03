@@ -44,7 +44,7 @@ char *la_simple_strptime(char const *s, struct tm *t);
 la_octet_string *la_octet_string_new(void *buf, size_t len);
 void la_octet_string_destroy(void *ostring_ptr);
 #ifdef WITH_LIBXML2
-xmlBufferPtr la_prettify_xml(char *buf);
+xmlBufferPtr la_prettify_xml(char const *buf);
 #endif
 uint32_t la_reverse(uint32_t v, int numbits);
 

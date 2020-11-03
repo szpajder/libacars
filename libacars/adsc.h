@@ -23,7 +23,7 @@ typedef struct {
 	int indent;
 } la_adsc_formatter_ctx_t;
 
-typedef int(la_adsc_parser_fun)(void *dest, uint8_t *buf, uint32_t len);
+typedef int(la_adsc_parser_fun)(void *dest, uint8_t const *buf, uint32_t len);
 typedef void(la_adsc_formatter_fun)(la_adsc_formatter_ctx_t *ctx, char const *label, void const *data);
 typedef void(la_adsc_destructor_fun)(void *data);
 
@@ -182,7 +182,7 @@ typedef struct {
 
 // adsc.c
 extern la_type_descriptor const la_DEF_adsc_message;
-la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc_imi imi);
+la_proto_node *la_adsc_parse(uint8_t const *buf, int len, la_msg_dir msg_dir, la_arinc_imi imi);
 void la_adsc_format_text(la_vstring *vstr, void const *data, int indent);
 void la_adsc_format_json(la_vstring *vstr, void const *data);
 void la_adsc_destroy(void *data);

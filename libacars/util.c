@@ -217,7 +217,7 @@ void la_xml_errfunc_noop(void * ctx, char const *msg, ...) {
 	(void)msg;
 }
 
-xmlBufferPtr la_prettify_xml(char *buf) {
+xmlBufferPtr la_prettify_xml(char const *buf) {
 	if(buf == NULL) {
 		return NULL;
 	}
@@ -227,7 +227,7 @@ xmlBufferPtr la_prettify_xml(char *buf) {
 		xmlGenericErrorFunc errfuncptr = la_xml_errfunc_noop;
 		initGenericErrorDefaultFunc(&errfuncptr);
 	}
-	xmlDocPtr doc = xmlParseDoc((uint8_t *)buf);
+	xmlDocPtr doc = xmlParseDoc((uint8_t const *)buf);
 	if(doc == NULL) {
 		return NULL;
 	}

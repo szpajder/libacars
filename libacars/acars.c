@@ -263,7 +263,7 @@ end:
 
 // Note: buf must contain raw ACARS bytes, NOT including initial SOH byte
 // (0x01) and including terminating DEL byte (0x7f).
-la_proto_node *la_acars_parse_and_reassemble(uint8_t *buf, int len, la_msg_dir msg_dir,
+la_proto_node *la_acars_parse_and_reassemble(uint8_t const* buf, int len, la_msg_dir msg_dir,
 		la_reasm_ctx *rtables, struct timeval rx_time) {
 	if(buf == NULL) {
 		return NULL;
@@ -478,7 +478,7 @@ end:
 	return node;
 }
 
-la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir) {
+la_proto_node *la_acars_parse(uint8_t const *buf, int len, la_msg_dir msg_dir) {
 	return la_acars_parse_and_reassemble(buf, len, msg_dir, NULL,
 			(struct timeval){ .tv_sec = 0, .tv_usec = 0 });
 }
