@@ -20,14 +20,14 @@ typedef enum {
 	LA_MSG_DIR_AIR2GND
 } la_msg_dir;
 
-typedef void (la_print_type_f)(la_vstring *vstr, void const *data, int indent);
-typedef void (la_json_type_f)(la_vstring *vstr, void const *data);
+typedef void (la_format_text_func)(la_vstring *vstr, void const *data, int indent);
+typedef void (la_format_json_func)(la_vstring *vstr, void const *data);
 typedef void (la_destroy_type_f)(void *data);
 
 typedef struct {
-	la_print_type_f *format_text;
+	la_format_text_func *format_text;
 	la_destroy_type_f *destroy;
-	la_json_type_f *format_json;
+	la_format_json_func *format_json;
 	char *json_key;
 // reserved for future use
 	void (*reserved2)(void);

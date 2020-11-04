@@ -21,15 +21,15 @@ typedef struct {
 } la_asn1_formatter_params;
 
 // Formatter function prototype
-typedef void (*la_asn1_formatter_fun)(la_asn1_formatter_params);
+typedef void (*la_asn1_formatter_func)(la_asn1_formatter_params);
 
 typedef struct {
 	asn_TYPE_descriptor_t *type;
-	la_asn1_formatter_fun format;
+	la_asn1_formatter_func format;
 	char const *label;
 } la_asn1_formatter;
 
-#define LA_ASN1_FORMATTER_FUN(x) \
+#define LA_ASN1_FORMATTER_FUNC(x) \
 	void x(la_asn1_formatter_params p)
 
 // asn1-util.c
