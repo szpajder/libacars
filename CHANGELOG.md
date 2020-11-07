@@ -1,6 +1,29 @@
 # ChangeLog
 
+## Version 2.1.0 (2020-11-07)
+
+* ADS-C: fixed incorrect computation of vertical speed threshold in contract
+  request messages.
+* JSON: fixed a bug where an ASN.1 string containing a \0 character caused
+  truncation of JSON output. NULLs in strings are now replaced with \u0000
+  sequence.
+* JSON: ASN.1 SEQUENCEs are now printed as JSON objects rather than arrays of
+  objects. It produces a simpler and more readable JSON structure. The change
+  applies to all ASN.1 types formatted with
+  `la_asn1_format_SEQUENCE_cpdlc_as_json` function. Refer to
+  `asn1-format-cpdlc-json.c` file for a full list.
+* JSON: added `json_append_octet_string_as_string` function which prints the
+  contents of the given byte buffer as a JSON string rather than as a list of
+  numeric values.
+* JSON: added a bunch of new functions for formatting basic ASN.1 types. Now we
+  have them all in libacars. Before that they were scattered between libacars
+  and dumpvdl2.
+* JSON: deprecate `la_json_append_long` function. A more portable version named
+  `la_json_append_int64` shall be used instead.
+* Small bugfixes, code cleanups.
+
 ## Version 2.0.1 (2020-08-24)
+
 * Fixed a bug causing FANS1/A ErrorInformation message elements to be decoded
   incorrectly
 

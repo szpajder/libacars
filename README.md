@@ -2,7 +2,7 @@
 
 libacars is a library for decoding ACARS message contents.
 
-Current stable version: **2.0.1** (released August 24, 2020)
+Current stable version: **2.1.0** (released November 7, 2020)
 
 ## Supported message types
 
@@ -151,8 +151,8 @@ Refer to the following documents:
 ## Applications using libacars
 
 - [dumpvdl2](https://github.com/szpajder/dumpvdl2), a VDL-2 decoder
-- [acarsdec](https://github.com/TLeconte/acarsdec/), an ACARS decoder
 - [vdlm2dec](https://github.com/TLeconte/vdlm2dec), a VDL-2 decoder
+- [acarsdec](https://github.com/TLeconte/acarsdec/), an ACARS decoder
 - [JAERO](https://github.com/jontio/JAERO/), a Satcom ACARS decoder
 
 ## Credits and thanks
@@ -187,7 +187,6 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 Contains code from the following software projects:
 
 - Rocksoft^tm Model CRC Algorithm Table Generation Program V1.0
@@ -199,6 +198,7 @@ Contains code from the following software projects:
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
 are met:
+
 1. Redistributions of source code must retain the above copyright
    notice, this list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright
@@ -216,7 +216,6 @@ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
-
 
 Packaged releases for Windows include zlib library in binary DLL form.
 zlib data compression library, (C) 1995-2017 Jean-loup Gailly and Mark Adler.
