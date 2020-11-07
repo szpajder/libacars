@@ -16,11 +16,12 @@
 #include <libacars/asn1-format-cpdlc.h>             // la_asn1_output_cpdlc_as_*()
 #include <libacars/cpdlc.h>                         // la_cpdlc_msg
 #include <libacars/libacars.h>                      // la_proto_node, la_config_get_bool, la_proto_tree_find_protocol
-#include <libacars/util.h>                          // la_debug_print, LA_CAST_PTR
+#include <libacars/macros.h>                        // la_debug_print
+#include <libacars/util.h>                          // LA_XFREE
 #include <libacars/vstring.h>                       // la_vstring, la_vstring_append_sprintf()
 #include <libacars/json.h>                          // la_json_append_bool()
 
-la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
+la_proto_node *la_cpdlc_parse(uint8_t const *buf, int len, la_msg_dir msg_dir) {
 	if(buf == NULL)
 		return NULL;
 
@@ -50,12 +51,12 @@ la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir) {
 	return node;
 }
 
-void la_cpdlc_format_text(la_vstring *vstr, void const * const data, int indent) {
+void la_cpdlc_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(vstr);
 	la_assert(data);
 	la_assert(indent >= 0);
 
-	LA_CAST_PTR(msg, la_cpdlc_msg *, data);
+	la_cpdlc_msg const *msg = data;
 	if(msg->err == true) {
 		LA_ISPRINTF(vstr, indent, "-- Unparseable FANS-1/A message\n");
 		return;
@@ -69,26 +70,36 @@ void la_cpdlc_format_text(la_vstring *vstr, void const * const data, int indent)
 				// asn_fprint does not indent the first line
 				LA_ISPRINTF(vstr, indent + 1, "");
 				asn_sprintf(vstr, msg->asn_type, msg->data, indent + 2);
+				LA_EOL(vstr);
 			}
-			la_asn1_output_cpdlc_as_text(vstr, msg->asn_type, msg->data, indent);
+			la_asn1_output_cpdlc_as_text((la_asn1_formatter_params){
+					.vstr = vstr,
+					.td = msg->asn_type,
+					.sptr = msg->data,
+					.indent = indent
+					});
 		} else {
 			LA_ISPRINTF(vstr, indent, "-- <empty PDU>\n");
 		}
 	}
 }
 
-void la_cpdlc_format_json(la_vstring *vstr, void const * const data) {
+void la_cpdlc_format_json(la_vstring *vstr, void const *data) {
 	la_assert(vstr);
 	la_assert(data);
 
-	LA_CAST_PTR(msg, la_cpdlc_msg *, data);
+	la_cpdlc_msg const *msg = data;
 	la_json_append_bool(vstr, "err", msg->err);
 	if(msg->err == true) {
 		return;
 	}
 	if(msg->asn_type != NULL) {
 		if(msg->data != NULL) {
-			la_asn1_output_cpdlc_as_json(vstr, msg->asn_type, msg->data, 0);
+			la_asn1_output_cpdlc_as_json((la_asn1_formatter_params){
+					.vstr = vstr,
+					.td = msg->asn_type,
+					.sptr = msg->data,
+					});
 		}
 	}
 }
@@ -97,7 +108,7 @@ void la_cpdlc_destroy(void *data) {
 	if(data == NULL) {
 		return;
 	}
-	LA_CAST_PTR(msg, la_cpdlc_msg *, data);
+	la_cpdlc_msg *msg = data;
 	if(msg->asn_type != NULL) {
 		msg->asn_type->free_struct(msg->asn_type, msg->data, 0);
 	}

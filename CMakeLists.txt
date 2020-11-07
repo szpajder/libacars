@@ -2,8 +2,8 @@ cmake_minimum_required (VERSION 3.1)
 project (libacars C)
 
 set (LA_VERSION_MAJOR 2)
-set (LA_VERSION_MINOR 0)
-set (LA_VERSION_PATCH 1)
+set (LA_VERSION_MINOR 1)
+set (LA_VERSION_PATCH 0pre)
 set (LA_VERSION "${LA_VERSION_MAJOR}.${LA_VERSION_MINOR}.${LA_VERSION_PATCH}")
 set (LA_SUBDIR "${PROJECT_NAME}-${LA_VERSION_MAJOR}")
 

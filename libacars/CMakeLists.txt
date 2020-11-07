@@ -1,4 +1,5 @@
 include(CheckCSourceCompiles)
+include(CheckCCompilerFlag)
 include(TestBigEndian)
 include(CheckSymbolExists)
 include(CheckPrototypeDefinition)
@@ -18,6 +19,8 @@ check_c_source_compiles("int main(void){return 0;}" HAVE_LD_VERSION_SCRIPT)
 set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_SAVE})
 file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/conftest.ldscript")
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+
 # strdup, strtok_r
 add_definitions(-D_XOPEN_SOURCE=600)
 
@@ -36,6 +39,11 @@ endif()
 if (HAVE_LD_VERSION_SCRIPT)
 	set(acars_ldscript "${CMAKE_CURRENT_SOURCE_DIR}/symversions.ldscript")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script,${acars_ldscript}")
+endif()
+
+CHECK_C_COMPILER_FLAG(-fno-common CC_HAS_FNO_COMMON)
+if(CC_HAS_FNO_COMMON)
+        add_definitions(-fno-common)
 endif()
 
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
@@ -132,6 +140,7 @@ add_library (acars_core OBJECT
 	configuration.c
 	cpdlc.c
 	crc.c
+	dict.c
 	hash.c
 	json.c
 	libacars.c
@@ -175,7 +184,10 @@ install(FILES
 	acars.h
 	adsc.h
 	arinc.h
+	asn1-format-common.h
+	asn1-util.h
 	cpdlc.h
+	dict.h
 	hash.h
 	json.h
 	libacars.h

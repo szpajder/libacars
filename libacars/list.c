@@ -8,7 +8,7 @@
 #include <libacars/list.h>      // la_list
 #include <libacars/util.h>      // LA_XCALLOC, LA_XFREE
 
-la_list *la_list_next(la_list const * const l) {
+la_list *la_list_next(la_list const *l) {
 	if(l == NULL) {
 		return NULL;
 	}
@@ -37,10 +37,9 @@ size_t la_list_length(la_list const *l) {
 }
 
 void la_list_foreach(la_list *l, void (*cb)(), void *ctx) {
-	la_assert(cb);
-	while(l != NULL) {
+	la_assert(cb != NULL);
+	for(; l != NULL; l = la_list_next(l)) {
 		cb(l->data, ctx);
-		l = la_list_next(l);
 	}
 }
 

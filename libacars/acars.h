@@ -58,18 +58,18 @@ typedef struct {
 
 // acars.c
 extern la_type_descriptor const la_DEF_acars_message;
-la_proto_node *la_acars_decode_apps(char const * const label,
-		char const * const txt, la_msg_dir const msg_dir);
-la_proto_node *la_acars_apps_parse_and_reassemble(char const * const reg,
-		char const * const label, char const * const txt, la_msg_dir const msg_dir,
-		la_reasm_ctx *rtables, struct timeval const rx_time);
-la_proto_node *la_acars_parse_and_reassemble(uint8_t *buf, int len, la_msg_dir msg_dir,
+la_proto_node *la_acars_decode_apps(char const *label,
+		char const *txt, la_msg_dir msg_dir);
+la_proto_node *la_acars_apps_parse_and_reassemble(char const *reg,
+		char const *label, char const *txt, la_msg_dir msg_dir,
 		la_reasm_ctx *rtables, struct timeval rx_time);
-la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir);
-int la_acars_extract_sublabel_and_mfi(char const * const label, la_msg_dir const msg_dir,
-		char const * const txt, int const len, char *sublabel, char *mfi);
-void la_acars_format_text(la_vstring *vstr, void const * const data, int indent);
-void la_acars_format_json(la_vstring *vstr, void const * const data);
+la_proto_node *la_acars_parse_and_reassemble(uint8_t const *buf, int len, la_msg_dir msg_dir,
+		la_reasm_ctx *rtables, struct timeval rx_time);
+la_proto_node *la_acars_parse(uint8_t const *buf, int len, la_msg_dir msg_dir);
+int la_acars_extract_sublabel_and_mfi(char const *label, la_msg_dir msg_dir,
+		char const *txt, int len, char *sublabel, char *mfi);
+void la_acars_format_text(la_vstring *vstr, void const *data, int indent);
+void la_acars_format_json(la_vstring *vstr, void const *data);
 la_proto_node *la_proto_tree_find_acars(la_proto_node *root);
 #ifdef __cplusplus
 }

@@ -16,7 +16,7 @@ extern "C" {
 typedef struct la_hash_s la_hash;
 typedef uint32_t (la_hash_func)(void const *key);
 typedef bool (la_hash_compare_func)(void const *key1, void const *key2);
-typedef bool (la_hash_if_func)(void const *key, void const *value, void const *ctx);
+typedef bool (la_hash_if_func)(void const *key, void const *value, void *ctx);
 typedef void (la_hash_key_destroy_func)(void *key);
 typedef void (la_hash_value_destroy_func)(void *value);
 

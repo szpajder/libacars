@@ -54,6 +54,7 @@ ACARS_2.0 {
     la_json_append_bool;
     la_json_append_char;
     la_json_append_double;
+    la_json_append_int64;
     la_json_append_long;
     la_json_append_octet_string;
     la_json_append_string;
@@ -63,7 +64,7 @@ ACARS_2.0 {
     la_json_object_end;
     la_json_object_start;
     la_json_start;
-    la_hash_compare_str;
+    la_hash_compare_keys_str;
     la_hash_destroy;
     la_hash_foreach_remove;
     la_hash_remove;
@@ -117,3 +118,34 @@ ACARS_2.0 {
   local:
     *;
 };
+
+ACARS_2.1 {
+  global:
+    la_asn1_format_ENUM_as_json;
+    la_asn1_format_ENUM_as_text;
+    la_asn1_format_OCTET_STRING_as_json;
+    la_asn1_format_any_as_string_as_json;
+    la_asn1_format_any_as_text;
+    la_asn1_format_bool_as_json;
+    la_asn1_format_label_only_as_json;
+    la_asn1_format_label_only_as_text;
+    la_asn1_format_long_as_json;
+    la_asn1_output;
+    la_asn1_value2enum;
+    la_dict_search;
+    la_format_BIT_STRING_as_json;
+    la_format_BIT_STRING_as_text;
+    la_format_CHOICE_as_json;
+    la_format_CHOICE_as_text;
+    la_format_INTEGER_as_ENUM_as_json;
+    la_format_INTEGER_as_ENUM_as_text;
+    la_format_INTEGER_with_unit_as_json;
+    la_format_INTEGER_with_unit_as_text;
+    la_format_SEQUENCE_OF_as_json;
+    la_format_SEQUENCE_OF_as_text;
+    la_format_SEQUENCE_as_json;
+    la_format_SEQUENCE_as_text;
+    la_json_append_octet_string_as_string;
+  local:
+    *;
+} ACARS_2.0;

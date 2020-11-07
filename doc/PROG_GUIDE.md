@@ -214,25 +214,25 @@ of the work. Here is a simple program code:
 
 
 ```C
-#include <stdint.h>		// uint8_t
-#include <stdbool.h>		// bool
-#include <stdio.h>		// printf(3)
-#include <string.h>		// strlen(3)
-#include <libacars/libacars.h>	// la_proto_node, la_proto_tree_destroy(),
-				// la_proto_tree_format_text()
-#include <libacars/acars.h>	// la_acars_parse()
-#include <libacars/vstring.h>	// la_vstring, la_vstring_destroy()
+#include <stdint.h>     // uint8_t
+#include <stdbool.h>    // bool
+#include <stdio.h>      // printf(3)
+#include <string.h>     // strlen(3)
+#include <libacars/libacars.h>  // la_proto_node, la_proto_tree_destroy(),
+                                // la_proto_tree_format_text()
+#include <libacars/acars.h>     // la_acars_parse()
+#include <libacars/vstring.h>   // la_vstring, la_vstring_destroy()
 
 int main() {
 	// Message buffer (raw bytes)
-	uint8_t bytebuf[] =
+	char bytebuf[] =
 		"\x01\x32\xae\xd3\xd0\xad\x4c\xc4\x45\x15\x32\xb3\xb3\x02\xcd"
 		"\xb0\xb9\xc1\x4c\x4f\xb0\x32\xc4\xcd\x4f\xce\xce\xb0\x31\x4c"
 		"\x4f\xb0\x32\xc4\xcd\x2f\x2a\x2a\x32\xb9\x32\xb0\x34\x31\x45"
 		"\x4c\x4c\x58\x45\xd0\x57\xc1\x32\xb0\x34\x31\xb0\xb0\x32\x38"
 		"\x83\xdf\xcb\x7f";
 	// Try to parse the buffer as an ACARS message
-	la_proto_node *node = la_acars_parse(bytebuf+1, strlen(bytebuf)-1,
+	la_proto_node *node = la_acars_parse((uint8_t *)bytebuf+1, strlen(bytebuf)-1,
 		LA_MSG_DIR_AIR2GND);
 	if(node != NULL) {
 		// Format the result as a human-readable text
@@ -315,7 +315,7 @@ la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir);
 - `la_proto_tree_format_text()` is prototyped as follows:
 
 ```C
-la_vstring *la_proto_tree_format_text(la_vstring *vstr, la_proto_node const * const root);
+la_vstring *la_proto_tree_format_text(la_vstring *vstr, la_proto_node const *root);
 ```
 
 - It takes a pointer named `root` (which must be non-NULL!) to the root of a
@@ -350,25 +350,38 @@ want libacars to decode these fields. How to achieve this?
 ```C
 #include <stdbool.h>            // bool
 #include <stdio.h>              // printf(3)
-#include <string.h>		// strlen(3)
+#include <string.h>             // strlen(3)
 #include <libacars/libacars.h>  // la_proto_node, la_proto_tree_destroy(),
                                 // la_proto_tree_format_text()
-#include <libacars/acars.h>     // la_acars_decode_apps()
+#include <libacars/acars.h>     // la_acars_decode_apps(), la_acars_extract_sublabel_and_mfi()
 #include <libacars/vstring.h>   // la_vstring, la_vstring_destroy()
 
 int main() {
 	char *label = "H1";
 	char *message = "#M1B/B6 LHWE1YA.ADS.N572UP07263B5872A048C9F21C1F0E5B88D700000239";
+	char sublabel[3];
+	char mfi[3];
 	la_msg_dir direction = LA_MSG_DIR_AIR2GND;
 
-	// The message text contains a sublabel (M1) and MFI (B6). They have to
-	// be skipped before further processing.
-	int offset = la_acars_extract_sublabel_and_mfi(label, LA_MSG_DIR_AIR2GND, message,
-		strlen(message), NULL, NULL);
-	// Check if this is a supported ACARS application. If it is, decode it.
-	la_proto_node *node = la_acars_decode_apps(label, message + offset, direction);
+	// The label is H1 which means the message text contains one or two additional fields -
+	// sublabel (int this case "M1") and Message Function Identifier ("B6"). These have to
+	// be stripped before calling la_acars_decode_apps(). la_acars_extract_sublabel_and_mfi()
+	// does this conveniently for us. It also copies these two fields to the given char buffers
+	// which must have a size of at least 3 bytes).
+	int offset = la_acars_extract_sublabel_and_mfi(label, direction, message,
+			strlen(message), sublabel, mfi);
+	char *ptr = message;
+	// If the value returned by la_acars_extract_sublabel_and_mfi() is greater than 0, it means
+	// that at least the sublabel has been found. The value indicates how many bytes we need
+	// to skip over.
+	if(offset > 0) {
+		ptr += offset;
+	}
+	// Now look for supported ACARS application and decode it if found
+	la_proto_node *node = la_acars_decode_apps(label, ptr, direction);
 	if(node != NULL) {
 		la_vstring *vstr = la_proto_tree_format_text(NULL, node);
+		printf("Sublabel: %s MFI: %s\n", sublabel, mfi);
 		printf("Decoded message:\n%s\n", vstr->str);
 		la_vstring_destroy(vstr, true);
 	} else {
@@ -382,6 +395,7 @@ Result:
 
 ```
 $ ./decode_apps
+Sublabel: M1 MFI: B6
 Decoded message:
 ADS-C message:
  Basic report:
@@ -425,26 +439,26 @@ it and use libacars only to decode FANS-1/A CPDLC.
 The program might look like this:
 
 ```C
-#include <stdbool.h>		// bool
-#include <stdio.h>		// printf(3)
-#include <string.h>		// strcmp(3), strlen(3)
-#include <libacars/libacars.h>	// la_proto_node, la_proto_tree_destroy(),
-				// la_proto_tree_format_text()
-#include <libacars/cpdlc.h>	// la_cpdlc_parse()
-#include <libacars/vstring.h>	// la_vstring, la_vstring_destroy()
+#include <stdbool.h>            // bool
+#include <stdio.h>              // printf(3)
+#include <string.h>             // strcmp(3), strlen(3)
+#include <libacars/libacars.h>  // la_proto_node, la_proto_tree_destroy(),
+                                // la_proto_tree_format_text()
+#include <libacars/cpdlc.h>     // la_cpdlc_parse()
+#include <libacars/vstring.h>   // la_vstring, la_vstring_destroy()
 
 int main() {
 	char *label = "AA";
 	char *message = "/AKLCDYA.AT1.9V-SVG21D0755D84AD067448398722949A7521C8AB4A1C8EAB5CE393";
-// Assume your clever parser has split the message text into following fields:
+	// Our clever parser has split the message text into following fields:
 	char *ground_addr = "AKLCDYA";
 	char *imi = "AT1";
-	char *air_addr = ".9V-SVG";
-// Hex string converted to raw bytes. Trailing \xE3\x93 cut off (this is CRC).
-	uint8_t *data = "\x21\xD0\x75\x5D\x84\xAD\x06\x74\x48\x39\x87\x22\x94\x9A\x75\x21\xC8\xAB\x4A\x1C\x8E\xAB\x5C";
+	char *air_addr = "9V-SVG";
+	// Trailing \xE3\x93 is CRC - skipped
+	char *data = "\x21\xD0\x75\x5D\x84\xAD\x06\x74\x48\x39\x87\x22\x94\x9A\x75\x21\xC8\xAB\x4A\x1C\x8E\xAB\x5C";
 	la_msg_dir direction = LA_MSG_DIR_GND2AIR;
 
-// Determine the message type from the IMI field
+	// Figure out the message type by looking at the IMI field
 	if(!strcmp(imi, "ADS")) {
 		/* It's an ADS-C message - launch our built-in decoder here */
 	} else if(
@@ -452,8 +466,8 @@ int main() {
 		!strcmp(imi, "CC1") ||
 		!strcmp(imi, "DR1") ||
 		!strcmp(imi, "AT1")) {
-// It's a CPDLC message - decode it with libacars
-		la_proto_node *node = la_cpdlc_parse(data, strlen(data), direction);
+		// It's a CPDLC message - decode it with libacars
+		la_proto_node *node = la_cpdlc_parse((uint8_t *)data, strlen(data), direction);
 		if(node != NULL) {
 			la_vstring *vstr = la_proto_tree_format_text(NULL, node);
 			printf("Decoded CPDLC message:\n%s\n", vstr->str);
@@ -572,7 +586,7 @@ containing the data of interest. There is a tool for that:
 ```C
 #include <libacars/libacars.h>
 /* ... */
-la_proto_node *la_proto_tree_find_protocol(la_proto_node *root, la_type_descriptor const * const td);
+la_proto_node *la_proto_tree_find_protocol(la_proto_node *root, la_type_descriptor const *td);
 ```
 
 Suppose you have a decoded protocol tree pointed to by `la_proto_node *my_tree_root`

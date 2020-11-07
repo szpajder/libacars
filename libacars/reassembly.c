@@ -55,7 +55,7 @@ static void la_reasm_table_entry_destroy(void *rt_ptr) {
 	if(rt_ptr == NULL) {
 		return;
 	}
-	LA_CAST_PTR(rt_entry, la_reasm_table_entry *, rt_ptr);
+	la_reasm_table_entry *rt_entry = rt_ptr;
 	la_list_free_full(rt_entry->fragment_list, la_octet_string_destroy);
 	LA_XFREE(rt_entry);
 }
@@ -64,7 +64,7 @@ static void la_reasm_table_destroy(void *table) {
 	if(table == NULL) {
 		return;
 	}
-	LA_CAST_PTR(rtable, la_reasm_table *, table);
+	la_reasm_table *rtable = table;
 	la_hash_destroy(rtable->fragment_table);
 	LA_XFREE(rtable);
 }
@@ -73,7 +73,7 @@ void la_reasm_ctx_destroy(void *ctx) {
 	if(ctx == NULL) {
 		return;
 	}
-	LA_CAST_PTR(rctx, la_reasm_ctx *, ctx);
+	la_reasm_ctx *rctx = ctx;
 	la_list_free_full(rctx->rtables, la_reasm_table_destroy);
 	LA_XFREE(rctx);
 }
@@ -83,7 +83,7 @@ la_reasm_table *la_reasm_table_lookup(la_reasm_ctx *rctx, void const *table_id) 
 	la_assert(table_id != NULL);
 
 	for(la_list *l = rctx->rtables; l != NULL; l = la_list_next(l)) {
-		LA_CAST_PTR(rt, la_reasm_table *, l->data);
+		la_reasm_table *rt = l->data;
 		if(rt->key == table_id) {
 			return rt;
 		}
@@ -94,7 +94,7 @@ la_reasm_table *la_reasm_table_lookup(la_reasm_ctx *rctx, void const *table_id) 
 #define LA_REASM_DEFAULT_CLEANUP_INTERVAL 100
 
 la_reasm_table *la_reasm_table_new(la_reasm_ctx *rctx, void const *table_id,
-		la_reasm_table_funcs funcs, int const cleanup_interval) {
+		la_reasm_table_funcs funcs, int cleanup_interval) {
 	la_assert(rctx != NULL);
 	la_assert(table_id != NULL);
 	la_assert(funcs.get_key);
@@ -122,8 +122,8 @@ end:
 }
 
 // Checks if time difference between rx_first and rx_last is greater than timeout.
-static bool la_reasm_timed_out(struct timeval const rx_last, struct timeval const rx_first,
-		struct timeval const timeout) {
+static bool la_reasm_timed_out(struct timeval rx_last, struct timeval rx_first,
+		struct timeval timeout) {
 	if(timeout.tv_sec == 0 && timeout.tv_usec == 0) {
 		return false;
 	}
@@ -142,13 +142,13 @@ static bool la_reasm_timed_out(struct timeval const rx_last, struct timeval cons
 }
 
 // Callback for la_hash_foreach_remove used during reassembly table cleanups.
-static bool is_rt_entry_expired(void const *keyptr, void const *valptr, void const *ctx) {
+static bool is_rt_entry_expired(void const *keyptr, void const *valptr, void *ctx) {
 	LA_UNUSED(keyptr);
 	la_assert(valptr != NULL);
 	la_assert(ctx != NULL);
 
-	LA_CAST_PTR(rt_entry, la_reasm_table_entry *, valptr);
-	LA_CAST_PTR(now, struct timeval *, ctx);
+	la_reasm_table_entry const *rt_entry = valptr;
+	struct timeval *now = ctx;
 	return la_reasm_timed_out(*now, rt_entry->first_frag_rx_time, rt_entry->reasm_timeout);
 }
 
@@ -166,7 +166,7 @@ static void la_reasm_table_cleanup(la_reasm_table *rtable, struct timeval now) {
 #define SEQ_UNINITIALIZED -2
 
 // Checks if the given sequence number follows the previous one seen.
-static bool is_seq_num_in_sequence(int const prev_seq_num, int const cur_seq_num) {
+static bool is_seq_num_in_sequence(int prev_seq_num, int cur_seq_num) {
 	return (prev_seq_num == SEQ_UNINITIALIZED || prev_seq_num + 1 == cur_seq_num);
 }
 
@@ -350,7 +350,7 @@ int la_reasm_payload_get(la_reasm_table *rtable, void const *msg_info, uint8_t *
 	uint8_t *reasm_buf = LA_XCALLOC(rt_entry->frags_collected_total_len + 1, sizeof(uint8_t));
 	uint8_t *ptr = reasm_buf;
 	for(la_list *l = rt_entry->fragment_list; l != NULL; l = la_list_next(l)) {
-		LA_CAST_PTR(ostring, la_octet_string *, l->data);
+		la_octet_string *ostring = l->data;
 		memcpy(ptr, ostring->buf, ostring->len);
 		ptr += ostring->len;
 	}
@@ -363,7 +363,7 @@ end:
 	return result_len;
 }
 
-char const *la_reasm_status_name_get(la_reasm_status const status) {
+char const *la_reasm_status_name_get(la_reasm_status status) {
 	static char const *reasm_status_names[] = {
 		[LA_REASM_UNKNOWN] = "unknown",
 		[LA_REASM_COMPLETE] = "complete",

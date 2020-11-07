@@ -18,7 +18,7 @@
 #define LA_VSTR_SIZE_MULT 2
 #define LA_VSTR_SIZE_MAX INT_MAX
 
-static void la_vstring_grow(la_vstring * const vstr, size_t const space_needed) {
+static void la_vstring_grow(la_vstring *vstr, size_t space_needed) {
 	la_assert(vstr);
 
 	size_t new_size = vstr->allocated_size;
@@ -32,7 +32,7 @@ static void la_vstring_grow(la_vstring * const vstr, size_t const space_needed) 
 	vstr->allocated_size = new_size;
 }
 
-static size_t la_vstring_space_left(la_vstring const * const vstr) {
+static size_t la_vstring_space_left(la_vstring const *vstr) {
 	la_assert(vstr);
 	la_assert(vstr->allocated_size >= vstr->len);
 	return vstr->allocated_size - vstr->len;
@@ -53,7 +53,7 @@ void la_vstring_destroy(la_vstring *vstr, bool destroy_buffer) {
 	LA_XFREE(vstr);
 }
 
-void la_isprintf_multiline_text(la_vstring * const vstr, int const indent, char const *txt) {
+void la_isprintf_multiline_text(la_vstring *vstr, int indent, char const *txt) {
 	la_assert(vstr != NULL);
 	la_assert(indent >= 0);
 	if(txt == NULL) {
@@ -70,7 +70,7 @@ void la_isprintf_multiline_text(la_vstring * const vstr, int const indent, char 
 	LA_XFREE(copy);
 }
 
-void la_vstring_append_sprintf(la_vstring * const vstr, char const *fmt, ...) {
+void la_vstring_append_sprintf(la_vstring *vstr, char const *fmt, ...) {
 	la_assert(vstr);
 	la_assert(fmt);
 
@@ -101,7 +101,7 @@ end:
 	return;
 }
 
-void la_vstring_append_buffer(la_vstring * const vstr, void const * buffer, size_t len) {
+void la_vstring_append_buffer(la_vstring *vstr, void const *buffer, size_t len) {
 	la_assert(vstr);
 	if(buffer == NULL || len == 0) {
 		return;

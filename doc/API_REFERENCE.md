@@ -31,8 +31,8 @@ A structure describing a particular message data type. It provides methods
 ```C
 #include <libacars/libacars.h>
 
-typedef void (la_print_type_f)(la_vstring * const vstr, void const * const data, int indent);
-typedef void (la_json_type_f)(la_vstring * const vstr, void const * const data);
+typedef void (la_format_text_func)(la_vstring *vstr, void const *data, int indent);
+typedef void (la_format_json_func)(la_vstring *vstr, void const *data);
 typedef void (la_destroy_type_f)(void *data);
 
 typedef struct {
@@ -103,7 +103,7 @@ themselves allocate memory for returned protocol node.
 ```C
 #include <libacars/libacars.h>
 
-la_vstring *la_proto_tree_format_text(la_vstring *vstr, la_proto_node const * const root)
+la_vstring *la_proto_tree_format_text(la_vstring *vstr, la_proto_node const *root);
 ```
 
 Walks the whole protocol tree pointed to by `root`, serializing each node into
@@ -117,7 +117,7 @@ caller using `la_proto_tree_destroy()`.
 ```C
 #include <libacars/libacars.h>
 
-la_vstring *la_proto_tree_format_json(la_vstring *vstr, la_proto_node const * const root)
+la_vstring *la_proto_tree_format_json(la_vstring *vstr, la_proto_node const *root);
 ```
 
 Walks the whole protocol tree pointed to by `root`, serializing each node into a
@@ -142,7 +142,7 @@ for each node. If `root` is NULL, the function does nothing.
 ```C
 #include <libacars/libacars.h>
 
-la_proto_node *la_proto_tree_find_protocol(la_proto_node *root, la_type_descriptor const * const td);
+la_proto_node *la_proto_tree_find_protocol(la_proto_node *root, la_type_descriptor const *td);
 ```
 
 Walks the whole protocol tree pointed to by `root`, and searches for a node of a
@@ -208,8 +208,8 @@ A structure representing a decoded ACARS message.
 #include <libacars/libacars.h>
 #include <libacars/acars.h>
 
-la_proto_node *la_acars_parse_and_reassemble(uint8_t *buf, int len, la_msg_dir msg_dir,
-	la_reasm_ctx *rtables, struct timeval rx_time);
+la_proto_node *la_acars_parse_and_reassemble(uint8_t const *buf, int len,
+		la_msg_dir msg_dir, la_reasm_ctx *rtables, struct timeval rx_time);
 
 ```
 
@@ -240,7 +240,7 @@ then no reassembly is done.
 #include <libacars/libacars.h>
 #include <libacars/acars.h>
 
-la_proto_node *la_acars_parse(uint8_t *buf, int len, la_msg_dir msg_dir);
+la_proto_node *la_acars_parse(uint8_t const *buf, int len, la_msg_dir msg_dir);
 ```
 
 This function is provided for backward compatbility with libacars version 1. It
@@ -253,8 +253,8 @@ ie. it parses the given buffer as an ACARS message, without reassembly.
 #include <libacars/libacars.h>
 #include <libacars/acars.h>
 
-int la_acars_extract_sublabel_and_mfi(char const * const label, la_msg_dir const msg_dir,
-	char const * const txt, int const len, char *sublabel, char *mfi);
+int la_acars_extract_sublabel_and_mfi(char const *label, la_msg_dir msg_dir,
+		char const *txt, int len, char *sublabel, char *mfi);
 ```
 
 Extracts sublabel and MFI (Message Function Identifier) fields from the given
@@ -321,7 +321,7 @@ program in the [Programmer's Guide](PROGRAMMING_GUIDE.md).
 #include <libacars/libacars.h>
 #include <libacars/acars.h>
 
-void la_acars_format_text(la_vstring *vstr, void const * const data, int indent);
+void la_acars_format_text(la_vstring *vstr, void const *data, int indent);
 ```
 
 Serializes a decoded ACARS message pointed to by `data` into a human-readable
@@ -344,7 +344,7 @@ instead.
 #include <libacars/libacars.h>
 #include <libacars/acars.h>
 
-void la_acars_format_json(la_vstring *vstr, void const * const data);
+void la_acars_format_json(la_vstring *vstr, void const *data);
 ```
 
 Serializes a decoded ACARS message pointed to by `data` into a JSON string and
@@ -360,13 +360,13 @@ instead.
 #include <libacars/libacars.h>
 #include <libacars/acars.h>
 
-la_proto_node *la_acars_apps_parse_and_reassemble(char const * const reg,
-	char const * const label, char const * const txt, la_msg_dir const msg_dir,
-	la_reasm_ctx *rtables, struct timeval const rx_time);
+la_proto_node *la_acars_apps_parse_and_reassemble(char const *reg,
+		char const *label, char const *txt, la_msg_dir msg_dir,
+		la_reasm_ctx *rtables, struct timeval rx_time);
 ```
 
-Tries to determine the ACARS application using message label stored in `label`. If
-the label corresponds to any supported applications, respective application
+Tries to determine the ACARS application using message label stored in `label`.
+If the label corresponds to any supported applications, respective application
 decoders are executed in sequence to decode the message text `txt`. `msg_dir`
 must be set to a correct transmission direction for the decoding to succeed.
 
@@ -388,8 +388,8 @@ reassembly timeouts). If `reasm_ctx` is NULL, then no reassembly is done.
 #include <libacars/libacars.h>
 #include <libacars/acars.h>
 
-la_proto_node *la_acars_decode_apps(char const * const label,
-        char const * const txt, la_msg_dir const msg_dir);
+la_proto_node *la_acars_decode_apps(char const *label,
+		char const *txt, la_msg_dir msg_dir);
 ```
 
 This function is provided for backward compatbility with libacars version 1. It
@@ -446,7 +446,7 @@ A structure representing a decoded ARINC-622 message.
 #include <libacars/libacars.h>
 #include <libacars/arinc.h>
 
-la_proto_node *la_arinc_parse(char const *txt, la_msg_dir const msg_dir);
+la_proto_node *la_arinc_parse(char const *txt, la_msg_dir msg_dir);
 ```
 
 Attempts to parse the message text `txt` sent in direction `msg_dir` as an
@@ -479,7 +479,7 @@ libacars currently supports the following IMIs: CR1, CC1, DR1, AT1, ADS, DIS.
 #include <libacars/libacars.h>
 #include <libacars/arinc.h>
 
-void la_arinc_format_text(la_vstring * const vstr, void const * const data, int indent);
+void la_arinc_format_text(la_vstring *vstr, void const *data, int indent);
 ```
 
 Serializes a decoded ARINC-622 message pointed to by `data` into a human-readable
@@ -496,7 +496,7 @@ instead.
 #include <libacars/libacars.h>
 #include <libacars/arinc.h>
 
-void la_arinc_format_json(la_vstring *vstr, void const * const data);
+void la_arinc_format_json(la_vstring *vstr, void const *data);
 ```
 
 Serializes a decoded ARINC-622 message pointed to by `data` into a JSON string
@@ -570,7 +570,8 @@ A generic ADS-C tag structure.
 #include <libacars/libacars.h>
 #include <libacars/adsc.h>
 
-la_proto_node *la_adsc_parse(uint8_t *buf, int len, la_msg_dir msg_dir, la_arinc_imi imi);
+la_proto_node *la_adsc_parse(uint8_t const *buf, int len, la_msg_dir msg_dir,
+		la_arinc_imi imi);
 ```
 
 Parses the octet string pointed to by `buf` having a length of `len` octets as
@@ -589,7 +590,7 @@ not be decoded, the `err` flag will be set to true.
 #include <libacars/libacars.h>
 #include <libacars/adsc.h>
 
-void la_adsc_format_text(la_vstring * const vstr, void const * const data, int indent);
+void la_adsc_format_text(la_vstring *vstr, void const *data, int indent);
 ```
 
 Serializes a decoded ADS-C message pointed to by `data` into a human-readable
@@ -604,7 +605,7 @@ the protocol tree, this function will have the same effect as
 #include <libacars/libacars.h>
 #include <libacars/adsc.h>
 
-void la_adsc_format_json(la_vstring *vstr, void const * const data);
+void la_adsc_format_json(la_vstring *vstr, void const *data);
 ```
 
 Serializes a decoded ADS-C message pointed to by `data` into a JSON string
@@ -674,7 +675,7 @@ A top-level structure representing a decoded CPDLC message.
 #include <libacars/libacars.h>
 #include <libacars/cpdlc.h>
 
-la_proto_node *la_cpdlc_parse(uint8_t *buf, int len, la_msg_dir const msg_dir);
+la_proto_node *la_cpdlc_parse(uint8_t const *buf, int len, la_msg_dir msg_dir);
 ```
 
 Parses the octet string pointed to by `buf` having a length of `len` octets as
@@ -714,7 +715,7 @@ include directory.
 #include <libacars/libacars.h>
 #include <libacars/cpdlc.h>
 
-void la_cpdlc_format_text(la_vstring * const vstr, void const * const data, int indent);
+void la_cpdlc_format_text(la_vstring *vstr, void const *data, int indent);
 ```
 
 Serializes a decoded CPDLC message pointed to by `data` into a human-readable
@@ -730,7 +731,7 @@ most cases.
 #include <libacars/libacars.h>
 #include <libacars/cpdlc.h>
 
-void la_cpdlc_format_json(la_vstring * const vstr, void const * const data);
+void la_cpdlc_format_json(la_vstring *vstr, void const *data);
 ```
 
 Serializes a decoded CPDLC message pointed to by `data` into a JSON string and
@@ -828,7 +829,7 @@ could not be decoded, the `err` flag will be set to true.
 #include <libacars/libacars.h>
 #include <libacars/media-adv.h>
 
-void la_media_adv_format_text(la_vstring * const vstr, void const * const data, int indent);
+void la_media_adv_format_text(la_vstring *vstr, void const *data, int indent);
 ```
 
 Serializes a decoded Media Advisory message pointed to by `data` into a
@@ -843,7 +844,7 @@ as `la_proto_tree_format_text()` which should be used instead in most cases.
 #include <libacars/libacars.h>
 #include <libacars/media-adv.h>
 
-void la_media_adv_format_json(la_vstring * const vstr, void const * const data);
+void la_media_adv_format_json(la_vstring *vstr, void const *data);
 ```
 
 Serializes a decoded Media Advisory message pointed to by `data` into a JSON
@@ -1073,7 +1074,7 @@ ie. it decodes MIAM message in the given buffer without reassembly.
 #include <libacars/libacars.h>
 #include <libacars/miam.h>
 
-void la_miam_format_text(la_vstring * const vstr, void const * const data, int indent);
+void la_miam_format_text(la_vstring *vstr, void const *data, int indent);
 ```
 
 Serializes a decoded MIAM ACARS CF frame pointed to by `data` into a
@@ -1086,7 +1087,7 @@ human-readable text indented by `indent` spaces and appends the result to `vstr`
 #include <libacars/libacars.h>
 #include <libacars/miam.h>
 
-void la_miam_format_json(la_vstring * const vstr, void const * const data);
+void la_miam_format_json(la_vstring *vstr, void const *data);
 ```
 
 Serializes a decoded MIAM ACARS CF frame pointed to by `data` into a JSON string
@@ -1206,7 +1207,7 @@ to `<libacars/miam-core.h>` for details.
 #include <libacars/libacars.h>
 #include <libacars/miam-core.h>
 
-void la_miam_core_format_text(la_vstring * const vstr, void const * const data, int indent);
+void la_miam_core_format_text(la_vstring *vstr, void const *data, int indent);
 ```
 
 Serializes a decoded MIAM CORE PDU pointed to by `data` into a human-readable
@@ -1225,7 +1226,7 @@ indentation).
 #include <libacars/libacars.h>
 #include <libacars/miam-core.h>
 
-void la_miam_core_format_json(la_vstring * const vstr, void const * const data);
+void la_miam_core_format_json(la_vstring *vstr, void const *data);
 ```
 
 Serializes a decoded MIAM CORE PDU pointed to by `data` into a JSON string and
@@ -1356,7 +1357,7 @@ Deallocates memory used by the reassembly context and all protocol state tables.
 #include <libacars/reassembly.h>
 
 la_reasm_table *la_reasm_table_new(la_reasm_ctx *rctx, void const *table_id,
-	la_reasm_table_funcs funcs, int const cleanup_interval);
+		la_reasm_table_funcs funcs, int cleanup_interval);
 
 ```
 Creates a reassembly table for the given protocol and returns a pointer to it.
@@ -1553,7 +1554,7 @@ Returns a short textual description of the given reassembly status value.
 ```C
 #include <libacars/reassembly.h>
 
-char const *la_reasm_status_name_get(la_reasm_status const status);
+char const *la_reasm_status_name_get(la_reasm_status status);
 ```
 
 ## la_vstring API
@@ -1610,8 +1611,9 @@ and free it later with `free()`.
 ```C
 #include <libacars/vstring.h>
 
-void la_vstring_append_sprintf(la_vstring * const vstr, char const *fmt, ...)
+void la_vstring_append_sprintf(la_vstring *vstr, char const *fmt, ...);
 ```
+
 Appends formatted string to the end of `vstr`.  Automatically extends `vstr` if
 it's too short to fit the result.
 
@@ -1620,19 +1622,23 @@ it's too short to fit the result.
 ```C
 #include <libacars/vstring.h>
 
-void la_vstring_append_buffer(la_vstring * const vstr, void const * buffer, size_t size);
+void la_vstring_append_buffer(la_vstring *vstr, void const *buffer, size_t size);
 ```
 
 Appends the contents of `buffer` of length `size` to the end of `vstr`.
-Automatically extends `vstr` if it's too short to fit the result. Use this
-function to append non-NULL-terminated strings to the `la_vstring`.
+Automatically extends `vstr` if it's too short to fit the result. The bufer does
+not need to be NULL-terminated. It may also contain non-printable characters,
+including NULL byte ('\0'). In the latter case it is not safe to print the
+resulting la_vstring with `printf`-like functions - the output will get
+truncated at the first NULL character. `write()` or `fwrite()` should be used
+instead.
 
 ### la_isprintf_multiline_text()
 
 ```C
 #include <libacars/vstring.h>
 
-void la_isprintf_multiline_text(la_vstring * const vstr, int const indent, char const *txt);
+void la_isprintf_multiline_text(la_vstring *vstr, int indent, char const *txt);
 ```
 
 Appends the contents of `txt` to the end of `vstr`. If `txt` contains multiple
@@ -1677,7 +1683,7 @@ item.
 ```C
 #include <libacars/list.h>
 
-la_list *la_list_next(la_list const * const l);
+la_list *la_list_next(la_list const *l);
 ```
 
 A convenience function which returns a pointer to the list element occuring
@@ -1904,7 +1910,7 @@ to a static or automatic variable.
 ```C
 #include <libacars/hash.h>
 
-typedef bool (la_hash_if_func)(void const *key, void const *value, void const *ctx);
+typedef bool (la_hash_if_func)(void const *key, void const *value, void *ctx);
 
 int la_hash_foreach_remove(la_hash *h, la_hash_if_func *if_func, void *if_func_ctx);
 ```
@@ -1946,7 +1952,7 @@ string values only. No escaping is performed on key names.
 #include <libacars/vstring.h>
 #include <libacars/json.h>
 
-void la_json_start(la_vstring * const vstr);
+void la_json_start(la_vstring *vstr);
 ```
 
 Start a JSON string by appending an initial `{` character to the string `vstr`.
@@ -1954,7 +1960,7 @@ Start a JSON string by appending an initial `{` character to the string `vstr`.
 ### la_json_end()
 
 ```C
-void la_json_end(la_vstring * const vstr);
+void la_json_end(la_vstring *vstr);
 ```
 
 Terminates the JSON string by emitting `}` character (and trimming preceding
@@ -1963,7 +1969,7 @@ comma, if present).
 ### la_json_append_bool()
 
 ```C
-void la_json_append_bool(la_vstring * const vstr, char const * const key, bool const val);
+void la_json_append_bool(la_vstring *vstr, char const *key, bool val);
 ```
 
 Emits a boolean value `val` as a JSON key named `key`.
@@ -1971,23 +1977,34 @@ Emits a boolean value `val` as a JSON key named `key`.
 ### la_json_append_double()
 
 ```C
-void la_json_append_double(la_vstring * const vstr, char const * const key, double const val);
+void la_json_append_double(la_vstring *vstr, char const *key, double val);
 ```
 
 Emits a double precision floating point value `val` as a JSON key named `key`.
 
+### la_json_append_int64
+
+```C
+void la_json_append_int64(la_vstring *vstr, char const *key, int64_t val);
+```
+
+Emits a 64-bit signed integer value `val` as a JSON key named `key`.
+
 ### la_json_append_long()
 
 ```C
-void la_json_append_long(la_vstring * const vstr, char const * const key, long const val);
+void la_json_append_long(la_vstring *vstr, char const *key, long val)
 ```
 
 Emits a long integer value `val` as a JSON key named `key`.
 
+**Note:** This function is deprecated, since the `long` type is not portable.
+la_json_append_int64 should be used instead.
+
 ### la_json_append_char()
 
 ```C
-void la_json_append_char(la_vstring * const vstr, char const * const key, char const val);
+void la_json_append_char(la_vstring *vstr, char const *key, char val);
 ```
 
 Emits a char value `val` as a JSON key named `key`.
@@ -1995,26 +2012,40 @@ Emits a char value `val` as a JSON key named `key`.
 ### la_json_append_string()
 
 ```C
-void la_json_append_string(la_vstring * const vstr, char const * const key, char const * const val);
+void la_json_append_string(la_vstring *vstr, char const *key, char const *val);
 ```
 
-Emits a string value `val` as a JSON key named `key`. Escapes all characters
-which require this.
+Emits a string value `val` as a JSON key named `key`. Escapes non-printable
+octets with `\u00XX` sequences.
+
+**Note:** this function does not handle NULL characters inside the string.  If
+this might be an issue, `la_json_append_octet_string_as_string` shall be used
+instead.
 
 ### la_json_append_octet_string()
 
 ```C
-void la_json_append_octet_string(la_vstring * const vstr, char const * const key,
-	uint8_t const * const buf, size_t len);
+void la_json_append_octet_string(la_vstring *vstr, char const *key,
+		uint8_t const *buf, size_t len);
 ```
 
 Emits a JSON array named `key` containing a string of `len` octets stored in `buf`.
 Octet values are serialized as decimal integers.
 
+### la_json_append_octet_string_as_string()
+
+```C
+void la_json_append_octet_string_as_string(la_vstring *vstr, char const *key,
+		uint8_t const *buf, size_t len);
+```
+Emits a string value `val` as a JSON key named `key`. The string consists of
+characters represented by octets in the given `buf` of length `len` Escapes
+non-printable octets with `\u00XX` sequences.
+
 ### la_json_object_start()
 
 ```C
-void la_json_object_start(la_vstring * const vstr, char const * const key);
+void la_json_object_start(la_vstring *vstr, char const *key);
 ```
 
 Begins a JSON object named `key` by emitting a key name and an opening `{`
@@ -2025,7 +2056,7 @@ produced.
 ### la_json_object_end()
 
 ```C
-void la_json_object_end(la_vstring * const vstr);
+void la_json_object_end(la_vstring *vstr);
 ```
 
 Ends a previously opened JSON object by emitting a terminating `}` character
@@ -2034,7 +2065,7 @@ and a comma.
 ### la_json_array_start()
 
 ```C
-void la_json_array_start(la_vstring * const vstr, char const * const key);
+void la_json_array_start(la_vstring *vstr, char const *key);
 ```
 
 Begins a JSON array named `key` by emitting a key name and an opening `[`
@@ -2045,7 +2076,7 @@ produced.
 ### la_json_array_end()
 
 ```C
-void la_json_array_end(la_vstring * const vstr);
+void la_json_array_end(la_vstring *vstr);
 ```
 
 Ends a previously opened JSON array by emitting a terminating `]` character
@@ -2123,9 +2154,9 @@ in place.
 ```C
 #include <libacars/libacars.h>
 
-bool la_config_set_bool(char const *name, bool const value);
-bool la_config_set_int(char const *name, long int const value);
-bool la_config_set_double(char const *name, double const value);
+bool la_config_set_bool(char const *name, bool value);
+bool la_config_set_int(char const *name, long int value);
+bool la_config_set_double(char const *name, double value);
 bool la_config_set_str(char const *name, char const *value);
 ```
 
