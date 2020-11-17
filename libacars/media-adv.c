@@ -39,29 +39,8 @@ static char const *get_link_description(char code) {
 	return NULL;
 }
 
-static bool is_numeric(char const *str, size_t len) {
-	if(!str) return false;
-	for(size_t i = 0; i < len; i++) {
-		if(!isdigit(str[i]) || str[i] == '\0') {
-			return false;
-		}
-	}
-	return true;
-}
-
-static bool check_format(char const *txt) {
-	bool valid = false;
-	if(strlen(txt) >= 10) {
-		valid = txt[0] == '0';
-		valid &= txt[1] == 'E' || txt[1] == 'L';
-		valid &= strchr("VSHGC2XI",txt[2]) != NULL;
-		valid &= is_numeric(&txt[3], 6);
-		int index = 9;
-		while(txt[index] !='\0' && txt[index] != '/') {
-			valid &= strchr("VSHGC2XI",txt[index++]) != NULL;
-		}
-	}
-	return valid;
+bool is_valid_link(char link) {
+	return strchr("VSHGC2XI", link) != NULL;
 }
 
 la_proto_node *la_media_adv_parse(char const *txt) {
@@ -70,63 +49,54 @@ la_proto_node *la_media_adv_parse(char const *txt) {
 	}
 
 	LA_NEW(la_media_adv_msg, msg);
-	la_proto_node *node = NULL;
-	la_proto_node *next_node = NULL;
-	// default to error
 	msg->err = true;
 
-	size_t payload_len = strlen(txt);
-	// Message size 0EV122234V
-	if(check_format(txt)) {
-		msg->err = false;
-		// First is version
-		msg->version = txt[0] - '0';
-		// link status Established or Lost
-		msg->state = txt[1];
-		// link type
-		msg->current_link = txt[2];
-		// time of state change
-		msg->hour = ATOI2(txt[3], txt[4]);
-		if(msg->hour > 23) {
-			msg->err = true;
-		}
-		msg->minute = ATOI2(txt[5], txt[6]);
-		if(msg->minute > 59) {
-			msg->err = true;
-		}
-		msg->second = ATOI2(txt[7], txt[8]);
-		if(msg->second > 59) {
-			msg->err = true;
-		}
-		msg->available_links = la_vstring_new();
-		// Available links are for 4 to symbol / if present
-		char *end = strchr(txt, '/');
-		// if there is no / only available links are present
-		if(end == NULL) {
-			size_t index = 9;
-			while(index < payload_len) {
-				la_vstring_append_buffer(msg->available_links, txt + index, 1);
-				index++;
-			}
-		} else {
-			// Copy all link until / is found
-			size_t index = 9;
-			while(index < payload_len) {
-				if(txt[index] != '/') {
-					la_vstring_append_buffer(msg->available_links, txt + index, 1);
-				} else {
-					break;
-				}
-				index++;
-			}
-			msg->text = strdup(end + 1);
-		}
-	}
-
-	node = la_proto_node_new();
+	la_proto_node *node = la_proto_node_new();
 	node->data = msg;
 	node->td = &la_DEF_media_adv_message;
-	node->next = next_node;
+	node->next = NULL;
+
+	if(strlen(txt) < 10) {
+		goto end;
+	}
+	msg->version = txt[0] - '0';
+	if(msg->version != 0) {
+		goto end;
+	}
+	msg->state = txt[1];
+	if(msg->state != 'E' && msg->state != 'L') {
+		goto end;
+	}
+	msg->current_link = txt[2];
+	if(!is_valid_link(msg->current_link)) {
+		goto end;
+	}
+	for(size_t i = 3; i < 9; i++) {
+		if(!isdigit(txt[i])) {
+			goto end;
+		}
+	}
+	msg->hour = ATOI2(txt[3], txt[4]);
+	msg->minute = ATOI2(txt[5], txt[6]);
+	msg->second = ATOI2(txt[7], txt[8]);
+	if(msg->hour > 23 || msg->minute > 59 || msg->second > 59) {
+		goto end;
+	}
+	txt += 9;
+	msg->available_links = la_vstring_new();
+	// Copy all link until / character or end of string
+	for(; *txt != '/' && *txt != '\0'; txt++) {
+		if(is_valid_link(*txt)) {
+			la_vstring_append_buffer(msg->available_links, txt, 1);
+		} else {
+			goto end;
+		}
+	}
+	if(txt[0] == '/' && txt[1] != '\0') {
+		msg->text = strdup(txt + 1);
+	}
+	msg->err = false;
+end:
 	return node;
 }
 
