@@ -108,7 +108,6 @@ la_proto_node *la_media_adv_parse(char const *txt) {
 				index++;
 			}
 			msg->available_links[index - 9] = '\0';
-			msg->text[0] = '\0';
 		} else {
 			// Copy all link until / is found
 			size_t index = 9;
@@ -121,8 +120,7 @@ la_proto_node *la_media_adv_parse(char const *txt) {
 				index++;
 			}
 			msg->available_links[index - 9] = '\0';
-			// copy text
-			strcpy(msg->text, end + 1);
+			msg->text = strdup(end + 1);
 		}
 	}
 
@@ -145,18 +143,15 @@ void la_media_adv_format_text(la_vstring *vstr, void const *data, int indent) {
 		return;
 	}
 
-	// Version
 	LA_ISPRINTF(vstr, indent, "Media Advisory, version %d:\n", msg->version);
 	indent++;
 
-	// Prepare time
 	LA_ISPRINTF(vstr, indent, "Link %s %s at %02d:%02d:%02d UTC\n",
 			get_link_description(msg->current_link),
 			(msg->state == 'E') ? "established" : "lost",
 			msg->hour, msg->minute, msg->second
 			);
 
-	// print all available links
 	LA_ISPRINTF(vstr, indent, "Available links: ");
 	size_t count = strlen(msg->available_links);
 	for(size_t i = 0; i < count; i++) {
@@ -168,8 +163,7 @@ void la_media_adv_format_text(la_vstring *vstr, void const *data, int indent) {
 		}
 	}
 
-	// print text if present
-	if(strlen(msg->text)) {
+	if(msg->text != NULL && msg->text[0] != '\0') {
 		LA_ISPRINTF(vstr, indent, "Text: %s\n", msg->text);
 	}
 }
@@ -205,16 +199,25 @@ void la_media_adv_format_json(la_vstring *vstr, void const *data) {
 		la_json_object_end(vstr);
 	}
 	la_json_array_end(vstr);
-	if(strlen(msg->text)) {
+	if(msg->text != NULL && msg->text[0] != '\0') {
 		la_json_append_string(vstr, "text", msg->text);
 	}
+}
+
+void la_media_adv_destroy(void *data) {
+	if(data == NULL) {
+		return;
+	}
+	la_media_adv_msg *msg = data;
+	LA_XFREE(msg->text);
+	LA_XFREE(msg);
 }
 
 la_type_descriptor const la_DEF_media_adv_message = {
 	.format_text = la_media_adv_format_text,
 	.format_json = la_media_adv_format_json,
 	.json_key = "media-adv",
-	.destroy = NULL
+	.destroy = la_media_adv_destroy
 };
 
 la_proto_node *la_proto_tree_find_media_adv(la_proto_node *root) {

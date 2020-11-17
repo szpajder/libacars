@@ -26,7 +26,7 @@ typedef struct {
 	char state;
 	char current_link;
 	char available_links[10];
-	char text[255];
+	char *text;
 // reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
