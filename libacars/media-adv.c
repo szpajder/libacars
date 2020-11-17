@@ -98,28 +98,27 @@ la_proto_node *la_media_adv_parse(char const *txt) {
 		if(msg->second > 59) {
 			msg->err = true;
 		}
+		msg->available_links = la_vstring_new();
 		// Available links are for 4 to symbol / if present
 		char *end = strchr(txt, '/');
 		// if there is no / only available links are present
 		if(end == NULL) {
 			size_t index = 9;
 			while(index < payload_len) {
-				msg->available_links[index - 9] = txt[index];
+				la_vstring_append_buffer(msg->available_links, txt + index, 1);
 				index++;
 			}
-			msg->available_links[index - 9] = '\0';
 		} else {
 			// Copy all link until / is found
 			size_t index = 9;
 			while(index < payload_len) {
 				if(txt[index] != '/') {
-					msg->available_links[index - 9] = txt[index];
+					la_vstring_append_buffer(msg->available_links, txt + index, 1);
 				} else {
 					break;
 				}
 				index++;
 			}
-			msg->available_links[index - 9] = '\0';
 			msg->text = strdup(end + 1);
 		}
 	}
@@ -153,9 +152,9 @@ void la_media_adv_format_text(la_vstring *vstr, void const *data, int indent) {
 			);
 
 	LA_ISPRINTF(vstr, indent, "Available links: ");
-	size_t count = strlen(msg->available_links);
+	size_t count = strlen(msg->available_links->str);
 	for(size_t i = 0; i < count; i++) {
-		char const *link = get_link_description(msg->available_links[i]);
+		char const *link = get_link_description(msg->available_links->str[i]);
 		if(i == count - 1) {
 			la_vstring_append_sprintf(vstr, "%s\n", link);
 		} else {
@@ -191,11 +190,11 @@ void la_media_adv_format_json(la_vstring *vstr, void const *data) {
 	la_json_object_end(vstr);
 
 	la_json_array_start(vstr, "links_avail");
-	size_t count = strlen(msg->available_links);
+	size_t count = strlen(msg->available_links->str);
 	for(size_t i = 0; i < count; i++) {
 		la_json_object_start(vstr, NULL);
-		la_json_append_char(vstr, "code", msg->available_links[i]);
-		la_json_append_string(vstr, "descr", get_link_description(msg->available_links[i]));
+		la_json_append_char(vstr, "code", msg->available_links->str[i]);
+		la_json_append_string(vstr, "descr", get_link_description(msg->available_links->str[i]));
 		la_json_object_end(vstr);
 	}
 	la_json_array_end(vstr);
@@ -209,6 +208,7 @@ void la_media_adv_destroy(void *data) {
 		return;
 	}
 	la_media_adv_msg *msg = data;
+	la_vstring_destroy(msg->available_links, true);
 	LA_XFREE(msg->text);
 	LA_XFREE(msg);
 }
