@@ -25,8 +25,8 @@ typedef struct {
 	uint8_t second;
 	char state;
 	char current_link;
-	char available_links[10];
-	char text[255];
+	la_vstring *available_links;
+	char *text;
 // reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
