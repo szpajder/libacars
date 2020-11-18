@@ -1,5 +1,15 @@
 # ChangeLog
 
+## Version 2.1.1 (2020-11-18)
+
+* Media Advisory: fixed a bug where a message with 10 or more available link
+  indicators could overflow the static buffer and produce garbled result (thx
+  mmiszewski).
+* Media Advisory: fixed a bug where a message with an exceptionally long text
+  field could cause buffer overrun and crash the program (thx mmiszewski).
+* Media Advisory: replaced message parsing routine with a simpler and more
+  robust one.
+
 ## Version 2.1.0 (2020-11-07)
 
 * ADS-C: fixed incorrect computation of vertical speed threshold in contract

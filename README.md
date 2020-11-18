@@ -2,7 +2,7 @@
 
 libacars is a library for decoding ACARS message contents.
 
-Current stable version: **2.1.0** (released November 7, 2020)
+Current stable version: **2.1.1** (released November 18, 2020)
 
 ## Supported message types
 
@@ -158,11 +158,12 @@ Refer to the following documents:
 ## Credits and thanks
 
 I hereby express my gratitude to everybody who helped with the development and
-testing of dumpvdl2. Special thanks go to:
+testing of libacars. Special thanks go to:
 
 - Fabrice Crohas
 - Dick van Noort
 - acarslogger
+- Michał Miszewski
 
 ## Licenses
 
