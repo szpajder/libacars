@@ -8,6 +8,7 @@
 #include <stdlib.h>             // calloc, realloc, free
 #include <string.h>             // strerror, strlen, strdup, strnlen, strspn, strpbrk
 #include <time.h>               // struct tm
+#include <limits.h>             // CHAR_BIT
 #include <errno.h>              // errno
 #include <unistd.h>             // _exit
 #include "config.h"             // HAVE_STRSEP, WITH_LIBXML2
