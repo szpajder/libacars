@@ -1,5 +1,9 @@
 # ChangeLog
 
+## Version 2.1.2 (2020-12-02)
+
+* Fixed a build failure when compiling without libxml2 support.
+
 ## Version 2.1.1 (2020-11-18)
 
 * Media Advisory: fixed a bug where a message with 10 or more available link
