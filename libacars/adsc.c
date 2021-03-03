@@ -1407,13 +1407,15 @@ LA_ADSC_FORMATTER_FUN(la_adsc_modulus_format_json) {
 
 LA_ADSC_FORMATTER_FUN(la_adsc_reporting_interval_format_text) {
 	la_adsc_report_interval_req_t const *t = data;
-	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: %d seconds\n", label, (int)(t->scaling_factor) * (int)(t->rate));
+	LA_ISPRINTF(ctx->vstr, ctx->indent, "%s: %d seconds\n", label,
+			(int)(t->scaling_factor) * ((int)(t->rate) + 1));
 }
 
 LA_ADSC_FORMATTER_FUN(la_adsc_reporting_interval_format_json) {
 	LA_UNUSED(label);
 	la_adsc_report_interval_req_t const *t = data;
-	la_json_append_int64(ctx->vstr, "interval_secs", (int)(t->scaling_factor) * (int)(t->rate));
+	la_json_append_int64(ctx->vstr, "interval_secs",
+			(int)(t->scaling_factor) * ((int)(t->rate) + 1));
 }
 
 LA_ADSC_FORMATTER_FUN(la_adsc_acft_intent_group_format_text) {
