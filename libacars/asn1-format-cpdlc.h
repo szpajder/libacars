@@ -1,7 +1,7 @@
 /*
  *  This file is a part of libacars
  *
- *  Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
+ *  Copyright (c) 2018-2021 Tomasz Lemiech <szpajder@gmail.com>
  */
 
 #ifndef LA_ASN1_FORMAT_CPDLC_H

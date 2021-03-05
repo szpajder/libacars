@@ -2,7 +2,7 @@
 
 API version: 2.0
 
-Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
+Copyright (c) 2018-2021 Tomasz Lemiech <szpajder@gmail.com>
 
 ## Basic data types
 

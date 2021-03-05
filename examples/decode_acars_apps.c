@@ -1,7 +1,7 @@
 /*
  *  decode_acars_apps - an example decoder for ACARS applications
  *
- *  Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
+ *  Copyright (c) 2018-2021 Tomasz Lemiech <szpajder@gmail.com>
  */
 #include <stdbool.h>            /* true */
 #include <stdio.h>              /* printf(), fprintf(), fgets() */
@@ -15,7 +15,7 @@
 void usage() {
 	fprintf(stderr,
 			"decode_acars_apps - an example decoder of ACARS applications\n"
-			"(c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>\n\n"
+			"(c) 2018-2021 Tomasz Lemiech <szpajder@gmail.com>\n\n"
 			"Usage:\n\n"
 			"To decode a single message from command line:\n\n"
 			"\t./decode_acars_apps <direction> <acars_label> <acars_message_text>\n\n"

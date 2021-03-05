@@ -1,6 +1,6 @@
 /*  This file is a part of libacars
  *
- *  Copyright (c) 2018-2020 Tomasz Lemiech <szpajder@gmail.com>
+ *  Copyright (c) 2018-2021 Tomasz Lemiech <szpajder@gmail.com>
  */
 
 #include <stdint.h>
