@@ -1,5 +1,10 @@
 # ChangeLog
 
+## Version 2.1.3 (2021-03-05)
+
+* Fixed incorrect calculation of reporting interval in ADS-C Periodic
+  Contract Requests. Reported by Roman Tordia.
+
 ## Version 2.1.2 (2020-12-02)
 
 * Fixed a build failure when compiling without libxml2 support.
