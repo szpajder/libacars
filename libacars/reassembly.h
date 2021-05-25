@@ -10,7 +10,11 @@
 extern "C" {
 #endif
 #include <stdbool.h>
+#ifndef _MSC_VER
 #include <sys/time.h>
+#else
+#include <winsock.h>
+#endif
 #include <libacars/hash.h>
 
 typedef struct la_reasm_ctx_s la_reasm_ctx;
