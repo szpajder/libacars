@@ -55,7 +55,7 @@ apt-get install zlib1g-dev
 apt-get install libxml2-dev
 ```
 
-#### Compiling libacars
+#### Compiling libacars (Linux)
 
 - **Option 1:** To run stable and tested code, download the latest stable
   release tarball from [Releases](https://github.com/szpajder/libacars/releases)
@@ -104,9 +104,20 @@ sudo make install
 sudo ldconfig
 ```
 
-On Linux the library will be installed to `/usr/local/lib` (or
+The library will be installed to `/usr/local/lib` (or
 `/usr/local/lib64`). Header files will land in
 `/usr/local/include/libacars-2/libacars`.
+
+#### Compiling libacars (Mac)
+
+Install dependencies and tools with `brew`:
+
+```
+brew install cmake zlib libxml2
+```
+
+Then follow the above instructions for Linux. Just skip the final `sudo
+ldconfig` step.
 
 ### Advanced compilation options
 
