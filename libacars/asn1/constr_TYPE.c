@@ -98,3 +98,11 @@ void ASN_DEBUG_f(const char *fmt, ...) {
 	fprintf(stderr, "\n");
 	va_end(ap);
 }
+
+#if	EMIT_ASN_DEBUG == 1
+#ifdef	__GNUC__
+#ifndef	ASN_THREAD_SAFE
+int asn_debug_indent;
+#endif
+#endif
+#endif
