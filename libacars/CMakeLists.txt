@@ -4,6 +4,10 @@ include(TestBigEndian)
 include(CheckSymbolExists)
 include(CheckPrototypeDefinition)
 
+# Use ZLIB_ROOT when searching for zlib with find_package
+# This is used when making Win32 binary releases.
+cmake_policy(SET CMP0074 NEW)
+
 # Check if LD supports linker scripts.
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/conftest.ldscript" "VERS_1 {
   global: sym;
