@@ -1,5 +1,12 @@
 # ChangeLog
 
+## Version 2.1.4 (2022-03-06)
+
+* Fix compile error under MS Visual C++ caused by `struct timeval`
+  being defined in `winsock.h` rather than `sys/time.h` (thx Jon Beniston)
+* Fix compile error under GCC >= 10 (multiple definitions of `asn_debug_indent`)
+* Fix for cmake >=3.17 not finding zlib1.dll when building with MinGW.
+
 ## Version 2.1.3 (2021-03-05)
 
 * Fixed incorrect calculation of reporting interval in ADS-C Periodic
