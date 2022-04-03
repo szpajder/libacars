@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 #if	__GNUC__ >= 3
-#define GCC_DEPRECATED(x) __attribute__ ((deprecated(x))
+#define GCC_DEPRECATED(x) __attribute__ ((deprecated(x)))
 #else
 #define GCC_DEPRECATED(x)
 #endif
