@@ -12,5 +12,7 @@
 #cmakedefine HAVE_STRSEP
 #cmakedefine LFIND_NMEMB_SIZE_SIZE_T
 #cmakedefine LFIND_NMEMB_SIZE_UINT
+#cmakedefine HAVE_SYS_TIME_H
+#cmakedefine HAVE_UNISTD_H
 
 #endif // !_CONFIG_H

@@ -4,11 +4,14 @@
  *  Copyright (c) 2018-2021 Tomasz Lemiech <szpajder@gmail.com>
  */
 
+#include "config.h"                 /* HAVE_SYS_TIME_H */
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>                 /* calloc() */
 #include <string.h>                 /* strchr(), strlen(), strncmp(), strcmp() */
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>               /* struct timeval */
+#endif
 #include <libacars/macros.h>        /* la_assert() */
 #include <libacars/libacars.h>      /* la_proto_node, la_type_descriptor */
 #include <libacars/vstring.h>       /* la_vstring */

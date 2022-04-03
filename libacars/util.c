@@ -10,8 +10,10 @@
 #include <time.h>               // struct tm
 #include <limits.h>             // CHAR_BIT
 #include <errno.h>              // errno
+#include "config.h"             // HAVE_STRSEP, WITH_LIBXML2, HAVE_UNISTD_H
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>             // _exit
-#include "config.h"             // HAVE_STRSEP, WITH_LIBXML2
+#endif
 #ifdef WITH_LIBXML2
 #include <libxml/parser.h>      // xmlParseDoc
 #include <libxml/tree.h>        // xmlBuffer.*, xmlNodeDump, xmlDocGetRootElement, xmlFreeDoc

@@ -7,7 +7,9 @@ foreach (ex ${EXAMPLE_BINARIES})
 	add_executable(${ex} ${ex}.c)
 	target_link_libraries(${ex} acars)
 endforeach()
-target_link_libraries (cpdlc_get_position m)
+if(NOT MSVC)
+	target_link_libraries (cpdlc_get_position m)
+endif()
 install (TARGETS
 	${EXAMPLE_BINARIES}
 	DESTINATION ${CMAKE_INSTALL_BINDIR}

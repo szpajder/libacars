@@ -15,6 +15,12 @@
 extern "C" {
 #endif
 
+#if	__GNUC__ >= 3
+#define GCC_DEPRECATED(x) __attribute__ ((deprecated(x))
+#else
+#define GCC_DEPRECATED(x)
+#endif
+
 // json.c
 void la_json_object_start(la_vstring *vstr, char const *key);
 void la_json_object_end(la_vstring *vstr);
@@ -24,7 +30,7 @@ void la_json_append_bool(la_vstring *vstr, char const *key, bool val);
 void la_json_append_double(la_vstring *vstr, char const *key, double val);
 void la_json_append_int64(la_vstring *vstr, char const *key, int64_t val);
 void la_json_append_long(la_vstring *vstr, char const *key, long val)
-	__attribute__ ((deprecated("This function is not portable; use la_json_append_int64 instead")));
+	GCC_DEPRECATED("This function is not portable; use la_json_append_int64 instead");
 void la_json_append_char(la_vstring *vstr, char const *key, char val);
 void la_json_append_string(la_vstring *vstr, char const *key, char const *val);
 void la_json_append_octet_string(la_vstring *vstr, char const *key,
