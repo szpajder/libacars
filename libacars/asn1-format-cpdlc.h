@@ -19,4 +19,6 @@ extern la_dict const FANSATCDownlinkMsgElementId_labels[];
 // asn1-format-cpdlc-json.c
 LA_ASN1_FORMATTER_FUNC(la_asn1_output_cpdlc_as_json);
 
+#define LA_ASN1_CPDLC_TABLE_SIZE 209
+
 #endif // !LA_ASN1_FORMAT_CPDLC_H

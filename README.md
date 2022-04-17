@@ -34,7 +34,7 @@ The project should build and run correctly on the following platforms:
 
 - Linux i686 and x86_64 (gcc)
 - MacOS (clang)
-- Windows (mingw)
+- Windows (mingw or msvc)
 
 #### Installing dependencies
 

@@ -21,9 +21,13 @@ endif(NOT CMAKE_BUILD_TYPE)
 option(EMIT_ASN_DEBUG, "Enable debugging of ASN.1 decoder (requires
 CMAKE_BUILD_TYPE=Debug" OFF)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og -DDEBUG")
-set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
+if(MSVC)
+	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+else()
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
+	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og -DDEBUG")
+	set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
+endif()
 
 if(MINGW)
 	add_definitions(-D__USE_MINGW_ANSI_STDIO=1)

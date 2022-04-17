@@ -79,8 +79,12 @@ if(NOT ${LFIND_NMEMB_SIZE_SIZE_T} AND NOT ${LFIND_NMEMB_SIZE_UINT})
 	message(FATAL_ERROR "Unable to determine lfind function prototype")
 endif()
 
+CHECK_INCLUDE_FILE("sys/time.h" HAVE_SYS_TIME_H)
+CHECK_INCLUDE_FILE("unistd.h" HAVE_UNISTD_H)
 
-find_library(LIBM m REQUIRED)
+if(NOT MSVC)
+	find_library(LIBM m REQUIRED)
+endif()
 
 option(ZLIB "Enable ZLIB support for MIAM" ON)
 set(WITH_ZLIB FALSE)
@@ -163,7 +167,11 @@ target_include_directories(acars_core PUBLIC ${acars_include_dirs} ${CMAKE_CURRE
 set(acars_obj_files $<TARGET_OBJECTS:asn1> $<TARGET_OBJECTS:acars_core>)
 
 add_library(acars SHARED ${acars_obj_files})
-target_link_libraries (acars m ${acars_extra_libs})
+if(MSVC)
+	target_link_libraries (acars ${acars_extra_libs})
+else()
+	target_link_libraries (acars m ${acars_extra_libs})
+endif()
 set_property (TARGET acars PROPERTY SOVERSION ${LA_VERSION_MAJOR})
 set_target_properties(acars PROPERTIES OUTPUT_NAME "acars-${LA_VERSION_MAJOR}")
 if (HAVE_LD_VERSION_SCRIPT)
@@ -171,7 +179,12 @@ if (HAVE_LD_VERSION_SCRIPT)
 endif()
 
 add_library(acars_static ${acars_obj_files})
-set_target_properties(acars_static PROPERTIES OUTPUT_NAME "acars-${LA_VERSION_MAJOR}")
+if(MSVC)
+    # In order to build with ninja, we need static and shared .lib names to be different
+    set_target_properties(acars_static PROPERTIES OUTPUT_NAME "acarsstatic-${LA_VERSION_MAJOR}")
+else()
+    set_target_properties(acars_static PROPERTIES OUTPUT_NAME "acars-${LA_VERSION_MAJOR}")
+endif()
 
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.pc.in"
