@@ -84,6 +84,7 @@ CHECK_INCLUDE_FILE("unistd.h" HAVE_UNISTD_H)
 
 if(NOT MSVC)
 	find_library(LIBM m REQUIRED)
+	list(APPEND acars_extra_libs m)
 endif()
 
 option(ZLIB "Enable ZLIB support for MIAM" ON)
@@ -167,11 +168,7 @@ target_include_directories(acars_core PUBLIC ${acars_include_dirs} ${CMAKE_CURRE
 set(acars_obj_files $<TARGET_OBJECTS:asn1> $<TARGET_OBJECTS:acars_core>)
 
 add_library(acars SHARED ${acars_obj_files})
-if(MSVC)
-	target_link_libraries (acars ${acars_extra_libs})
-else()
-	target_link_libraries (acars m ${acars_extra_libs})
-endif()
+target_link_libraries (acars ${acars_extra_libs})
 set_property (TARGET acars PROPERTY SOVERSION ${LA_VERSION_MAJOR})
 set_target_properties(acars PROPERTIES OUTPUT_NAME "acars-${LA_VERSION_MAJOR}")
 if (HAVE_LD_VERSION_SCRIPT)
