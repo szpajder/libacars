@@ -47,5 +47,6 @@ void la_octet_string_destroy(void *ostring_ptr);
 xmlBufferPtr la_prettify_xml(char const *buf);
 #endif
 uint32_t la_reverse(uint32_t v, int numbits);
+la_octet_string *la_base64_decode(char const *input, size_t input_len);
 
 #endif // !LA_UTIL_H

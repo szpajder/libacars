@@ -258,3 +258,49 @@ uint32_t la_reverse(uint32_t v, int numbits) {
 	r >>= 32 - numbits;
 	return r;
 }
+
+// BASE64 decoder
+
+static int32_t la_get_base64_idx(char c) {
+    char const base64_chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+    for (int32_t i = 0; i < 64; i++) {
+        if (base64_chars[i] == c) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+la_octet_string *la_base64_decode(char const *input, size_t input_len) {
+	// Round off the input length to full 4-char blocks
+	if((input_len & 3) != 0) {
+		input_len &= ~3;
+	}
+    int32_t decoded_len = (input_len * 3) / 4;
+
+    if (input[input_len - 1] == '=') {
+        decoded_len--;
+    }
+    if (input[input_len - 2] == '=') {
+        decoded_len--;
+    }
+
+    uint8_t *output = LA_XCALLOC(decoded_len, sizeof(uint8_t));
+    size_t output_idx = 0;
+    size_t i = 0;
+
+    while (i < input_len) {
+        int32_t idx1 = la_get_base64_idx(input[i++]);
+        int32_t idx2 = la_get_base64_idx(input[i++]);
+        output[output_idx++] = (idx1 << 2) | (idx2 >> 4);
+
+        int32_t idx3 = la_get_base64_idx(input[i++]);
+        output[output_idx++] = (idx2 << 4) | (idx3 >> 2);
+
+        int32_t idx4 = la_get_base64_idx(input[i++]);
+        output[output_idx++] = (idx3 << 6) | idx4;
+    }
+	return la_octet_string_new(output, decoded_len);
+}
