@@ -281,7 +281,7 @@ la_octet_string *la_base64_decode(char const *input, size_t input_len) {
 	if((input_len & 3) != 0) {
 		input_len &= ~3;
 	}
-    int32_t decoded_len = (input_len * 3) / 4;
+    size_t decoded_len = (input_len * 3) / 4;
 
     if (input[input_len - 1] == '=') {
         decoded_len--;
@@ -296,16 +296,24 @@ la_octet_string *la_base64_decode(char const *input, size_t input_len) {
 
     while (i < input_len) {
         int32_t idx1 = la_get_base64_idx(input[i++]);
+        if(idx1 < 0) goto fail;
         int32_t idx2 = la_get_base64_idx(input[i++]);
+        if(idx2 < 0) goto fail;
         output[output_idx++] = (idx1 << 2) | (idx2 >> 4);
 
         int32_t idx3 = la_get_base64_idx(input[i++]);
+        if(idx3 < 0) goto fail;
         output[output_idx++] = (idx2 << 4) | (idx3 >> 2);
 
         int32_t idx4 = la_get_base64_idx(input[i++]);
+        if(idx4 < 0) goto fail;
         output[output_idx++] = (idx3 << 6) | idx4;
     }
 	return la_octet_string_new(output, decoded_len);
+fail:
+	la_debug_print(D_VERBOSE, "Decoding failed at position %zu\n", i);
+	LA_XFREE(output);
+	return NULL;
 }
 
 // ZLIB decompressor
