@@ -15,8 +15,6 @@
 #include <libacars/macros.h>        // la_debug_print()
 #include <libacars/ohma.h>          // la_ohma_msg
 
-#define OHMA_MSG_MIN_LEN 8          // "OHMA" prefix plus one BASE64 block
-
 la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 		la_reasm_ctx *rtables, struct timeval rx_time) {
 #ifdef WITH_ZLIB
@@ -24,13 +22,17 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 		return NULL;
 	}
 	size_t len = strlen(txt);
-	if(len < OHMA_MSG_MIN_LEN) {
-		return NULL;
+	// OHMA message recognition logic:
+	// - short form: starts with "OHMA"
+	// - long form: additionally preceded with '/', 7-char ground address and '.' (eg. "/RTNBOCR.OHMA")
+	if(len >= 13 && txt[0] == '/' && txt[8] == '.') {
+	    txt += 9; len -= 9;
 	}
-	if(strncmp(txt, "OHMA", 4) != 0) {       // Not an OHMA message
-		return NULL;
+	if(strncmp(txt, "OHMA", 4) == 0) {
+		txt += 4; len -= 4;
+	} else {
+	    return NULL;
 	}
-	txt += 4; len -= 4;
 
 	la_octet_string *b64_decoded_msg = la_base64_decode(txt, len);
 	if(b64_decoded_msg == NULL) {

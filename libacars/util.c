@@ -294,6 +294,9 @@ static int32_t la_get_base64_idx(char c) {
 }
 
 la_octet_string *la_base64_decode(char const *input, size_t input_len) {
+	if(input == NULL || input_len == 0) {
+		return NULL;
+	}
 	// Round off the input length to full 4-char blocks
 	if((input_len & 3) != 0) {
 		input_len &= ~3;
