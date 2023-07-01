@@ -17,8 +17,10 @@ extern "C" {
 #endif
 
 typedef enum {
-	LA_OHMA_SUCCESS              = 0,
-	LA_OHMA_DECOMPRESSION_FAILED = 1,
+	LA_OHMA_SUCCESS                   = 0,
+	LA_OHMA_FAIL_MSG_TOO_SHORT        = 1,
+	LA_OHMA_FAIL_UNKNOWN_COMPRESSION  = 2,
+	LA_OHMA_FAIL_DECOMPRESSION_FAILED = 3,
 } la_ohma_decoding_error_code;
 #define LA_OHMA_DECODING_ERROR_MAX 1
 
