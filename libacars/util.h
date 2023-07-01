@@ -9,7 +9,7 @@
 #include <stddef.h>         // size_t
 #include <stdlib.h>         // free()
 #include <time.h>           // struct tm
-#include "config.h"         // HAVE_STRSEP, WITH_LIBXML2
+#include "config.h"         // HAVE_STRSEP, WITH_LIBXML2 WITH_ZLIB
 #ifdef WITH_LIBXML2
 #include <libxml/tree.h>    // xmlBufferPtr
 #endif
@@ -48,5 +48,17 @@ xmlBufferPtr la_prettify_xml(char const *buf);
 #endif
 uint32_t la_reverse(uint32_t v, int numbits);
 la_octet_string *la_base64_decode(char const *input, size_t input_len);
+
+#ifdef WITH_ZLIB
+#include <stdbool.h>
+typedef struct {
+	uint8_t *buf;
+	size_t buflen;
+	bool success;
+} la_inflate_result;
+
+la_inflate_result la_inflate(uint8_t const *buf, int in_len);
+#endif
+
 
 #endif // !LA_UTIL_H

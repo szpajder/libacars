@@ -8,9 +8,6 @@
 #include <stdlib.h>                 // calloc
 #include <string.h>                 // strchr(), strdup(), strtok_r(), strlen
 #include "config.h"
-#ifdef WITH_ZLIB
-#include <zlib.h>                   // z_stream, inflateInit2(), inflate(), inflateEnd()
-#endif
 #ifdef WITH_LIBXML2
 #include <libxml/tree.h>            // xmlBufferPtr, xmlBufferFree()
 #endif
@@ -74,72 +71,6 @@ typedef struct {
 	uint8_t *buf;
 	int len;
 } la_base85_decode_result;
-
-#ifdef WITH_ZLIB
-typedef struct {
-	uint8_t *buf;
-	size_t buflen;
-	bool success;
-} la_inflate_result;
-
-#define MAX_INFLATED_LEN (1<<20)
-
-static la_inflate_result la_inflate(uint8_t const *buf, int in_len) {
-	la_assert(buf != NULL);
-	la_assert(in_len > 0);
-
-	z_stream stream;
-	memset(&stream, 0, sizeof(stream));
-	la_inflate_result result;
-	memset(&result, 0, sizeof(result));
-
-	int ret = inflateInit2(&stream, -15);   // raw deflate with max window size
-	if(ret != Z_OK) {
-		la_debug_print(D_ERROR, "inflateInit failed: %d\n", ret);
-		goto end;
-	}
-	stream.avail_in = (uInt)in_len;
-	stream.next_in = (uint8_t *)buf;
-	int chunk_len = 4 * in_len;
-	int out_len = chunk_len;                // rough initial approximation
-	uint8_t *outbuf = LA_XCALLOC(out_len, sizeof(uint8_t));
-	stream.next_out = outbuf;
-	stream.avail_out = out_len;
-
-	while((ret = inflate(&stream, Z_FINISH)) == Z_BUF_ERROR) {
-		la_debug_print(D_INFO, "Z_BUF_ERROR, avail_in=%u avail_out=%u\n", stream.avail_in, stream.avail_out);
-		if(stream.avail_out == 0) {
-			// Not enough output space
-			int new_len = out_len + chunk_len;
-			la_debug_print(D_INFO, "outbuf grow: %d -> %d\n", out_len, new_len);
-			if(new_len > MAX_INFLATED_LEN) {
-				// Do not go overboard with memory usage
-				la_debug_print(D_ERROR, "new_len too large: %d > %d\n", new_len, MAX_INFLATED_LEN);
-				break;
-			}
-			outbuf = LA_XREALLOC(outbuf, new_len * sizeof(uint8_t));
-			stream.next_out = outbuf + out_len;
-			stream.avail_out = chunk_len;
-			out_len = new_len;
-		} else if(stream.avail_in == 0) {
-			// Input stream is truncated - error out
-			break;
-		}
-	}
-	la_debug_print(D_INFO, "zlib ret=%d avail_out=%u total_out=%lu\n", ret, stream.avail_out, stream.total_out);
-	// Make sure the buffer is larger than the result.
-	// We need space to append NULL terminator later for printing it.
-	if(stream.avail_out == 0) {
-		outbuf = LA_XREALLOC(outbuf, (out_len + 1) * sizeof(uint8_t));
-	}
-	result.buf = outbuf;
-	result.buflen = stream.total_out;
-	result.success = (ret == Z_STREAM_END ? true : false);
-end:
-	(void)inflateEnd(&stream);
-	return result;
-}
-#endif
 
 static la_base85_decode_result la_base85_decode(char const *str, char const *end) {
 	static uint32_t const base85[] = {
