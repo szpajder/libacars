@@ -157,6 +157,7 @@ add_library (acars_core OBJECT
 	media-adv.c
 	miam.c
 	miam-core.c
+	ohm.c
 	reassembly.c
 	util.c
 	vstring.c
@@ -209,6 +210,7 @@ install(FILES
 	media-adv.h
 	miam.h
 	miam-core.h
+	ohm.h
 	reassembly.h
 	version.h
 	vstring.h
