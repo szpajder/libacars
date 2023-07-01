@@ -17,7 +17,7 @@
 #include <libacars/arinc.h>                 // la_arinc_parse()
 #include <libacars/media-adv.h>             // la_media_adv_parse()
 #include <libacars/miam.h>                  // la_miam_parse_and_reassemble()
-#include <libacars/ohm.h>                   // la_ohm_parse_and_reassemble()
+#include <libacars/ohma.h>                  // la_ohma_parse_and_reassemble()
 #include <libacars/crc.h>                   // la_crc16_ccitt()
 #include <libacars/vstring.h>               // la_vstring, LA_ISPRINTF()
 #include <libacars/json.h>                  // la_json_append_*()
@@ -164,7 +164,7 @@ la_proto_node *la_acars_apps_parse_and_reassemble(char const *reg,
 					if((ret = la_miam_parse_and_reassemble(reg, txt, rtables, rx_time)) != NULL) {
 						goto end;
 					}
-					if((ret = la_ohm_parse_and_reassemble(reg, txt, rtables, rx_time)) != NULL) {
+					if((ret = la_ohma_parse_and_reassemble(reg, txt, rtables, rx_time)) != NULL) {
 						goto end;
 					}
 					break;

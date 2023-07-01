@@ -13,21 +13,21 @@
 #include <libacars/reassembly.h>
 #include <libacars/util.h>          // la_base64_decode
 #include <libacars/macros.h>        // la_debug_print()
-#include <libacars/ohm.h>           // la_ohm_msg
+#include <libacars/ohma.h>          // la_ohma_msg
 
-#define OHM_MSG_MIN_LEN 4           // one BASE64 block
+#define OHMA_MSG_MIN_LEN 4          // one BASE64 block
 
-la_proto_node *la_ohm_parse_and_reassemble(char const *reg, char const *txt,
+la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 		la_reasm_ctx *rtables, struct timeval rx_time) {
 #ifdef WITH_ZLIB
 	if(txt == NULL) {
 		return NULL;
 	}
 	size_t len = strlen(txt);
-	if(len < OHM_MSG_MIN_LEN) {
+	if(len < OHMA_MSG_MIN_LEN) {
 		return NULL;
 	}
-	if(strncmp(txt, "OHM", 3) != 0) {       // Not an OHM message
+	if(strncmp(txt, "OHM", 3) != 0) {       // Not an OHMA message
 		return NULL;
 	}
 
@@ -44,7 +44,7 @@ la_proto_node *la_ohm_parse_and_reassemble(char const *reg, char const *txt,
 
 	la_debug_print_buf_hex(D_VERBOSE, b64_decoded_msg->buf, b64_decoded_msg->len, "Message after BASE64 decoding:\n");
 	// The first three octets come as a result of decoding the initial
-	// "OHM" string which acts only as a message type indicator. Skip them.
+	// "OHMA" string which acts only as a message type indicator. Skip them.
 	// Next two octets are the zlib magic value. Skip them too.
 	la_inflate_result inflated = la_inflate(b64_decoded_msg->buf + 5, b64_decoded_msg->len);
 	// If it's text, it needs a NULL terminator.
@@ -53,10 +53,10 @@ la_proto_node *la_ohm_parse_and_reassemble(char const *reg, char const *txt,
 
 	la_octet_string_destroy(b64_decoded_msg);
 
-	LA_NEW(la_ohm_msg, msg);
+	LA_NEW(la_ohma_msg, msg);
 	msg->payload = la_octet_string_new(inflated.buf, inflated.buflen);
 	la_proto_node *node = la_proto_node_new();
-	node->td = &la_DEF_ohm_msg;
+	node->td = &la_DEF_ohma_msg;
 	node->data = msg;
 	node->next = NULL;
 	return node;
@@ -69,26 +69,26 @@ la_proto_node *la_ohm_parse_and_reassemble(char const *reg, char const *txt,
 #endif  // WITH_ZLIB
 }
 
-static void la_ohm_msg_destroy(void *data) {
+static void la_ohma_msg_destroy(void *data) {
 	if(data == NULL) {
 		return;
 	}
-	la_ohm_msg *msg = data;
+	la_ohma_msg *msg = data;
 	la_octet_string_destroy(msg->payload);
 	LA_XFREE(msg);
 }
 
-void la_ohm_format_text(la_vstring *vstr, void const *data, int indent) {
+void la_ohma_format_text(la_vstring *vstr, void const *data, int indent) {
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 	la_assert(indent >= 0);
 
-	la_ohm_msg const *msg = data;
-	if(msg->err != LA_OHM_SUCCESS) {
-		LA_ISPRINTF(vstr, indent, "-- Unparseable OHM message\n");
+	la_ohma_msg const *msg = data;
+	if(msg->err != LA_OHMA_SUCCESS) {
+		LA_ISPRINTF(vstr, indent, "-- Unparseable OHMA message\n");
 		return;
 	}
-	LA_ISPRINTF(vstr, indent, "OHM message:\n");
+	LA_ISPRINTF(vstr, indent, "OHMA message:\n");
 	if(is_printable(msg->payload->buf, msg->payload->len)) {
 		la_isprintf_multiline_text(vstr, indent + 1, (char *)msg->payload->buf);
 	} else {
@@ -98,12 +98,12 @@ void la_ohm_format_text(la_vstring *vstr, void const *data, int indent) {
 	}
 }
 
-void la_ohm_format_json(la_vstring *vstr, void const *data);
-la_proto_node *la_proto_tree_find_ohm(la_proto_node *root);
+void la_ohma_format_json(la_vstring *vstr, void const *data);
+la_proto_node *la_proto_tree_find_ohma(la_proto_node *root);
 
-la_type_descriptor const la_DEF_ohm_msg = {
-	.format_text = la_ohm_format_text,
+la_type_descriptor const la_DEF_ohma_msg = {
+	.format_text = la_ohma_format_text,
 	.format_json = NULL,
 	.json_key = NULL,
-	.destroy = &la_ohm_msg_destroy
+	.destroy = &la_ohma_msg_destroy
 };
