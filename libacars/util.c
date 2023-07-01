@@ -272,7 +272,7 @@ static int32_t la_get_base64_idx(char c) {
             return i;
         }
     }
-
+	la_debug_print(D_VERBOSE, "char %c is invalid\n", c);
     return -1;
 }
 
@@ -301,9 +301,17 @@ la_octet_string *la_base64_decode(char const *input, size_t input_len) {
         if(idx2 < 0) goto fail;
         output[output_idx++] = (idx1 << 2) | (idx2 >> 4);
 
+        if (output_idx >= decoded_len) {
+            break;
+        }
+
         int32_t idx3 = la_get_base64_idx(input[i++]);
         if(idx3 < 0) goto fail;
         output[output_idx++] = (idx2 << 4) | (idx3 >> 2);
+
+        if (output_idx >= decoded_len) {
+            break;
+        }
 
         int32_t idx4 = la_get_base64_idx(input[i++]);
         if(idx4 < 0) goto fail;
