@@ -6,6 +6,7 @@
 #ifndef LA_UTIL_H
 #define LA_UTIL_H 1
 #include <stdint.h>
+#include <stdbool.h>
 #include <stddef.h>         // size_t
 #include <stdlib.h>         // free()
 #include <time.h>           // struct tm
@@ -38,6 +39,7 @@ char *la_strsep(char **stringp, char const *delim);
 
 size_t la_slurp_hexstring(char *string, uint8_t **buf);
 char *la_hexdump(uint8_t *data, size_t len);
+bool is_printable(uint8_t const *buf, uint32_t data_len);
 int la_strntouint16_t(char const *txt, int charcnt);
 size_t chomped_strlen(char const *s);
 char *la_simple_strptime(char const *s, struct tm *t);
@@ -50,7 +52,6 @@ uint32_t la_reverse(uint32_t v, int numbits);
 la_octet_string *la_base64_decode(char const *input, size_t input_len);
 
 #ifdef WITH_ZLIB
-#include <stdbool.h>
 typedef struct {
 	uint8_t *buf;
 	size_t buflen;

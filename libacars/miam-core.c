@@ -136,23 +136,6 @@ static la_base85_decode_result la_base85_decode(char const *str, char const *end
 	};
 }
 
-static bool is_printable(uint8_t const *buf, uint32_t data_len) {
-	if(buf == NULL || data_len == 0) {
-		return false;
-	}
-	for(uint32_t i = 0; i < data_len; i++) {
-		if((buf[i] >= 7 && buf[i] <= 13) ||
-				(buf[i] >= 32 && buf[i] <= 126)) {
-			// noop
-		} else {
-			la_debug_print(D_VERBOSE, "false due to character %u at position %u\n", buf[i], i);
-			return false;
-		}
-	}
-	la_debug_print(D_VERBOSE, "true\n");
-	return true;
-}
-
 // MIAM CORE v1/v2 common parsers
 
 static la_proto_node *v1v2_alo_alr_parse(uint8_t const *hdrbuf, int hdrlen, uint8_t const *bodybuf,

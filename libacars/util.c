@@ -127,6 +127,23 @@ char *la_hexdump(uint8_t *data, size_t len) {
 	return buf;
 }
 
+bool is_printable(uint8_t const *buf, uint32_t data_len) {
+	if(buf == NULL || data_len == 0) {
+		return false;
+	}
+	for(uint32_t i = 0; i < data_len; i++) {
+		if((buf[i] >= 7 && buf[i] <= 13) ||
+				(buf[i] >= 32 && buf[i] <= 126)) {
+			// noop
+		} else {
+			la_debug_print(D_VERBOSE, "false due to character %u at position %u\n", buf[i], i);
+			return false;
+		}
+	}
+	la_debug_print(D_VERBOSE, "true\n");
+	return true;
+}
+
 int la_strntouint16_t(char const *txt, int charcnt) {
 	if(txt == NULL ||
 			charcnt < 1 ||
