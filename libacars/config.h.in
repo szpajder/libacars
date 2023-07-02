@@ -8,6 +8,7 @@
 
 #cmakedefine WITH_ZLIB
 #cmakedefine WITH_LIBXML2
+#cmakedefine WITH_JANSSON
 #cmakedefine IS_BIG_ENDIAN
 #cmakedefine HAVE_STRSEP
 #cmakedefine LFIND_NMEMB_SIZE_SIZE_T

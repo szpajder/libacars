@@ -4,6 +4,8 @@ include(TestBigEndian)
 include(CheckSymbolExists)
 include(CheckPrototypeDefinition)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+
 # Use ZLIB_ROOT when searching for zlib with find_package
 # This is used when making Win32 binary releases.
 cmake_policy(SET CMP0074 NEW)
@@ -120,6 +122,18 @@ if(LIBXML2)
 	endif()
 endif()
 
+option(JANSSON "Enable jansson library support for parsing JSON-encoded messages (eg. OHMA)" ON)
+set(WITH_JANSSON FALSE)
+
+if(JANSSON)
+	find_package(Jansson)
+	if(JANSSON_FOUND)
+		set(WITH_JANSSON TRUE)
+		list(APPEND acars_extra_libs ${JANSSON_LIBRARIES})
+		list(APPEND acars_include_dirs ${JANSSON_INCLUDE_DIR})
+	endif()
+endif()
+
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/version.c
 		${CMAKE_CURRENT_BINARY_DIR}/_version.c
@@ -129,6 +143,7 @@ add_custom_command(
 message(STATUS "libacars configuration summary:")
 message(STATUS "- zlib:\t\trequested: ${ZLIB}, enabled: ${WITH_ZLIB}")
 message(STATUS "- libxml2:\t\trequested: ${LIBXML2}, enabled: ${WITH_LIBXML2}")
+message(STATUS "- jansson:\t\trequested: ${JANSSON}, enabled: ${WITH_JANSSON}")
 
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"

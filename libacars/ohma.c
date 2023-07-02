@@ -4,10 +4,13 @@
  *  Copyright (c) 2018-2021 Tomasz Lemiech <szpajder@gmail.com>
  */
 
-#include "config.h"                 // WITH_ZLIB
+#include "config.h"                 // WITH_ZLIB, WITH_JANSSON
 #include <string.h>                 // strlen
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>               // struct timeval
+#endif
+#ifdef WITH_JANSSON
+#include <jansson.h>
 #endif
 #include <libacars/libacars.h>      // la_proto_node, la_type_descriptor
 #include <libacars/reassembly.h>
@@ -37,10 +40,12 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 	la_octet_string *b64_decoded_msg = la_base64_decode(txt, len);
 	if(b64_decoded_msg == NULL) {
 		la_debug_print(D_INFO, "Failed to decode message as BASE64\n");
+		// Fail silently without producing a node, since it's probably not an OHMA message
 		return NULL;
 	}
 
 	LA_NEW(la_ohma_msg, msg);
+	msg->err = LA_OHMA_SUCCESS;
 	la_proto_node *node = la_proto_node_new();
 	node->td = &la_DEF_ohma_msg;
 	node->data = msg;
@@ -62,17 +67,94 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 	}
 	// Skip CMF & FLG octets. zlib's inflate() function doesn't want them.
 	la_inflate_result inflated = la_inflate(b64_decoded_msg->buf + 2, b64_decoded_msg->len - 2);
-	msg->payload = la_octet_string_new(inflated.buf, inflated.buflen);
 
 	if(inflated.success == false) {
 	    la_debug_print(D_ERROR, "ZLIB decompressor failed\n");
 	    msg->err = LA_OHMA_FAIL_DECOMPRESSION_FAILED;
+	    LA_XFREE(inflated.buf);
 	    goto end;
 	}
-	// If it's text, it needs a NULL terminator.
-	// If it's not text, it doesn't hurt either. The buffer is larger than len anyway.
-	inflated.buf[inflated.buflen] = '\0';
+#ifdef WITH_JANSSON
+	json_error_t err;
+	json_t *root = json_loadb((char const *)inflated.buf, inflated.buflen, 0, &err);
+	if(!root) {
+		la_debug_print(D_ERROR, "Failed to decode outer JSON string at position %d: %s\n",
+				err.position, err.text);
+		goto json_fail;
+	}
+	if(!json_is_object(root)) {
+		la_debug_print(D_ERROR, "JSON root is not an object\n");
+		json_decref(root);
+		goto json_fail;
+	}
 
+	char *version = NULL, *convo_id = NULL, *message = NULL;
+	int32_t msg_seq = 0, msg_total = 0;
+	if(json_unpack_ex(root, &err, 0LU, "{s:s, s?:s, s:s, s?:i, s?:i}",
+				"version", &version, "convo_id", &convo_id, "message", &message,
+				"msg_seq", &msg_seq, "msg_total", &msg_total) < 0) {
+		la_debug_print(D_INFO, "json_unpack_ex failed: %s\n", err.text);
+		msg->err = LA_OHMA_JSON_BAD_STRUCTURE;
+		json_decref(root);
+		// FIXME: don't fail, just pretty-print the JSON
+		goto json_fail;
+	}
+	msg->version = strdup(version);
+	if(convo_id) {
+		msg->convo_id = strdup(convo_id);
+	}
+	msg->msg_seq = msg_seq;
+	if(msg_seq > 0) {
+		// The message is fragmented. convo_id is required.
+		if(convo_id == NULL) {
+			la_debug_print(D_INFO, "JSON: msg_seq set, but convo_id missing\n");
+			json_decref(root);
+			goto json_fail;
+		}
+		// If this is the first fragment, then we also need msg_total.
+		if(msg_seq == 1) {
+			if(msg_total == 0) {
+				la_debug_print(D_INFO, "JSON: msg_seq is 1, but msg_total is not present\n");
+				json_decref(root);
+				goto json_fail;
+			}
+		}
+		// TODO: actually reassemble the message.
+	} else {
+		msg->reasm_status = LA_REASM_SKIPPED;
+	}
+
+	// Try to decode "message" field as JSON and pretty-print it if successful.
+	// Otherwise just print it as is.
+	if(msg->reasm_status == LA_REASM_SKIPPED) {
+		json_t *inner_msg_root = json_loads(message, 0, &err);
+		if(inner_msg_root) {
+			char *pretty = json_dumps(inner_msg_root, JSON_INDENT(1) | JSON_REAL_PRECISION(6));
+			if(pretty != NULL) {
+				msg->payload = la_octet_string_new(pretty, strlen(pretty));
+			} else {
+				la_debug_print(D_INFO, "json_dumps() did not return any result\n");
+				msg->payload = la_octet_string_new(strdup(message), strlen(message));
+			}
+			json_decref(inner_msg_root);
+		} else {
+			la_debug_print(D_ERROR, "Failed to decode inner JSON string at position %d: %s\n",
+					err.position, err.text);
+			msg->payload = la_octet_string_new(strdup(message), strlen(message));
+		}
+	}
+
+	LA_XFREE(inflated.buf);
+	json_decref(root);
+	goto end;
+#endif   // WITH_JANSSON
+json_fail:
+    // Failed to decode JSON string - either due to decoding error or
+    // Jansson support disabled during build - just NULL-terminate
+    // the unprocessed buffer and attach it as payload for printing.
+	msg->err = LA_OHMA_JSON_DECODE_FAILED;
+	inflated.buf[inflated.buflen] = '\0';
+	msg->payload = la_octet_string_new(inflated.buf, inflated.buflen);
 end:
 	la_octet_string_destroy(b64_decoded_msg);
 	return node;
@@ -92,6 +174,8 @@ static void la_ohma_msg_destroy(void *data) {
 	}
 	la_ohma_msg *msg = data;
 	la_octet_string_destroy(msg->payload);
+	LA_XFREE(msg->version);
+	LA_XFREE(msg->convo_id);
 	LA_XFREE(msg);
 }
 
@@ -106,12 +190,25 @@ void la_ohma_format_text(la_vstring *vstr, void const *data, int indent) {
 		return;
 	}
 	LA_ISPRINTF(vstr, indent, "OHMA message:\n");
-	if(is_printable(msg->payload->buf, msg->payload->len)) {
-		la_isprintf_multiline_text(vstr, indent + 1, (char *)msg->payload->buf);
-	} else {
-		char *hexdump = la_hexdump((uint8_t *)msg->payload->buf, msg->payload->len);
-		la_isprintf_multiline_text(vstr, indent + 1, hexdump);
-		LA_XFREE(hexdump);
+	indent++;
+	LA_ISPRINTF(vstr, indent, "Version: %s\n", msg->version ? msg->version : "<unknown>");
+	if(msg->convo_id) {
+		LA_ISPRINTF(vstr, indent, "Msg ID: %s\n", msg->convo_id);
+	}
+	if(msg->msg_seq > 0) {      // Print this only for multipart messages
+		LA_ISPRINTF(vstr, indent, "Msg seq: %d\n", msg->msg_seq);
+	}
+	LA_ISPRINTF(vstr, indent, "Reassembly: %s\n", la_reasm_status_name_get(msg->reasm_status));
+	if(msg->payload != NULL) {
+		if(is_printable(msg->payload->buf, msg->payload->len)) {
+			LA_ISPRINTF(vstr, indent, "Message:\n");
+			la_isprintf_multiline_text(vstr, indent + 1, (char *)msg->payload->buf);
+		} else {
+			LA_ISPRINTF(vstr, indent, "Data (%zu bytes):\n", msg->payload->len);
+			char *hexdump = la_hexdump(msg->payload->buf, msg->payload->len);
+			la_isprintf_multiline_text(vstr, indent + 1, hexdump);
+			LA_XFREE(hexdump);
+		}
 	}
 }
 

@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <libacars/libacars.h>          // la_type_descriptor, la_proto_node
 #include <libacars/util.h>              // la_octet_string
-#include <libacars/reassembly.h>        // la_reasm_ctx
+#include <libacars/reassembly.h>        // la_reasm_ctx, la_reasm_status
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,12 +21,18 @@ typedef enum {
 	LA_OHMA_FAIL_MSG_TOO_SHORT        = 1,
 	LA_OHMA_FAIL_UNKNOWN_COMPRESSION  = 2,
 	LA_OHMA_FAIL_DECOMPRESSION_FAILED = 3,
+	LA_OHMA_JSON_DECODE_FAILED        = 4,
+	LA_OHMA_JSON_BAD_STRUCTURE        = 5
 } la_ohma_decoding_error_code;
-#define LA_OHMA_DECODING_ERROR_MAX 1
+#define LA_OHMA_DECODING_ERROR_MAX 5
 
 typedef struct {
-	la_ohma_decoding_error_code err;     // message decoding error code
-	la_octet_string *payload;           // message payload
+	char *version;                      // OHMA version
+	char *convo_id;                     // unique message identifier (reassembly key)
+	la_octet_string *payload;           // pretty-printed JSON string or undecoded payload (in case of failure)
+	int32_t msg_seq;                    // sequence number (used with multipart messages)
+	la_ohma_decoding_error_code err;    // message decoding error code
+	la_reasm_status reasm_status;       // OHMA reassembly status
 	// reserved for future use
 	void (*reserved0)(void);
 	void (*reserved1)(void);
