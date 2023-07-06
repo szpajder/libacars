@@ -15,6 +15,7 @@
 #include <libacars/libacars.h>      // la_proto_node, la_type_descriptor
 #include <libacars/reassembly.h>
 #include <libacars/util.h>          // la_base64_decode
+#include <libacars/dict.h>          // la_dict, la_dict_search
 #include <libacars/macros.h>        // la_debug_print()
 #include <libacars/ohma.h>          // la_ohma_msg
 
@@ -132,7 +133,7 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 
 	la_octet_string *b64_decoded_msg = la_base64_decode(txt, len);
 	if(b64_decoded_msg == NULL) {
-		la_debug_print(D_INFO, "Failed to decode message as BASE64\n");
+		la_debug_print(D_INFO, "Not an OHMA message (Failed to decode as BASE64)\n");
 		// Fail silently without producing a node, since it's probably not an OHMA message
 		return NULL;
 	}
@@ -174,15 +175,17 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 	if(!root) {
 		la_debug_print(D_ERROR, "Failed to decode outer JSON string at position %d: %s\n",
 				err.position, err.text);
+		msg->err = LA_OHMA_JSON_DECODE_FAILED;
 		goto json_fail;
 	}
 	if(!json_is_object(root)) {
 		la_debug_print(D_ERROR, "JSON root is not an object\n");
+		msg->err = LA_OHMA_JSON_BAD_STRUCTURE;
 		json_decref(root);
 		goto json_fail;
 	}
 
-	char *version = NULL, *convo_id = NULL, *message = NULL;
+	char *version = NULL, *convo_id = NULL, *message = NULL, *pretty = NULL;
 	int32_t msg_seq = 0, msg_total = 0;
 	if(json_unpack_ex(root, &err, 0LU, "{s:s, s?:s, s:s, s?:i, s?:i}",
 				"version", &version, "convo_id", &convo_id, "message", &message,
@@ -190,7 +193,6 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 		la_debug_print(D_INFO, "json_unpack_ex failed: %s\n", err.text);
 		msg->err = LA_OHMA_JSON_BAD_STRUCTURE;
 		json_decref(root);
-		// FIXME: don't fail, just pretty-print the JSON
 		goto json_fail;
 	}
 	msg->version = strdup(version);
@@ -203,16 +205,16 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 		// The message is fragmented. convo_id is required.
 		if(convo_id == NULL) {
 			la_debug_print(D_INFO, "JSON: msg_seq set, but convo_id missing\n");
+			msg->err = LA_OHMA_JSON_BAD_STRUCTURE;
 			json_decref(root);
 			goto json_fail;
 		}
 		// If this is the first fragment, then we also need msg_total.
-		if(msg_seq == 1) {
-			if(msg_total == 0) {
-				la_debug_print(D_INFO, "JSON: msg_seq is 1, but msg_total is not present\n");
-				json_decref(root);
-				goto json_fail;
-			}
+		if(msg_seq == 1 && msg_total == 0) {
+			la_debug_print(D_INFO, "JSON: msg_seq is 1, but msg_total is not present\n");
+			msg->err = LA_OHMA_JSON_BAD_STRUCTURE;
+			json_decref(root);
+			goto json_fail;
 		}
 
 		la_reasm_table *ohma_rtable = NULL;
@@ -244,7 +246,7 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 		msg->reasm_status = LA_REASM_SKIPPED;
 	}
 
-	char *pretty = NULL;
+
 	if(msg->reasm_status == LA_REASM_SKIPPED) {
 		pretty = la_json_pretty_print(message);
 	} else if(reassembled_message != NULL) {
@@ -277,7 +279,6 @@ json_fail:
     // Failed to decode JSON string - either due to decoding error or
     // Jansson support disabled during build - just NULL-terminate
     // the unprocessed buffer and attach it as payload for printing.
-	msg->err = LA_OHMA_JSON_DECODE_FAILED;
 	inflated.buf[inflated.buflen] = '\0';
 	msg->payload = la_octet_string_new(inflated.buf, inflated.buflen);
 end:
@@ -305,25 +306,35 @@ static void la_ohma_msg_destroy(void *data) {
 }
 
 void la_ohma_format_text(la_vstring *vstr, void const *data, int indent) {
+	static la_dict const la_ohma_decoding_error_descriptions[] = {
+		{ .id = LA_OHMA_SUCCESS, .val = "Success" },
+		{ .id = LA_OHMA_FAIL_MSG_TOO_SHORT, .val = "Message too short" },
+		{ .id = LA_OHMA_FAIL_UNKNOWN_COMPRESSION, .val = "Unknown compression algorithm" },
+		{ .id = LA_OHMA_FAIL_DECOMPRESSION_FAILED, .val = "Decompression failed" },
+		{ .id = LA_OHMA_JSON_DECODE_FAILED, .val = "Failed to decode message as JSON" },
+		{ .id = LA_OHMA_JSON_BAD_STRUCTURE, .val = "Unexpected JSON structure" }
+	};
 	la_assert(vstr != NULL);
 	la_assert(data != NULL);
 	la_assert(indent >= 0);
 
 	la_ohma_msg const *msg = data;
-	if(msg->err != LA_OHMA_SUCCESS) {
-		LA_ISPRINTF(vstr, indent, "-- Unparseable OHMA message\n");
-		return;
-	}
 	LA_ISPRINTF(vstr, indent, "OHMA message:\n");
 	indent++;
-	LA_ISPRINTF(vstr, indent, "Version: %s\n", msg->version ? msg->version : "<unknown>");
-	if(msg->convo_id) {
-		LA_ISPRINTF(vstr, indent, "Msg ID: %s\n", msg->convo_id);
+	if(msg->err != LA_OHMA_SUCCESS) {
+		char const *err_string = la_dict_search(la_ohma_decoding_error_descriptions, msg->err);
+		la_assert(err_string);
+		LA_ISPRINTF(vstr, indent, "-- %s\n", err_string);
+	} else {
+		LA_ISPRINTF(vstr, indent, "Version: %s\n", msg->version ? msg->version : "<unknown>");
+		if(msg->convo_id) {
+			LA_ISPRINTF(vstr, indent, "Msg ID: %s\n", msg->convo_id);
+		}
+		if(msg->msg_seq > 0) {      // Print this only for multipart messages
+			LA_ISPRINTF(vstr, indent, "Msg seq: %d\n", msg->msg_seq);
+		}
+		LA_ISPRINTF(vstr, indent, "Reassembly: %s\n", la_reasm_status_name_get(msg->reasm_status));
 	}
-	if(msg->msg_seq > 0) {      // Print this only for multipart messages
-		LA_ISPRINTF(vstr, indent, "Msg seq: %d\n", msg->msg_seq);
-	}
-	LA_ISPRINTF(vstr, indent, "Reassembly: %s\n", la_reasm_status_name_get(msg->reasm_status));
 	if(msg->payload != NULL) {
 		if(is_printable(msg->payload->buf, msg->payload->len)) {
 			LA_ISPRINTF(vstr, indent, "Message:\n");
