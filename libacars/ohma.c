@@ -18,6 +18,99 @@
 #include <libacars/macros.h>        // la_debug_print()
 #include <libacars/ohma.h>          // la_ohma_msg
 
+/********************************************************************************
+ * OHMA reassembly constants and callbacks
+ ********************************************************************************/
+
+// Clean up stale reassembly entries every 20 OHMA messages.
+#define LA_OHMA_REASM_TABLE_CLEANUP_INTERVAL 20
+
+// OHMA reassembly timeout
+static struct timeval const la_ohma_reasm_timeout = {
+	.tv_sec = 60,
+	.tv_usec = 0
+};
+
+typedef struct {
+	char *reg, *convo_id;
+} la_ohma_key;
+
+static uint32_t la_ohma_key_hash(void const *key) {
+	la_ohma_key const *k = key;
+	uint32_t h = la_hash_string(k->reg, LA_HASH_INIT);
+	h = la_hash_string(k->convo_id, h);
+	return h;
+}
+
+static bool la_ohma_key_compare(void const *key1, void const *key2) {
+	la_ohma_key const *k1 = key1;
+	la_ohma_key const *k2 = key2;
+	return (!strcmp(k1->reg, k2->reg) &&
+			!strcmp(k1->convo_id, k2->convo_id));
+}
+
+static void la_ohma_key_destroy(void *ptr) {
+	if(ptr == NULL) {
+		return;
+	}
+	la_ohma_key *key = ptr;
+	la_debug_print(D_INFO, "DESTROY KEY %s %s\n", key->reg, key->convo_id);
+	LA_XFREE(key->reg);
+	LA_XFREE(key->convo_id);
+	LA_XFREE(key);
+}
+
+static void *la_ohma_key_get(void const *msg) {
+	la_assert(msg != NULL);
+	la_ohma_msg const *amsg = msg;
+	LA_NEW(la_ohma_key, key);
+	key->reg = strdup(amsg->reg);
+	key->convo_id = strdup(amsg->convo_id);
+	la_debug_print(D_INFO, "ALLOC KEY %s %s\n", key->reg, key->convo_id);
+	return (void *)key;
+}
+
+static void *la_ohma_tmp_key_get(void const *msg) {
+	la_assert(msg != NULL);
+	la_ohma_msg const *amsg = msg;
+	LA_NEW(la_ohma_key, key);
+	key->reg = (char *)amsg->reg;
+	key->convo_id = (char *)amsg->convo_id;
+	return (void *)key;
+}
+
+static la_reasm_table_funcs ohma_reasm_funcs = {
+	.get_key = la_ohma_key_get,
+	.get_tmp_key = la_ohma_tmp_key_get,
+	.hash_key = la_ohma_key_hash,
+	.compare_keys = la_ohma_key_compare,
+	.destroy_key = la_ohma_key_destroy
+};
+
+/********************************************************************************
+ * OHMA parsing and formatting functions
+ ********************************************************************************/
+
+#ifdef WITH_JANSSON
+static char *la_json_pretty_print(char const *json_string) {
+	la_assert(json_string);
+	json_error_t err;
+	char *result = NULL;
+	json_t *root = json_loads(json_string, 0, &err);
+	if(root) {
+		result = json_dumps(root, JSON_INDENT(1) | JSON_REAL_PRECISION(6));
+		if(result == NULL) {
+			la_debug_print(D_INFO, "json_dumps() did not return any result\n");
+		}
+	} else {
+		la_debug_print(D_ERROR, "Failed to decode JSON string at position %d: %s\n",
+				err.position, err.text);
+	}
+	json_decref(root);
+	return result;
+}
+#endif // WITH_JANSSON
+
 la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 		la_reasm_ctx *rtables, struct timeval rx_time) {
 #ifdef WITH_ZLIB
@@ -46,6 +139,7 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 
 	LA_NEW(la_ohma_msg, msg);
 	msg->err = LA_OHMA_SUCCESS;
+	msg->reg = reg;
 	la_proto_node *node = la_proto_node_new();
 	node->td = &la_DEF_ohma_msg;
 	node->data = msg;
@@ -103,8 +197,9 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 	if(convo_id) {
 		msg->convo_id = strdup(convo_id);
 	}
-	msg->msg_seq = msg_seq;
+	uint8_t *reassembled_message = NULL;
 	if(msg_seq > 0) {
+		msg->msg_seq = msg_seq;
 		// The message is fragmented. convo_id is required.
 		if(convo_id == NULL) {
 			la_debug_print(D_INFO, "JSON: msg_seq set, but convo_id missing\n");
@@ -119,27 +214,57 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 				goto json_fail;
 			}
 		}
-		// TODO: actually reassemble the message.
+
+		la_reasm_table *ohma_rtable = NULL;
+		if(rtables != NULL) {       // reassembly engine is enabled
+			ohma_rtable = la_reasm_table_lookup(rtables, &la_DEF_ohma_msg);
+			if(ohma_rtable == NULL) {
+				ohma_rtable = la_reasm_table_new(rtables, &la_DEF_ohma_msg,
+						ohma_reasm_funcs, LA_OHMA_REASM_TABLE_CLEANUP_INTERVAL);
+			}
+			msg->reasm_status = la_reasm_fragment_add(ohma_rtable,
+					&(la_reasm_fragment_info){
+					.msg_info = msg,
+					.msg_data = (uint8_t *)message,
+					.msg_data_len = strlen(message),
+					.total_pdu_len = 0,        // not used here
+					.rx_time = rx_time,
+					.reasm_timeout = la_ohma_reasm_timeout,
+					.seq_num = msg->msg_seq,
+					.seq_num_first = 1,
+					.seq_num_wrap = SEQ_WRAP_NONE,
+					.is_final_fragment = false,
+					.total_fragment_cnt = msg_total
+					});
+			if(msg->reasm_status == LA_REASM_COMPLETE) {
+				la_reasm_payload_get(ohma_rtable, msg, &reassembled_message);
+			}
+		}
 	} else {
 		msg->reasm_status = LA_REASM_SKIPPED;
 	}
 
-	// Try to decode "message" field as JSON and pretty-print it if successful.
-	// Otherwise just print it as is.
+	char *pretty = NULL;
 	if(msg->reasm_status == LA_REASM_SKIPPED) {
-		json_t *inner_msg_root = json_loads(message, 0, &err);
-		if(inner_msg_root) {
-			char *pretty = json_dumps(inner_msg_root, JSON_INDENT(1) | JSON_REAL_PRECISION(6));
-			if(pretty != NULL) {
-				msg->payload = la_octet_string_new(pretty, strlen(pretty));
-			} else {
-				la_debug_print(D_INFO, "json_dumps() did not return any result\n");
-				msg->payload = la_octet_string_new(strdup(message), strlen(message));
-			}
-			json_decref(inner_msg_root);
+		pretty = la_json_pretty_print(message);
+	} else if(reassembled_message != NULL) {
+		// reassembled_message is a newly allocated byte buffer, which is
+		// guaranteed to be NULL-terminated, so we can cast it to char *
+		// directly.
+		pretty = la_json_pretty_print((char *)reassembled_message);
+	}
+	// If JSON pretty printer has failed, use the unformatted message as the
+	// decoding result. However, reassembled_message is a newly allocated
+	// buffer, while message is a temporary pointer, so we have to fiddle a bit
+	// to resolve this unfortunate discrepancy.
+	if(pretty != NULL) {
+		msg->payload = la_octet_string_new(pretty, strlen(pretty));
+		LA_XFREE(reassembled_message);      // NOOP, if it's NULL
+	} else {
+		if(reassembled_message != NULL) {
+			msg->payload = la_octet_string_new(reassembled_message,
+					strlen((char *)reassembled_message));
 		} else {
-			la_debug_print(D_ERROR, "Failed to decode inner JSON string at position %d: %s\n",
-					err.position, err.text);
 			msg->payload = la_octet_string_new(strdup(message), strlen(message));
 		}
 	}

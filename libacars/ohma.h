@@ -28,7 +28,8 @@ typedef enum {
 
 typedef struct {
 	char *version;                      // OHMA version
-	char *convo_id;                     // unique message identifier (reassembly key)
+	char const *reg;                    // regnr of the sender (used in reassembly key)
+	char *convo_id;                     // unique message identifier (used in reassembly key)
 	la_octet_string *payload;           // pretty-printed JSON string or undecoded payload (in case of failure)
 	int32_t msg_seq;                    // sequence number (used with multipart messages)
 	la_ohma_decoding_error_code err;    // message decoding error code
