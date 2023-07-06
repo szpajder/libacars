@@ -42,6 +42,11 @@ typedef struct {
 	int total_pdu_len;                  /* total length of the reassembled message
 	                                       (copied from la_reasm_fragment_info of the 1st fragment) */
 
+	int frags_collected_cnt;            /* number of already collected fragments */
+
+	int total_fragment_cnt;             /* expected total number of fragments
+	                                       (copied from la_reasm_fragment_info of the 1st fragment) */
+
 	struct timeval first_frag_rx_time;  /* time of arrival of the first fragment */
 
 	struct timeval reasm_timeout;       /* reassembly timeout to be applied to this message */
@@ -221,8 +226,13 @@ restart:
 		rt_entry->prev_seq_num = SEQ_UNINITIALIZED;
 		rt_entry->first_frag_rx_time = finfo->rx_time;
 		rt_entry->reasm_timeout = finfo->reasm_timeout;
-		rt_entry->total_pdu_len = LA_MAX(finfo->total_pdu_len, 0);
+		if(finfo->total_pdu_len > 0) {
+			rt_entry->total_pdu_len = finfo->total_pdu_len;
+		} else if(finfo->total_fragment_cnt > 0) {
+			rt_entry->total_fragment_cnt = finfo->total_fragment_cnt;
+		}
 		rt_entry->frags_collected_total_len = 0;
+		rt_entry->frags_collected_cnt = 0;
 		la_debug_print(D_INFO, "Adding new rt_table entry (rx_time: %lu.%lu timeout: %lu.%lu)\n",
 				rt_entry->first_frag_rx_time.tv_sec, rt_entry->first_frag_rx_time.tv_usec,
 				rt_entry->reasm_timeout.tv_sec, rt_entry->reasm_timeout.tv_usec);
@@ -294,20 +304,27 @@ restart:
 		rt_entry->fragment_list = la_list_append(rt_entry->fragment_list, ostring);
 	}
 	rt_entry->frags_collected_total_len += finfo->msg_data_len;
+	rt_entry->frags_collected_cnt++;
 	rt_entry->prev_seq_num = finfo->seq_num;
 
 	// If we've come to this point successfully, then reassembly is complete if:
 	//
 	// - total_pdu_len for this rt_entry is set and we've already collected
 	//   required amount of data, or
+	//   
+	// - total_pdu_len for this rt_entry is unset and total_fragment_cnt is set
+	//   and we've already collected the required number of fragments, or
 	//
-	// - total_pdu_len for this rt_entry is not known and the caller indicates
-	//   that this is the final fragment of this message.
+	// - both total_pdu_len and total_fragment_cnt for this rt_entry are unset
+	//   and the caller indicates that this is the final fragment of this message.
 	//
 	// Otherwise we expect more fragments to come.
 
 	if(rt_entry->total_pdu_len > 0) {
 		ret = rt_entry->frags_collected_total_len >= rt_entry->total_pdu_len ?
+			LA_REASM_COMPLETE : LA_REASM_IN_PROGRESS;
+	} else if(rt_entry->total_fragment_cnt > 0) {
+		ret = rt_entry->frags_collected_cnt >= rt_entry->total_fragment_cnt ?
 			LA_REASM_COMPLETE : LA_REASM_IN_PROGRESS;
 	} else {
 		ret = finfo->is_final_fragment ? LA_REASM_COMPLETE : LA_REASM_IN_PROGRESS;

@@ -64,8 +64,10 @@ typedef struct {
 
 	bool is_final_fragment;         /* is this the final fragment of this message? */
 
+	int total_fragment_cnt;         /* Total number of fragments. If > 0, then reassembly
+	                                   is completed when the number of collected fragments
+	                                   reaches this value. */
 // reserved for future use
-	void (*reserved0)(void);
 	void (*reserved1)(void);
 	void (*reserved2)(void);
 	void (*reserved3)(void);
