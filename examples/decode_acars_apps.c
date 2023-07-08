@@ -80,6 +80,7 @@ int main(int argc, char **argv) {
 		json = true;
 	}
 	la_config_set_bool("prettify_xml", true);
+	la_config_set_bool("prettify_json", true);
 	if(argc > 1 && !strcmp(argv[1], "-h")) {
 		usage();
 		exit(0);

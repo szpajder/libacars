@@ -27,5 +27,9 @@
 
 // Pretty-print XML in ACARS and MIAM Core payloads?
 
-	LA_CONFIG_SETTING_BOOLEAN("prettify_xml", false)
+	LA_CONFIG_SETTING_BOOLEAN("prettify_xml", false),
+
+// Pretty-print JSON?
+
+	LA_CONFIG_SETTING_BOOLEAN("prettify_json", false)
 };

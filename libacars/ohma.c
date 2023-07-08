@@ -95,6 +95,13 @@ static la_reasm_table_funcs ohma_reasm_funcs = {
 #ifdef WITH_JANSSON
 static char *la_json_pretty_print(char const *json_string) {
 	la_assert(json_string);
+
+	bool prettify_json = false;
+	(void)la_config_get_bool("prettify_json", &prettify_json);
+	if(prettify_json == false) {
+		return NULL;
+	}
+
 	json_error_t err;
 	char *result = NULL;
 	json_t *root = json_loads(json_string, 0, &err);
@@ -255,10 +262,11 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 		// directly.
 		pretty = la_json_pretty_print((char *)reassembled_message);
 	}
-	// If JSON pretty printer has failed, use the unformatted message as the
-	// decoding result. However, reassembled_message is a newly allocated
-	// buffer, while message is a temporary pointer, so we have to fiddle a bit
-	// to resolve this unfortunate discrepancy.
+	// If JSON pretty printer returned NULL (either due to a failure or
+	// pretty-printing being disabled in the configuration), use the
+	// unformatted message as the decoding result. However, reassembled_message
+	// is a newly allocated buffer, while message is a temporary pointer, so we
+	// have to fiddle a bit to resolve this unfortunate discrepancy.
 	if(pretty != NULL) {
 		msg->payload = la_octet_string_new(pretty, strlen(pretty));
 		LA_XFREE(reassembled_message);      // NOOP, if it's NULL
