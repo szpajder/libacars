@@ -149,3 +149,15 @@ ACARS_2.1 {
   local:
     *;
 } ACARS_2.0;
+
+ACARS_2.2 {
+  global:
+    la_ohma_decoding_error_code;
+    la_ohma_msg;
+    la_ohma_parse_and_reassemble;
+    la_ohma_format_text;
+    la_ohma_format_json;
+    la_proto_tree_find_ohma;
+  local:
+    *;
+} ACARS_2.1;
