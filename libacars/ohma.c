@@ -192,7 +192,7 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 		goto json_fail;
 	}
 
-	char *version = NULL, *convo_id = NULL, *message = NULL, *pretty = NULL;
+	char *version = NULL, *convo_id = NULL, *message = NULL;
 	int32_t msg_seq = 0, msg_total = 0;
 	if(json_unpack_ex(root, &err, 0LU, "{s:s, s?:s, s:s, s?:i, s?:i}",
 				"version", &version, "convo_id", &convo_id, "message", &message,
@@ -253,30 +253,11 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 		msg->reasm_status = LA_REASM_SKIPPED;
 	}
 
-
-	if(msg->reasm_status == LA_REASM_SKIPPED) {
-		pretty = la_json_pretty_print(message);
-	} else if(reassembled_message != NULL) {
-		// reassembled_message is a newly allocated byte buffer, which is
-		// guaranteed to be NULL-terminated, so we can cast it to char *
-		// directly.
-		pretty = la_json_pretty_print((char *)reassembled_message);
-	}
-	// If JSON pretty printer returned NULL (either due to a failure or
-	// pretty-printing being disabled in the configuration), use the
-	// unformatted message as the decoding result. However, reassembled_message
-	// is a newly allocated buffer, while message is a temporary pointer, so we
-	// have to fiddle a bit to resolve this unfortunate discrepancy.
-	if(pretty != NULL) {
-		msg->payload = la_octet_string_new(pretty, strlen(pretty));
-		LA_XFREE(reassembled_message);      // NOOP, if it's NULL
+	if(reassembled_message != NULL) {
+		msg->payload = la_octet_string_new(reassembled_message,
+				strlen((char *)reassembled_message));
 	} else {
-		if(reassembled_message != NULL) {
-			msg->payload = la_octet_string_new(reassembled_message,
-					strlen((char *)reassembled_message));
-		} else {
-			msg->payload = la_octet_string_new(strdup(message), strlen(message));
-		}
+		msg->payload = la_octet_string_new(strdup(message), strlen(message));
 	}
 
 	LA_XFREE(inflated.buf);
@@ -345,8 +326,19 @@ void la_ohma_format_text(la_vstring *vstr, void const *data, int indent) {
 	}
 	if(msg->payload != NULL) {
 		if(is_printable(msg->payload->buf, msg->payload->len)) {
-			LA_ISPRINTF(vstr, indent, "Message:\n");
-			la_isprintf_multiline_text(vstr, indent + 1, (char *)msg->payload->buf);
+			// msg->payload is guaranteed to be NULL-terminated, so a cast to char * is safe.
+			char *pretty = la_json_pretty_print((char *)msg->payload->buf);
+			if(pretty != NULL) {
+				LA_ISPRINTF(vstr, indent, "Message (reformatted):\n");
+				la_isprintf_multiline_text(vstr, indent + 1, pretty);
+				LA_XFREE(pretty);
+			} else {
+				// Result might be NULL either due to pretty-printing being
+				// disabled in the config or the payload not being JSON.
+				// In either case, print the message without reformatting.
+				LA_ISPRINTF(vstr, indent, "Message:\n");
+				la_isprintf_multiline_text(vstr, indent + 1, (char *)msg->payload->buf);
+			}
 		} else {
 			LA_ISPRINTF(vstr, indent, "Data (%zu bytes):\n", msg->payload->len);
 			char *hexdump = la_hexdump(msg->payload->buf, msg->payload->len);
