@@ -327,7 +327,9 @@ void la_ohma_format_text(la_vstring *vstr, void const *data, int indent) {
 }
 
 void la_ohma_format_json(la_vstring *vstr, void const *data);
-la_proto_node *la_proto_tree_find_ohma(la_proto_node *root);
+la_proto_node *la_proto_tree_find_ohma(la_proto_node *root) {
+	return la_proto_tree_find_protocol(root, &la_DEF_ohma_msg);
+}
 
 la_type_descriptor const la_DEF_ohma_msg = {
 	.format_text = la_ohma_format_text,
