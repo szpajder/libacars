@@ -439,7 +439,8 @@ la_proto_node *la_acars_parse_and_reassemble(uint8_t const* buf, int len, la_msg
 				.msg_info = msg,
 				.msg_data = (uint8_t *)ptr,
 				.msg_data_len = remaining,
-				.total_pdu_len = 0,        // not used here
+				.total_pdu_len = 0,         // not used here
+				.total_fragment_cnt = 0,    // not used here
 				.seq_num = down ? msg->msg_num_seq - 'A' : msg->block_id - 'A',
 				.seq_num_first = down ? 0 : SEQ_FIRST_NONE,
 				.seq_num_wrap = down ? SEQ_WRAP_NONE : 'X' - 'A',

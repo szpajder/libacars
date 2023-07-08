@@ -195,6 +195,7 @@ static la_proto_node *la_miam_file_transfer_request_parse(char const *reg, char 
 					.msg_data = NULL,       // payload will start in the next segment
 					.msg_data_len = 0,
 					.total_pdu_len = msg->file_size,
+					.total_fragment_cnt = 0, // not used here
 					.seq_num = 0,           // in sequence with file segment numbers, which go from 1
 					.seq_num_first = 0,
 					.seq_num_wrap = SEQ_WRAP_NONE,
@@ -309,6 +310,7 @@ static la_proto_node *la_miam_file_segment_parse(char const *reg, char const *tx
 					.msg_data = (uint8_t *)txt,
 					.msg_data_len = strlen(txt),
 					.total_pdu_len = 0,         // already set in 1st fragment
+					.total_fragment_cnt = 0,    // not used here
 					.seq_num = msg->segment_id,
 					.seq_num_first = 0,
 					.seq_num_wrap = SEQ_WRAP_NONE,
