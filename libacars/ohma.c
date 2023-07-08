@@ -17,6 +17,7 @@
 #include <libacars/util.h>          // la_base64_decode, la_json_pretty_print
 #include <libacars/dict.h>          // la_dict, la_dict_search
 #include <libacars/macros.h>        // la_debug_print()
+#include <libacars/json.h>          // ja_json_*
 #include <libacars/ohma.h>          // la_ohma_msg
 
 /********************************************************************************
@@ -326,14 +327,41 @@ void la_ohma_format_text(la_vstring *vstr, void const *data, int indent) {
 	}
 }
 
-void la_ohma_format_json(la_vstring *vstr, void const *data);
+void la_ohma_format_json(la_vstring *vstr, void const *data) {
+	la_assert(vstr);
+	la_assert(data);
+
+	la_ohma_msg const *msg = data;
+	la_json_append_int64(vstr, "err", msg->err);
+	if(msg->err == LA_OHMA_SUCCESS) {
+		if(msg->version) {
+			la_json_append_string(vstr, "version", msg->version);
+		}
+		if(msg->convo_id) {
+			la_json_append_string(vstr, "msg_id", msg->convo_id);
+		}
+		if(msg->msg_seq > 0) {
+			la_json_append_int64(vstr, "msg_seq", msg->msg_seq);
+		}
+		la_json_append_string(vstr, "reasm_status", la_reasm_status_name_get(msg->reasm_status));
+		if(msg->payload != NULL) {
+			if(is_printable(msg->payload->buf, msg->payload->len)) {
+				la_json_append_string(vstr, "text", (char *)msg->payload->buf);
+			} else {
+				la_json_append_octet_string(vstr, "octet_string",
+						msg->payload->buf, msg->payload->len);
+			}
+		}
+	}
+}
+
 la_proto_node *la_proto_tree_find_ohma(la_proto_node *root) {
 	return la_proto_tree_find_protocol(root, &la_DEF_ohma_msg);
 }
 
 la_type_descriptor const la_DEF_ohma_msg = {
 	.format_text = la_ohma_format_text,
-	.format_json = NULL,
-	.json_key = NULL,
+	.format_json = la_ohma_format_json,
+	.json_key = "ohma",
 	.destroy = &la_ohma_msg_destroy
 };
