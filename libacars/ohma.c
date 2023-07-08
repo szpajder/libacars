@@ -23,6 +23,7 @@
  * OHMA reassembly constants and callbacks
  ********************************************************************************/
 
+#ifdef WITH_JANSSON
 // Clean up stale reassembly entries every 20 OHMA messages.
 #define LA_OHMA_REASM_TABLE_CLEANUP_INTERVAL 20
 
@@ -87,6 +88,7 @@ static la_reasm_table_funcs ohma_reasm_funcs = {
 	.compare_keys = la_ohma_key_compare,
 	.destroy_key = la_ohma_key_destroy
 };
+#endif  // WITH_JANSSON
 
 /********************************************************************************
  * OHMA parsing and formatting functions
@@ -236,8 +238,11 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 	LA_XFREE(inflated.buf);
 	json_decref(root);
 	goto end;
-#endif   // WITH_JANSSON
 json_fail:
+#else   // !WITH_JANSSON
+	LA_UNUSED(rtables);
+	LA_UNUSED(rx_time);
+#endif   // WITH_JANSSON
     // Failed to decode JSON string - either due to decoding error or
     // Jansson support disabled during build - just NULL-terminate
     // the unprocessed buffer and attach it as payload for printing.
@@ -250,8 +255,6 @@ end:
 #else   // !WITH_ZLIB
 	LA_UNUSED(reg);
 	LA_UNUSED(txt);
-	LA_UNUSED(rtables);
-	LA_UNUSED(tx_time);
 	return NULL;
 #endif  // WITH_ZLIB
 }
@@ -288,7 +291,9 @@ void la_ohma_format_text(la_vstring *vstr, void const *data, int indent) {
 		la_assert(err_string);
 		LA_ISPRINTF(vstr, indent, "-- %s\n", err_string);
 	} else {
-		LA_ISPRINTF(vstr, indent, "Version: %s\n", msg->version ? msg->version : "<unknown>");
+		if(msg->version) {
+			LA_ISPRINTF(vstr, indent, "Version: %s\n", msg->version);
+		}
 		if(msg->convo_id) {
 			LA_ISPRINTF(vstr, indent, "Msg ID: %s\n", msg->convo_id);
 		}
