@@ -14,7 +14,7 @@
 #endif
 #include <libacars/libacars.h>      // la_proto_node, la_type_descriptor
 #include <libacars/reassembly.h>
-#include <libacars/util.h>          // la_base64_decode
+#include <libacars/util.h>          // la_base64_decode, la_json_pretty_print
 #include <libacars/dict.h>          // la_dict, la_dict_search
 #include <libacars/macros.h>        // la_debug_print()
 #include <libacars/ohma.h>          // la_ohma_msg
@@ -91,33 +91,6 @@ static la_reasm_table_funcs ohma_reasm_funcs = {
 /********************************************************************************
  * OHMA parsing and formatting functions
  ********************************************************************************/
-
-#ifdef WITH_JANSSON
-static char *la_json_pretty_print(char const *json_string) {
-	la_assert(json_string);
-
-	bool prettify_json = false;
-	(void)la_config_get_bool("prettify_json", &prettify_json);
-	if(prettify_json == false) {
-		return NULL;
-	}
-
-	json_error_t err;
-	char *result = NULL;
-	json_t *root = json_loads(json_string, 0, &err);
-	if(root) {
-		result = json_dumps(root, JSON_INDENT(1) | JSON_REAL_PRECISION(6));
-		if(result == NULL) {
-			la_debug_print(D_INFO, "json_dumps() did not return any result\n");
-		}
-	} else {
-		la_debug_print(D_ERROR, "Failed to decode JSON string at position %d: %s\n",
-				err.position, err.text);
-	}
-	json_decref(root);
-	return result;
-}
-#endif // WITH_JANSSON
 
 la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 		la_reasm_ctx *rtables, struct timeval rx_time) {

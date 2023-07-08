@@ -10,7 +10,8 @@
 #include <time.h>               // struct tm
 #include <limits.h>             // CHAR_BIT
 #include <errno.h>              // errno
-#include "config.h"             // HAVE_STRSEP, WITH_LIBXML2, HAVE_UNISTD_H
+#include "config.h"             // HAVE_STRSEP, WITH_LIBXML2, WITH_JANSSON, HAVE_UNISTD_H
+#include "libacars.h"           // la_config_get_bool
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>             // _exit
 #endif
@@ -21,6 +22,9 @@
 #endif
 #ifdef WITH_ZLIB
 #include <zlib.h>               // z_stream, inflateInit2(), inflate(), inflateEnd()
+#endif
+#ifdef WITH_JANSSON
+#include <jansson.h>
 #endif
 #include <libacars/macros.h>    // la_debug_print()
 #include <libacars/util.h>
@@ -406,3 +410,31 @@ end:
 	return result;
 }
 #endif  // WITH_ZLIB
+
+char *la_json_pretty_print(char const *json_string) {
+	la_assert(json_string);
+
+	bool prettify_json = false;
+	(void)la_config_get_bool("prettify_json", &prettify_json);
+	if(prettify_json == false) {
+		return NULL;
+	}
+
+	char *result = NULL;
+#ifdef WITH_JANSSON
+	json_error_t err;
+	json_t *root = json_loads(json_string, 0, &err);
+	if(root) {
+		result = json_dumps(root, JSON_INDENT(1) | JSON_REAL_PRECISION(6));
+		if(result == NULL) {
+			la_debug_print(D_INFO, "json_dumps() did not return any result\n");
+		}
+	} else {
+		la_debug_print(D_ERROR, "Failed to decode JSON string at position %d: %s\n",
+				err.position, err.text);
+	}
+	json_decref(root);
+#endif // WITH_JANSSON
+	return result;
+}
+

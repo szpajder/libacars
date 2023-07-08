@@ -60,6 +60,7 @@ typedef struct {
 
 la_inflate_result la_inflate(uint8_t const *buf, int in_len);
 #endif
+char *la_json_pretty_print(char const *json_string);
 
 
 #endif // !LA_UTIL_H
