@@ -434,6 +434,8 @@ char *la_json_pretty_print(char const *json_string) {
 				err.position, err.text);
 	}
 	json_decref(root);
+#else
+	LA_UNUSED(json_string);
 #endif // WITH_JANSSON
 	return result;
 }
