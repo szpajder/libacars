@@ -1,4 +1,4 @@
-# libacars [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/szpajder/libacars.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/szpajder/libacars/context:cpp)
+# libacars
 
 libacars is a library for decoding ACARS message contents.
 
