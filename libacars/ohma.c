@@ -5,7 +5,8 @@
  */
 
 #include "config.h"                 // WITH_ZLIB, WITH_JANSSON
-#include <string.h>                 // strlen
+#define _GNU_SOURCE                 // for memmem()
+#include <string.h>                 // strlen, memmem
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>               // struct timeval
 #endif
@@ -101,20 +102,58 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 	if(txt == NULL) {
 		return NULL;
 	}
-	size_t len = strlen(txt);
+	size_t len = 0LU;
+	char const *ptr = txt;
+restart:
+	len = strlen(ptr);
 	// OHMA message recognition logic:
-	// - short form: starts with "OHMA"
-	// - long form: additionally preceded with '/', 7-char ground address and '.' (eg. "/RTNBOCR.OHMA")
-	if(len >= 13 && txt[0] == '/' && txt[8] == '.') {
-	    txt += 9; len -= 9;
+	// - downlinks, short form: starts with "OHMA"
+	// - downlinks, long form: additionally preceded with '/', 7-char ground address and '.' (eg. "/RTNBOCR.OHMA")
+	// - uplinks: '/' + 2 characters + '.OHMA'
+	if(len >= 13 && ptr[0] == '/' && ptr[8] == '.') {
+	    ptr += 9; len -= 9;
+	} else if(len >= 8 && ptr[0] == '/' && ptr[3] == '.') {
+		ptr += 4; len -= 4;
 	}
-	if(strncmp(txt, "OHMA", 4) == 0) {
-		txt += 4; len -= 4;
+	if(strncmp(ptr, "OHMA", 4) == 0) {
+		ptr += 4; len -= 4;
 	} else {
 	    return NULL;
 	}
 
-	la_octet_string *b64_decoded_msg = la_base64_decode(txt, len);
+	// This seems to be an OHMA message, but let's do an additional sanity
+	// check.  If the message was reassembled from multiple ACARS blocks, it
+	// sometimes happens that the contents of the second block is a duplicate
+	// of the first block, however the sequence number has been incremented
+	// correctly, an so the reassembly algorithm couldn't identify this as a
+	// duplicate. This might be a bug in the ACARS sender software. So far I've
+	// seen this only in uplink messages, Example:
+	// 
+	// ACARS label H1, sublabel T1, Block Id: A, More 1: Contents: /O2.OHMAabcdefgh
+	// ACARS label H1, sublabel T1, Block Id: B, More 1: Contents: /O2.OHMAabcdefgh
+	// ACARS label H1, sublabel T1, Block Id: C, More 1: Contents: ijkl
+	//
+	// is reassembled to:
+	// 
+	// /O2.OHMAabcdefgh/O2.OHMAabcdefghijkl
+	// 
+	// while the correct result should be:
+	// 
+	// /O2.OHMAabcdefghijkl
+	// 
+	// Here we determine whether the initial part of the message (that is, the
+	// prefix up to an including the "OHMA" string) occurs in the payload more
+	// than once.  If it does, we skip it and restart the search for the OHMA
+	// message.
+
+	void *duplicate = memmem(ptr, len, txt, ptr - txt);
+	if(duplicate != NULL) {
+		la_debug_print(D_INFO, "Duplicate first fragment found; skipping it\n");
+		ptr = duplicate;
+		goto restart;
+	}
+
+	la_octet_string *b64_decoded_msg = la_base64_decode(ptr, len);
 	if(b64_decoded_msg == NULL) {
 		la_debug_print(D_INFO, "Not an OHMA message (Failed to decode as BASE64)\n");
 		// Fail silently without producing a node, since it's probably not an OHMA message
