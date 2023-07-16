@@ -152,6 +152,9 @@ ACARS_2.1 {
 
 ACARS_2.2 {
   global:
+    la_list_prepend;
+    la_list_insert;
+    la_list_insert_sorted;
     la_ohma_decoding_error_code;
     la_ohma_msg;
     la_ohma_parse_and_reassemble;
