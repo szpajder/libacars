@@ -32,6 +32,7 @@ typedef struct {
 	char *convo_id;                     // unique message identifier (used in reassembly key)
 	la_octet_string *payload;           // pretty-printed JSON string or undecoded payload (in case of failure)
 	int32_t msg_seq;                    // sequence number (used with multipart messages)
+	int32_t msg_total;                  // total number of message parts - 0 if unknown
 	la_ohma_decoding_error_code err;    // message decoding error code
 	la_reasm_status reasm_status;       // OHMA reassembly status
 	// reserved for future use

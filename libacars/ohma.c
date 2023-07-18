@@ -247,6 +247,7 @@ restart:
 			json_decref(root);
 			goto json_fail;
 		}
+		msg->msg_total = msg_total;
 
 		la_reasm_table *ohma_rtable = NULL;
 		if(rtables != NULL) {       // reassembly engine is enabled
@@ -349,6 +350,9 @@ void la_ohma_format_text(la_vstring *vstr, void const *data, int indent) {
 		if(msg->msg_seq > 0) {      // Print this only for multipart messages
 			LA_ISPRINTF(vstr, indent, "Msg seq: %d\n", msg->msg_seq);
 		}
+		if(msg->msg_total > 0) {
+			LA_ISPRINTF(vstr, indent, "Msg total: %d\n", msg->msg_total);
+		}
 		LA_ISPRINTF(vstr, indent, "Reassembly: %s\n", la_reasm_status_name_get(msg->reasm_status));
 	}
 	if(msg->payload != NULL) {
@@ -390,6 +394,9 @@ void la_ohma_format_json(la_vstring *vstr, void const *data) {
 		}
 		if(msg->msg_seq > 0) {
 			la_json_append_int64(vstr, "msg_seq", msg->msg_seq);
+		}
+		if(msg->msg_total > 0) {
+			la_json_append_int64(vstr, "msg_total", msg->msg_total);
 		}
 		la_json_append_string(vstr, "reasm_status", la_reasm_status_name_get(msg->reasm_status));
 		if(msg->payload != NULL) {
