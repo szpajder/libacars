@@ -107,15 +107,15 @@ la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
 restart:
 	len = strlen(ptr);
 	// OHMA message recognition logic:
-	// - downlinks, short form: starts with "OHMA"
+	// - downlinks, short form: starts with "OHMA" or "RYKO"
 	// - downlinks, long form: additionally preceded with '/', 7-char ground address and '.' (eg. "/RTNBOCR.OHMA")
-	// - uplinks: '/' + 2 characters + '.OHMA'
+	// - uplinks: '/' + 2 characters + '.OHMA' or '.RYKO'
 	if(len >= 13 && ptr[0] == '/' && ptr[8] == '.') {
 	    ptr += 9; len -= 9;
 	} else if(len >= 8 && ptr[0] == '/' && ptr[3] == '.') {
 		ptr += 4; len -= 4;
 	}
-	if(strncmp(ptr, "OHMA", 4) == 0) {
+	if(strncmp(ptr, "OHMA", 4) == 0 || strncmp(ptr, "RYKO", 4) == 0) {
 		ptr += 4; len -= 4;
 	} else {
 	    return NULL;
