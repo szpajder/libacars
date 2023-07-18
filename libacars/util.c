@@ -293,7 +293,7 @@ static int32_t la_get_base64_idx(char c) {
             return i;
         }
     }
-	la_debug_print(D_VERBOSE, "char %c is invalid\n", c);
+	la_debug_print(D_VERBOSE, "char %hhd is invalid\n", c);
     return -1;
 }
 

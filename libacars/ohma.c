@@ -153,7 +153,16 @@ restart:
 		goto restart;
 	}
 
-	la_octet_string *b64_decoded_msg = la_base64_decode(ptr, len);
+	// Omit trailing CR+LFs, if present. They often appear in uplink messages
+	// and they are not valid BASE64 characters.
+
+	size_t new_len = len;
+	while(new_len > 0 && (ptr[new_len-1] == '\r' || ptr[new_len-1] == '\n')) {
+		new_len--;
+	}
+
+	la_debug_print(D_INFO, "Stripped %zu CR/LF characters before BASE64 decoding\n", len - new_len);
+	la_octet_string *b64_decoded_msg = la_base64_decode(ptr, new_len);
 	if(b64_decoded_msg == NULL) {
 		la_debug_print(D_INFO, "Not an OHMA message (Failed to decode as BASE64)\n");
 		// Fail silently without producing a node, since it's probably not an OHMA message
