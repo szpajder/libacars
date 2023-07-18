@@ -67,11 +67,13 @@ typedef struct {
 	int total_fragment_cnt;         /* Total number of fragments. If > 0, then reassembly
 	                                   is completed when the number of collected fragments
 	                                   reaches this value. */
+	uint32_t flags;                 /* One or more flags (listed below) */
 // reserved for future use
-	void (*reserved1)(void);
 	void (*reserved2)(void);
 	void (*reserved3)(void);
 } la_reasm_fragment_info;
+
+#define LA_ALLOW_OUT_OF_ORDER_DELIVERY (1 << 0)     /* Allows out of order delivery of fragments */
 
 typedef enum {
 	LA_REASM_UNKNOWN,

@@ -31,7 +31,7 @@
 
 // OHMA reassembly timeout
 static struct timeval const la_ohma_reasm_timeout = {
-	.tv_sec = 60,
+	.tv_sec = 1200,
 	.tv_usec = 0
 };
 
@@ -268,7 +268,8 @@ restart:
 					.seq_num_first = 1,
 					.seq_num_wrap = SEQ_WRAP_NONE,
 					.is_final_fragment = false,
-					.total_fragment_cnt = msg_total
+					.total_fragment_cnt = msg_total,
+					.flags = LA_ALLOW_OUT_OF_ORDER_DELIVERY
 					});
 			if(msg->reasm_status == LA_REASM_COMPLETE) {
 				la_reasm_payload_get(ohma_rtable, msg, &reassembled_message);

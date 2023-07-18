@@ -33,6 +33,11 @@ struct la_reasm_ctx_s {
 	la_list *rtables;                   /* list of reasm_tables, one per protocol */
 };
 
+typedef struct la_reasm_fragment_s {
+	int seq_num;                        /* sequence number of this fragment */
+	la_octet_string payload;            /* payload of this fragment */
+} la_reasm_fragment;
+
 // the header of the fragment list
 typedef struct {
 	int prev_seq_num;                   /* sequence number of previous fragment */
@@ -51,7 +56,7 @@ typedef struct {
 
 	struct timeval reasm_timeout;       /* reassembly timeout to be applied to this message */
 
-	la_list *fragment_list;             /* payloads of all fragments gathered so far */
+	la_list *fragment_list;             /* fragments gathered so far (list of la_reasm_fragments) */
 } la_reasm_table_entry;
 
 la_reasm_ctx *la_reasm_ctx_new() {
@@ -59,12 +64,52 @@ la_reasm_ctx *la_reasm_ctx_new() {
 	return rctx;
 }
 
+static la_reasm_fragment *la_reasm_fragment_new(int seq_num, uint8_t *payload, size_t len) {
+	LA_NEW(la_reasm_fragment, fragment);
+	fragment->seq_num = seq_num;
+
+	if(payload != NULL && len > 0) {
+		uint8_t *buf = LA_XCALLOC(len, sizeof(uint8_t));
+		memcpy(buf, payload, len);
+		fragment->payload.buf = buf;
+		fragment->payload.len = len;
+	}
+	return fragment;
+}
+
+static void la_reasm_fragment_destroy(void *data) {
+	if(data == NULL) {
+		return;
+	}
+	la_reasm_fragment *fragment = data;
+	LA_XFREE(fragment->payload.buf);
+	LA_XFREE(fragment);
+}
+
+static int la_reasm_compare_fragment_seq_numbers(void const *data1, void const *data2) {
+	la_assert(data1);
+	la_assert(data2);
+	la_reasm_fragment const *f1 = data1;
+	la_reasm_fragment const *f2 = data2;
+	return f1->seq_num - f2->seq_num;
+}
+
+static bool la_reasm_fragment_seq_num_already_exists(la_list *fragment_list, int seq_num) {
+	for(la_list *l = fragment_list; l != NULL; l = la_list_next(l)) {
+		la_reasm_fragment *fragment = l->data;
+		if(fragment->seq_num == seq_num) {
+			return true;
+		}
+	}
+	return false;
+}
+
 static void la_reasm_table_entry_destroy(void *rt_ptr) {
 	if(rt_ptr == NULL) {
 		return;
 	}
 	la_reasm_table_entry *rt_entry = rt_ptr;
-	la_list_free_full(rt_entry->fragment_list, la_octet_string_destroy);
+	la_list_free_full(rt_entry->fragment_list, la_reasm_fragment_destroy);
 	LA_XFREE(rt_entry);
 }
 
@@ -195,6 +240,10 @@ la_reasm_status la_reasm_fragment_add(la_reasm_table *rtable, la_reasm_fragment_
 		return LA_REASM_ARGS_INVALID;
 	}
 
+	if(finfo->flags & LA_ALLOW_OUT_OF_ORDER_DELIVERY && finfo->seq_num_wrap != SEQ_WRAP_NONE) {
+		return LA_REASM_ARGS_INVALID;
+	}
+
 	la_reasm_status ret = LA_REASM_UNKNOWN;
 	void *lookup_key = rtable->funcs.get_tmp_key(finfo->msg_info);
 	la_assert(lookup_key != NULL);
@@ -203,24 +252,40 @@ restart:
 	rt_entry = la_hash_lookup(rtable->fragment_table, lookup_key);
 	if(rt_entry == NULL) {
 
-		// Don't add if we know that this is not the first fragment of the message.
+		if(finfo->flags & LA_ALLOW_OUT_OF_ORDER_DELIVERY) {
 
-		if(finfo->seq_num_first != SEQ_FIRST_NONE && finfo->seq_num_first != finfo->seq_num) {
-			la_debug_print(D_INFO, "No rt_entry found and seq_num %d != seq_num_first %d,"
-					" not creating rt_entry\n", finfo->seq_num, finfo->seq_num_first);
-			ret = LA_REASM_FRAG_OUT_OF_SEQUENCE;
-			goto end;
-		}
-		if(finfo->is_final_fragment) {
+			if(finfo->seq_num_first != SEQ_FIRST_NONE &&
+					finfo->seq_num_first == finfo->seq_num &&
+					finfo->is_final_fragment) {
+				la_debug_print(D_INFO, "No rt_entry_found, out of order delivery is allowed, "
+						"seq_num %d == seq_num_first %d and is_final_fragment=true - "
+						"message is not fragmented, not creating rt_entry.",
+						finfo->seq_num, finfo->seq_num_first);
+				ret = LA_REASM_SKIPPED;
+				goto end;
+			}
 
-			// This is the first received fragment of this message and it's the final
-			// fragment.  Either this message is not fragmented or all fragments except the
-			// last one have been lost.  In either case there is no point in adding it to
-			// the fragment table.
+		} else {
 
-			la_debug_print(D_INFO, "No rt_entry found and is_final_fragment=true, not creating rt_entry\n");
-			ret = LA_REASM_SKIPPED;
-			goto end;
+			// Don't add if we know that this is not the first fragment of the message.
+
+			if(finfo->seq_num_first != SEQ_FIRST_NONE && finfo->seq_num_first != finfo->seq_num) {
+				la_debug_print(D_INFO, "No rt_entry found and seq_num %d != seq_num_first %d,"
+						" not creating rt_entry\n", finfo->seq_num, finfo->seq_num_first);
+				ret = LA_REASM_FRAG_OUT_OF_SEQUENCE;
+				goto end;
+			}
+			if(finfo->is_final_fragment) {
+
+				// This is the first received fragment of this message and it's the final
+				// fragment.  Either this message is not fragmented or all fragments except the
+				// last one have been lost.  In either case there is no point in adding it to
+				// the fragment table.
+
+				la_debug_print(D_INFO, "No rt_entry found and is_final_fragment=true, not creating rt_entry\n");
+				ret = LA_REASM_SKIPPED;
+				goto end;
+			}
 		}
 		rt_entry = LA_XCALLOC(1, sizeof(la_reasm_table_entry));
 		rt_entry->prev_seq_num = SEQ_UNINITIALIZED;
@@ -244,6 +309,7 @@ restart:
 	}
 
 	// Check if the sequence number has wrapped (if we're supposed to handle wraparounds)
+	// This implies that out-of-order delivery is not allowed (checked earlier above).
 
 	if(finfo->seq_num_wrap != SEQ_WRAP_NONE && finfo->seq_num == 0 &&
 			finfo->seq_num_wrap == rt_entry->prev_seq_num + 1) {
@@ -268,19 +334,28 @@ restart:
 	}
 
 	// Skip duplicates / retransmissions.
-	// If sequence numbers don't wrap, then treat fragments we've seen before as
-	// duplicates too.
 
-	if(rt_entry->prev_seq_num == finfo->seq_num ||
-			(finfo->seq_num_wrap == SEQ_WRAP_NONE && finfo->seq_num < rt_entry->prev_seq_num)) {
+	bool is_duplicate = false;
+	if(finfo->flags & LA_ALLOW_OUT_OF_ORDER_DELIVERY) {
+		is_duplicate = la_reasm_fragment_seq_num_already_exists(rt_entry->fragment_list, finfo->seq_num);
+	} else {
+		// If out-of-order delivery is not allowed, then we may use a simplified
+		// check for duplicates.
+		// If sequence numbers don't wrap, then treat fragments we've seen before as
+		// duplicates too.
+		is_duplicate = rt_entry->prev_seq_num == finfo->seq_num ||
+			(finfo->seq_num_wrap == SEQ_WRAP_NONE && finfo->seq_num < rt_entry->prev_seq_num);
+	}
+	if(is_duplicate) {
 		la_debug_print(D_INFO, "skipping duplicate fragment (seq_num: %d)\n", finfo->seq_num);
 		ret = LA_REASM_DUPLICATE;
 		goto end;
 	}
 
-	// Check If the sequence number has incremented.
+	// If out-of-order delivery is not allowed, check if the sequence number has incremented.
 
-	if(is_seq_num_in_sequence(rt_entry->prev_seq_num, finfo->seq_num) == false) {
+	if(!(finfo->flags & LA_ALLOW_OUT_OF_ORDER_DELIVERY) &&
+			!is_seq_num_in_sequence(rt_entry->prev_seq_num, finfo->seq_num)) {
 
 		// Probably one or more fragments have been lost. Reassembly is not possible.
 
@@ -292,20 +367,35 @@ restart:
 	}
 
 	// All checks succeeded. Add the fragment to the list.
+	// If out-of-order delivery is allowed, keep the fragment list sorted by seq_num.
+	// Otherwise just append it at the end of the list - this is simpler and also
+	// works correctly if seq_num may wrap - sorted insert wouldn't work then.
 
-	la_debug_print(D_INFO, "Good seq_num %d (prev: %d), adding fragment to the list\n",
-			finfo->seq_num, rt_entry->prev_seq_num);
-	// Don't append fragments with empty payload (but increment seq_num anyway,
-	// because empty fragment is not an error)
-	if(finfo->msg_data != NULL && finfo->msg_data_len > 0) {
-		uint8_t *msg_data = LA_XCALLOC(finfo->msg_data_len, sizeof(uint8_t));
-		memcpy(msg_data, finfo->msg_data, finfo->msg_data_len);
-		la_octet_string *ostring = la_octet_string_new(msg_data, finfo->msg_data_len);
-		rt_entry->fragment_list = la_list_append(rt_entry->fragment_list, ostring);
+	la_reasm_fragment *fragment = la_reasm_fragment_new(finfo->seq_num, finfo->msg_data, finfo->msg_data_len);
+	if(finfo->flags & LA_ALLOW_OUT_OF_ORDER_DELIVERY) {
+		la_debug_print(D_INFO, "Good seq_num %d, adding fragment to the list\n",
+				finfo->seq_num);
+		rt_entry->fragment_list = la_list_insert_sorted(rt_entry->fragment_list, fragment,
+				la_reasm_compare_fragment_seq_numbers);
+		// total_pdu_len or total_fragment_cnt values might be contained in the
+		// first fragment only (like msg_total attribute in OHMA). If the first
+		// fragment received was not the first fragment of the message, then
+		// these values will initially be unknown (set to 0 in rt_entry). Once
+		// the first fragment is received, we need to update them, so that the
+		// reassembly process could complete successfully.
+		if(rt_entry->total_pdu_len == 0 && finfo->total_pdu_len > 0) {
+			rt_entry->total_pdu_len = finfo->total_pdu_len;
+		} else if(rt_entry->total_fragment_cnt == 0 && finfo->total_fragment_cnt > 0) {
+			rt_entry->total_fragment_cnt = finfo->total_fragment_cnt;
+		}
+	} else {
+		la_debug_print(D_INFO, "Good seq_num %d (prev: %d), adding fragment to the list\n",
+				finfo->seq_num, rt_entry->prev_seq_num);
+			rt_entry->fragment_list = la_list_append(rt_entry->fragment_list, fragment);
+		rt_entry->prev_seq_num = finfo->seq_num;
 	}
 	rt_entry->frags_collected_total_len += finfo->msg_data_len;
 	rt_entry->frags_collected_cnt++;
-	rt_entry->prev_seq_num = finfo->seq_num;
 
 	// If we've come to this point successfully, then reassembly is complete if:
 	//
@@ -319,6 +409,11 @@ restart:
 	//   and the caller indicates that this is the final fragment of this message.
 	//
 	// Otherwise we expect more fragments to come.
+	// 
+	// XXX: when out-of-order delivery is allowed, we probably should verify
+	// whether seq_nums of collected fragments form a contiguous sequence,
+	// however the only protocol which currently uses this mode of reassembly
+	// is OHMA, for which total_fragment_cnt check is good enough.
 
 	if(rt_entry->total_pdu_len > 0) {
 		ret = rt_entry->frags_collected_total_len >= rt_entry->total_pdu_len ?
@@ -370,9 +465,11 @@ int la_reasm_payload_get(la_reasm_table *rtable, void const *msg_info, uint8_t *
 	uint8_t *reasm_buf = LA_XCALLOC(rt_entry->frags_collected_total_len + 1, sizeof(uint8_t));
 	uint8_t *ptr = reasm_buf;
 	for(la_list *l = rt_entry->fragment_list; l != NULL; l = la_list_next(l)) {
-		la_octet_string *ostring = l->data;
-		memcpy(ptr, ostring->buf, ostring->len);
-		ptr += ostring->len;
+		la_reasm_fragment *fragment = l->data;
+		if(fragment->payload.buf != NULL && fragment->payload.len > 0) {
+			memcpy(ptr, fragment->payload.buf, fragment->payload.len);
+		}
+		ptr += fragment->payload.len;
 	}
 	reasm_buf[rt_entry->frags_collected_total_len] = '\0'; // buffer len is frags_collected_total_len + 1
 	*result = reasm_buf;
