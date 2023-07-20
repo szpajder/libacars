@@ -230,6 +230,21 @@ restart:
 	if(convo_id) {
 		msg->convo_id = strdup(convo_id);
 	}
+	char *sym_key = NULL, *iv = NULL, *signature = NULL;
+	if(json_unpack_ex(root, &err, 0LU, "{s?:s, s?:s, s?:s}",
+				"sym_key", &sym_key, "iv", &iv, "signature", &signature) < 0) {
+		la_debug_print(D_INFO, "json_unpack_ex (2) failed: %s\n", err.text);
+	} else {
+		if(sym_key != NULL) {
+			msg->sym_key = la_base64_decode(sym_key, strlen(sym_key));
+		}
+		if(iv != NULL) {
+			msg->iv = la_base64_decode(iv, strlen(iv));
+		}
+		if(signature != NULL) {
+			msg->signature = la_base64_decode(signature, strlen(signature));
+		}
+	}
 	uint8_t *reassembled_message = NULL;
 	if(msg_seq > 0) {
 		msg->msg_seq = msg_seq;
@@ -316,9 +331,20 @@ static void la_ohma_msg_destroy(void *data) {
 	}
 	la_ohma_msg *msg = data;
 	la_octet_string_destroy(msg->payload);
+	la_octet_string_destroy(msg->sym_key);
+	la_octet_string_destroy(msg->iv);
+	la_octet_string_destroy(msg->signature);
 	LA_XFREE(msg->version);
 	LA_XFREE(msg->convo_id);
 	LA_XFREE(msg);
+}
+
+static void la_print_hexdump(la_vstring *vstr, int indent, la_octet_string *ostring) {
+	la_assert(vstr);
+	la_assert(ostring);
+	char *hexdump = la_hexdump(ostring->buf, ostring->len);
+	la_isprintf_multiline_text(vstr, indent, hexdump);
+	LA_XFREE(hexdump);
 }
 
 void la_ohma_format_text(la_vstring *vstr, void const *data, int indent) {
@@ -355,6 +381,18 @@ void la_ohma_format_text(la_vstring *vstr, void const *data, int indent) {
 			LA_ISPRINTF(vstr, indent, "Msg total: %d\n", msg->msg_total);
 		}
 		LA_ISPRINTF(vstr, indent, "Reassembly: %s\n", la_reasm_status_name_get(msg->reasm_status));
+		if(msg->sym_key) {
+			LA_ISPRINTF(vstr, indent, "Sym key:\n");
+			la_print_hexdump(vstr, indent + 1, msg->sym_key);
+		}
+		if(msg->iv) {
+			LA_ISPRINTF(vstr, indent, "IV:\n");
+			la_print_hexdump(vstr, indent + 1, msg->iv);
+		}
+		if(msg->signature) {
+			LA_ISPRINTF(vstr, indent, "Signature:\n");
+			la_print_hexdump(vstr, indent + 1, msg->signature);
+		}
 	}
 	if(msg->payload != NULL) {
 		if(is_printable(msg->payload->buf, msg->payload->len)) {
@@ -373,9 +411,7 @@ void la_ohma_format_text(la_vstring *vstr, void const *data, int indent) {
 			}
 		} else {
 			LA_ISPRINTF(vstr, indent, "Data (%zu bytes):\n", msg->payload->len);
-			char *hexdump = la_hexdump(msg->payload->buf, msg->payload->len);
-			la_isprintf_multiline_text(vstr, indent + 1, hexdump);
-			LA_XFREE(hexdump);
+			la_print_hexdump(vstr, indent + 1, msg->payload);
 		}
 	}
 }
@@ -400,6 +436,15 @@ void la_ohma_format_json(la_vstring *vstr, void const *data) {
 			la_json_append_int64(vstr, "msg_total", msg->msg_total);
 		}
 		la_json_append_string(vstr, "reasm_status", la_reasm_status_name_get(msg->reasm_status));
+		if(msg->sym_key != NULL) {
+			la_json_append_octet_string(vstr, "sym_key", msg->sym_key->buf, msg->sym_key->len);
+		}
+		if(msg->iv != NULL) {
+			la_json_append_octet_string(vstr, "iv", msg->iv->buf, msg->iv->len);
+		}
+		if(msg->signature != NULL) {
+			la_json_append_octet_string(vstr, "signature", msg->signature->buf, msg->signature->len);
+		}
 		if(msg->payload != NULL) {
 			if(is_printable(msg->payload->buf, msg->payload->len)) {
 				la_json_append_string(vstr, "text", (char *)msg->payload->buf);

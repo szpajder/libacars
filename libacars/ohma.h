@@ -30,6 +30,9 @@ typedef struct {
 	char *version;                      // OHMA version
 	char const *reg;                    // regnr of the sender (used in reassembly key)
 	char *convo_id;                     // unique message identifier (used in reassembly key)
+	la_octet_string *sym_key;           // 
+	la_octet_string *iv;                // } encryption-related parameters from outer JSON message
+	la_octet_string *signature;         // 
 	la_octet_string *payload;           // pretty-printed JSON string or undecoded payload (in case of failure)
 	int32_t msg_seq;                    // sequence number (used with multipart messages)
 	int32_t msg_total;                  // total number of message parts - 0 if unknown
