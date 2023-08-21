@@ -867,6 +867,161 @@ encountered node containing a Media Advisory message (ie. having a type
 descriptor of `la_DEF_media_adv_message`). If `root` is NULL or no matching
 protocol node has been found in the tree, the function returns NULL.
 
+## OHMA
+
+OHMA are diagnostic messages exchanged with Boeing 737MAX aircraft. They have an
+ACARS label H1 and sublabel T1. The payload of downlink messages looks as follows:
+
+```
+OHMAeJy1kUFvozAQhf9K5(...)
+
+/RTNBOCR.OHMAeJy1kW9Pqz(...)
+```
+
+Uplink messages have the following syntax:
+
+```
+/O2.OHMAeNotjttyok(...)
+
+/O2.RYKOeNotkNt(...)
+```
+
+The payload after the `OHMA` or `RYKO` string is a BASE64-encoded,
+zlib-compressed JSON string. Therefore libacars must be compiled with zlib
+support in order to decode these messages.
+
+Large OHMA messages may be split across multiple ACARS blocks. In case this is
+not enough, OHMA has its own message fragmentation mechanism, which uses
+`msg_total` and `msg_seq` JSON attributes to indicate the total number of
+fragments (only in the first fragment) and the sequence number of the current
+fragment, respectively. OHMA fragments might be transmitted in arbitrary order.
+libacars supports automatic reassembly of multipart OHMA messages.
+
+### la_ohma_msg
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/ohma.h>
+
+typedef struct {
+	char *version;
+	char const *reg;
+	char *convo_id;
+	la_octet_string *sym_key;
+	la_octet_string *iv;
+	la_octet_string *signature;
+	la_octet_string *payload;
+	int32_t msg_seq;
+	int32_t msg_total;
+	la_ohma_decoding_error_code err;
+	la_reasm_status reasm_status;
+// ... (placeholder fields for future use)
+} la_ohma_msg;
+```
+
+- `version` - message version number
+- `reg` - registration number of the sending/receiving aircraft (used as
+  reassembly key)
+- `convo_id` - message identifier specified in the `convo_id` attribute of the
+  outer JSON message. Used as reassembly key.
+- `sym_key`, `iv`, `signature` - values of encryption-related attributes of the
+  outer JSON message. Might be NULL.
+- `payload` - if the decoding succeeded, contains the message payload (JSON
+  string), otherwise it contains raw undecoded payload.
+- `msg_seq` - sequence number of the current fragment (non-zero if the message
+  is fragmented at the OHMA layer).
+- `msg_total` - total number of message fragments - 0 if unknown.
+- `err` - message decoding error code (see below).
+- `reasm_status` - OHMA reassembly status code.
+
+`err` field might have the following values:
+
+```C
+typedef enum {
+	LA_OHMA_SUCCESS                   = 0,
+	LA_OHMA_FAIL_MSG_TOO_SHORT        = 1,
+	LA_OHMA_FAIL_UNKNOWN_COMPRESSION  = 2,
+	LA_OHMA_FAIL_DECOMPRESSION_FAILED = 3,
+	LA_OHMA_JSON_DECODE_FAILED        = 4,
+	LA_OHMA_JSON_BAD_STRUCTURE        = 5
+} la_ohma_decoding_error_code;
+```
+
+### la_ohma_parse_and_reassemble()
+
+```C
+la_proto_node *la_ohma_parse_and_reassemble(char const *reg, char const *txt,
+		la_reasm_ctx *rtables, struct timeval rx_time);
+```
+
+Parses the NULL-terminated string `txt` as an OHMA message. Optionally performs
+reassembly of the inner payload.
+
+- `reg` - registration of the aircraft which sent or received this message. Used
+  as a hash key during reassembly process. If reassembly is not desired (ie.
+  `rtables` argument is set to NULL), this parameter is not used and might be set
+  to NULL.
+- `txt` - ACARS message text (sublabel and MFI must be stripped beforehand)
+- `rtables` - if reassembly is desired, this should point to a valid reassembly
+  context. Setting it to NULL disables reassembly.
+- `rx_time` - if reassembly is desired, this should indicate the reception
+  timestamp of the message, which is required for proper handling of reassembly
+  timeouts. If reassembly is disabled, this parameter is not used and might be
+  set to any value, for example `{ 0, 0 }`.
+
+The parser returns a pointer to a newly allocated `la_proto_node` structure
+which is the root of the decoded protocol tree. The `data` pointer of the top
+`la_proto_node` will point to a `la_ohma_msg` structure. `td` will point to
+`la_DEF_ohma_message` type descriptor. If the message has not been identified as
+OHMA, the parser returns NULL. This informs the caller that the message possibly
+contains another ACARS application (not OHMA), hence the return value of NULL
+should not be treated as fatal.
+
+### la_ohma_format_text()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/ohma.h>
+
+void la_ohma_format_text(la_vstring *vstr, void const *data, int indent);
+```
+
+Serializes a decoded OHMA message pointed to by `data` into a human-readable
+text indented by `indent` spaces and appends the result to `vstr` (which must be
+non-NULL).
+
+If libacars has been built with Jansson library support and `prettify_json`
+configuration variable is set to `true`, then the function attempts to parse the
+message text as a JSON document. If parsing succeeds (meaning the message indeed
+contains JSON), the text is pretty-printed (reformatted into multi-line output
+with proper indentation).
+
+### la_ohma_format_json()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/ohma.h>
+
+void la_ohma_format_json(la_vstring *vstr, void const *data);
+```
+
+Serializes a decoded OHMA message pointed to by `data` into a JSON string and
+appends the result to `vstr` (which must be non-NULL).
+
+### la_proto_tree_find_ohma()
+
+```C
+#include <libacars/libacars.h>
+#include <libacars/ohma.h>
+
+la_proto_node *la_proto_tree_find_ohma(la_proto_node *root);
+```
+
+Walks the protocol tree pointed to by `root` and returns a pointer to the first
+encountered node containing OHMA message  (ie. having a type descriptor of
+`la_DEF_ohma_msg`). If `root` is NULL or no matching protocol node has been
+found in the tree, the function returns NULL.
+
 ## MIAM
 
 Media Independent Aircraft Messaging (MIAM) is a protocol that provides a
@@ -1295,12 +1450,18 @@ protocol must satisfy certain prerequisites, in particular:
   either by a boolean flag indicating whether a particular fragment is the final
   fragment of the message, or by specifying the total size of the reassembled
   message in bytes (the reassembly process is deemed complete after receiving
-  that amount of data).
+  that amount of data) or by specifying the expected fragment count.
+  
+- The user may decide if the engine shall allow out-of-order delivery of
+  fragments or not.
 
-- Fragments of each message must be passed to the reassembly engine in correct
-  order.  Duplicates (consecutive repetitions of a fragment with the same
-  sequence number) are allowed (they are skipped), but sequence number gaps and
-  reversals are not allowed (however see below for an exception).
+- If out-of-order delivery is not allowed, sequence numbers may optionally wrap
+  at a certain constant value specified by the user.
+
+- Duplicates (consecutive repetitions of a fragment with the same sequence
+  number) are skipped. If sequence numbers do not wrap, then this also applies
+  to fragments with sequence numbers lower than the previously received
+  fragment.
 
 - Non-zero reassembly timeout must be specified for each message. This is
   particularly important when sequence numbers wrap often. The engine must
@@ -1312,20 +1473,17 @@ protocol must satisfy certain prerequisites, in particular:
 
 Additionally:
 
-- Sequence numbers may optionally wrap at a certain constant value.
-
 - If the sequence numbers of the fragments of each message start from a fixed
-  known value, the engine may ensure completeness of reassembled messages,
+  known value, the engine ensures the completeness of reassembled messages,
   ie. that each message begins with a fragment with a sequence number of that
-  fixed value. This is also the only case when reversals of sequence numbers are
-  allowed - fragments with sequence numbers lower than the previously received
-  fragment are treated as duplicates (skipped).
+  fixed value.
 
 - Sequencing fragments using fragment offset (like in IP protocol) is not
   supported.
 
-The engine is used internally by libacars to reassemble ACARS messages and MIAM
-file transfers. In addition, dumpvdl2 uses the engine to reassemble X.25.
+The engine is used internally by libacars to reassemble ACARS messages, OHMA
+messages and MIAM file transfers. In addition, dumpvdl2 uses the engine to
+reassemble X.25.
 
 ### la_reasm_ctx_new()
 
@@ -1338,7 +1496,7 @@ la_reasm_ctx *la_reasm_ctx_new();
 Initializes reassembly engine context which stores the reassembly state table
 for each protocol. A pointer to this context should then be passed to the
 decoding routine of each protocol which may contain fragmented messages - in
-particular, `la_acars_parse_and_reassemble()`,
+particular, `la_acars_parse_and_reassemble()`, `la_ohma_parse_and_reassemble(),`
 `la_acars_apps_parse_and_reassemble()` and `la_miam_parse_and_reassemble()`.
 
 ### la_reasm_ctx_destroy()
@@ -1442,6 +1600,8 @@ typedef struct {
 	int seq_num_first;
 	int seq_num_wrap;
 	bool is_final_fragment;
+	int total_fragment_cnt;
+	uint32_t flags;
 } la_reasm_fragment_info;
 ```
 
@@ -1454,10 +1614,12 @@ typedef struct {
   this field to a positive value indicates that the reassembly should be deemed
   complete when the amount of data collected from fragments equals or exceeds
   this value. If the total length is unknown, this field should be set to zero.
-  In this case, the final fragment of the message must be indicated by setting
-  `is_final_fragment` flag to true. Note that only `total_pdu_len` value from
-  the first fragment of the message is taken into account In subsequent fragments
-  of the same message this field may be set to any value (eq. zero).
+  In this case, either the final fragment of the message must be indicated by
+  setting `is_final_fragment` flag to true or total expected number of fragments
+  must be specified in `total_fragment_cnt`. Note that only `total_pdu_len`
+  value from the first fragment of the message is taken into account. In
+  subsequent fragments of the same message this field may be set to any value
+  (eq. zero).
 - `rx_time` - time when this fragment has been received. Used for handling
   reassembly timeouts and expiration of old incomplete entries.
 - `reasm_timeout` - reassembly timeout. All fragments must be received before it
@@ -1480,6 +1642,13 @@ typedef struct {
   message and to `false` in all fragments preceding it. This allows the algorithm
   to determine whether the reassembly of the message in question has already
   completed (ie. all fragments have been received).
+- `total_fragment_cnt` - total expected number of fragments. Shall be set to
+  zero if unknown. Note: `total_pdu_len` takes precedence over this field.
+- `flags` - a bitfield specifying flags that affect the operation of the engine.
+  Available flags:
+
+  - `LA_ALLOW_OUT_OF_ORDER_DELIVERY` - if set to 1, then the engine accepts
+    out-of order delivery of fragments.
 
 `la_reasm_fragment_add()` returns the message reassembly status an enumerated
 value defined as follows:
@@ -1677,6 +1846,45 @@ Allocates a new list item, stores `data` in it and appends it at the end of the
 list `l`. Returns a pointer to the top element of the list, ie. when `l` is not
 NULL, it returns `l`, otherwise returns a pointer to the newly allocated list
 item.
+
+### la_list_prepend()
+
+```C
+#include <libacars/list.h>
+
+la_list *la_list_prepend(la_list *l, void *data);
+```
+
+Allocates a new list item, stores `data` in it and prepends it at the beginning
+of the list `l`. Returns a pointer to the new top element of the list.
+
+### la_list_insert()
+
+```C
+#include <libacars/list.h>
+
+la_list *la_list_insert(la_list *l, void *data);
+```
+
+Allocates a new list item, stored `data` in it and inserts it after the list
+item pointed to by `l`. Returns a pointer to the inserted element (which might
+be a new list in case `l` is `NULL`).
+
+### la_list_insert_sorted()
+
+```C
+#include <libacars/list.h>
+
+la_list *la_list_insert_sorted(la_list *list, void *data, la_list_compare_func *compare_nodes);
+```
+
+Inserts a new element into the list, preserving sort order of the elements.  The
+order is determined by the `compare_nodes` callback, which shall return a value
+less than, equal or greater to 0, when the first argument is less, equal or
+greater than the second one, respectively.  If list is NULL, a new list is
+allocated and the element is appended to it. Returns a pointer to the top
+element of the list, ie. when `l` is not NULL, it returns `l`, otherwise returns
+a pointer to the newly allocated list item.
 
 ### la_list_next()
 
