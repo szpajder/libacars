@@ -1,5 +1,14 @@
 # ChangeLog
 
+## Version 2.2.0 (2023-08-21)
+
+* Support for decoding OHMA messages. These are diagnostic data exchanged with
+  Boeing 737MAX aircraft. Decoding requires libacars to be built with ZLIB
+  support.  The data is encoded in JSON which libacars might optionally
+  pretty-print, when serializing the message as text. Pretty-printing feature
+  requires Jansson library.
+* Support for compilation with MSVC (thx John Beniston).
+
 ## Version 2.1.4 (2022-03-06)
 
 * Fix compile error under MS Visual C++ caused by `struct timeval`
