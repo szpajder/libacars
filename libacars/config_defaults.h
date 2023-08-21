@@ -1,7 +1,7 @@
 /*
  *  This file is a part of libacars
  *
- *  Copyright (c) 2018-2021 Tomasz Lemiech <szpajder@gmail.com>
+ *  Copyright (c) 2018-2023 Tomasz Lemiech <szpajder@gmail.com>
  */
 
 /* Default libacars configuration settings */

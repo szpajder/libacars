@@ -178,7 +178,7 @@ testing of libacars. Special thanks go to:
 
 ## Licenses
 
-libacars, Copyright (c) 2018-2021 Tomasz Lemiech <szpajder@gmail.com>
+libacars, Copyright (c) 2018-2023 Tomasz Lemiech <szpajder@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
