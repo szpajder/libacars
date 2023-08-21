@@ -11,6 +11,7 @@
 #cmakedefine WITH_JANSSON
 #cmakedefine IS_BIG_ENDIAN
 #cmakedefine HAVE_STRSEP
+#cmakedefine HAVE_MEMMEM
 #cmakedefine LFIND_NMEMB_SIZE_SIZE_T
 #cmakedefine LFIND_NMEMB_SIZE_UINT
 #cmakedefine HAVE_SYS_TIME_H

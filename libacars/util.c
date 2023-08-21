@@ -238,6 +238,30 @@ char *la_strsep(char **stringp, char const *delim) {
 }
 #endif
 
+#ifndef HAVE_MEMMEM
+void *memmem(void const *haystack, size_t haystack_len, void const *needle, size_t needle_len) {
+    if (needle_len == 0) {
+        return (void *)haystack;
+    }
+    if (needle_len > haystack_len) {
+        return NULL;
+    }
+
+    void const *haystack_end = (char const *)haystack + haystack_len - needle_len;
+    while (haystack <= haystack_end) {
+        void const *match = memchr(haystack, *(char const *)needle, haystack_end - haystack + 1);
+        if (match == NULL) {
+            return NULL;
+        }
+        if (memcmp(match, needle, needle_len) == 0) {
+            return (void *)match;
+        }
+        haystack = (char const *)match + 1;
+    }
+    return NULL;
+}
+#endif
+
 #ifdef WITH_LIBXML2
 void la_xml_errfunc_noop(void * ctx, char const *msg, ...) {
 	(void)ctx;

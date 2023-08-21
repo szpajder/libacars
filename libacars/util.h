@@ -35,6 +35,10 @@ char *la_strsep(char **stringp, char const *delim);
 #define LA_STRSEP la_strsep
 #endif
 
+#ifndef HAVE_MEMMEM
+void *memmem(void const *haystack, size_t haystack_len, void const *needle, size_t needle_len);
+#endif
+
 #define ATOI2(x,y) (10 * ((x) - '0') + ((y) - '0'))
 
 size_t la_slurp_hexstring(char *string, uint8_t **buf);
