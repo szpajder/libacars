@@ -401,7 +401,7 @@ restart:
 	//
 	// - total_pdu_len for this rt_entry is set and we've already collected
 	//   required amount of data, or
-	//   
+	//
 	// - total_pdu_len for this rt_entry is unset and total_fragment_cnt is set
 	//   and we've already collected the required number of fragments, or
 	//
@@ -409,7 +409,7 @@ restart:
 	//   and the caller indicates that this is the final fragment of this message.
 	//
 	// Otherwise we expect more fragments to come.
-	// 
+	//
 	// XXX: when out-of-order delivery is allowed, we probably should verify
 	// whether seq_nums of collected fragments form a contiguous sequence,
 	// however the only protocol which currently uses this mode of reassembly

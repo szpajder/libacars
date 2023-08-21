@@ -128,19 +128,19 @@ restart:
 	// correctly, an so the reassembly algorithm couldn't identify this as a
 	// duplicate. This might be a bug in the ACARS sender software. So far I've
 	// seen this only in uplink messages, Example:
-	// 
+	//
 	// ACARS label H1, sublabel T1, Block Id: A, More 1: Contents: /O2.OHMAabcdefgh
 	// ACARS label H1, sublabel T1, Block Id: B, More 1: Contents: /O2.OHMAabcdefgh
 	// ACARS label H1, sublabel T1, Block Id: C, More 1: Contents: ijkl
 	//
 	// is reassembled to:
-	// 
+	//
 	// /O2.OHMAabcdefgh/O2.OHMAabcdefghijkl
-	// 
+	//
 	// while the correct result should be:
-	// 
+	//
 	// /O2.OHMAabcdefghijkl
-	// 
+	//
 	// Here we determine whether the initial part of the message (that is, the
 	// prefix up to an including the "OHMA" string) occurs in the payload more
 	// than once.  If it does, we skip it and restart the search for the OHMA
@@ -178,7 +178,7 @@ restart:
 	node->next = NULL;
 
 	// We need at least 3 octets (ZLIB CMF & FLG octets plus one octet of data).
-	if(b64_decoded_msg->len < 3) {  
+	if(b64_decoded_msg->len < 3) {
 		la_debug_print(D_INFO, "Message too short: len %zu < min_len 3\n",
 			b64_decoded_msg->len);
 		msg->err = LA_OHMA_FAIL_MSG_TOO_SHORT;
