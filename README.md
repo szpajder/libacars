@@ -10,6 +10,7 @@ Current stable version: **2.1.4** (released March 6, 2022)
 - [X] FANS-1/A CPDLC (Controller-Pilot Data Link Communications)
 - [X] MIAM (Media Independent Aircraft Messaging)
 - [X] Media Advisory (Status of data links: VDL2, HF, Satcom, VHF ACARS)
+- [X] OHMA (diagnostic messages exchanged with Boeing 737MAX aircraft)
 
 ## Installation
 
@@ -38,13 +39,13 @@ The project should build and run correctly on the following platforms:
 
 #### Installing dependencies
 
-- libacars needs zlib for MIAM message decompression. If zlib is not present,
-  decompression code will be disabled and many MIAM messages will be left
-  undecoded. Therefore it is recommended to install zlib development package
-  first. On Debian/Raspbian distros it is named `zlib1g-dev`:
+- libacars needs zlib for MIAM and OHMA message decompression. If zlib is not
+  present, decompression code will be disabled and compressed messages will be
+  left undecoded.  Therefore it is recommended to install zlib development
+  package first. On Debian/Raspbian distros it is named `zlib1g-dev`:
 
 ```
-apt-get install zlib1g-dev
+apt install zlib1g-dev
 ```
 
 - ACARS and MIAM CORE messages sometimes contain XML documents.  libacars may
@@ -52,7 +53,14 @@ apt-get install zlib1g-dev
   indentation. To enable this feature, you need libxml2 library:
 
 ```
-apt-get install libxml2-dev
+apt install libxml2-dev
+```
+
+- OHMA messages contain JSON-encoded data. libacars may optionally pretty-print
+  these messages. This feature requires Jansson library:
+
+```
+apt install libjansson-dev
 ```
 
 #### Compiling libacars (Linux)
@@ -94,6 +102,7 @@ cmake ../
 -- libacars configuration summary:
 -- - zlib:              requested: ON, enabled: TRUE
 -- - libxml2:           requested: ON, enabled: TRUE
+-- - jansson:           requested: ON, enabled: TRUE
 ```
 
 - Compile and install:
@@ -113,7 +122,7 @@ The library will be installed to `/usr/local/lib` (or
 Install dependencies and tools with `brew`:
 
 ```
-brew install cmake zlib libxml2
+brew install cmake zlib libxml2 jansson
 ```
 
 Then follow the above instructions for Linux. Just skip the final `sudo
@@ -135,6 +144,8 @@ The following options may be used when invoking cmake:
   if zlib is available.
 
 - `-DLIBXML2=FALSE` - disables libxml2 support.
+
+- `-DJANSSON=FALSE` - disables Jansson support.
 
 ## Example applications
 
