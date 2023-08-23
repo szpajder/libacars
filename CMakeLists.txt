@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 3.12)
 project (libacars C)
 
 set (LA_VERSION_MAJOR 2)
