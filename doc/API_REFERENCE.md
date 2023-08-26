@@ -888,7 +888,7 @@ Uplink messages have the following syntax:
 
 The payload after the `OHMA` or `RYKO` string is a BASE64-encoded,
 zlib-compressed JSON string. Therefore libacars must be compiled with zlib
-support in order to decode these messages.
+and Jansson support in order to decode these messages.
 
 Large OHMA messages may be split across multiple ACARS blocks. In case this is
 not enough, OHMA has its own message fragmentation mechanism, which uses
@@ -990,11 +990,10 @@ Serializes a decoded OHMA message pointed to by `data` into a human-readable
 text indented by `indent` spaces and appends the result to `vstr` (which must be
 non-NULL).
 
-If libacars has been built with Jansson library support and `prettify_json`
-configuration variable is set to `true`, then the function attempts to parse the
-message text as a JSON document. If parsing succeeds (meaning the message indeed
-contains JSON), the text is pretty-printed (reformatted into multi-line output
-with proper indentation).
+If `prettify_json` configuration variable is set to `true`, then the function
+attempts to parse the message text as a JSON document. If parsing succeeds
+(meaning the message indeed contains JSON), the text is pretty-printed
+(reformatted into multi-line output with proper indentation).
 
 ### la_ohma_format_json()
 

@@ -56,8 +56,8 @@ apt install zlib1g-dev
 apt install libxml2-dev
 ```
 
-- OHMA messages contain JSON-encoded data. libacars may optionally pretty-print
-  these messages. This feature requires Jansson library:
+- OHMA messages contain JSON-encoded data. Decoding these messages requires
+  libacars to be built with Jansson library:
 
 ```
 apt install libjansson-dev
