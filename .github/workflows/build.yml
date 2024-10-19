@@ -25,9 +25,9 @@ jobs:
     - name: Install packaged dependencies
       run: |
         if [[ "$RUNNER_OS" == "Linux" ]]; then sudo apt-get update; fi
-        if [[ "$RUNNER_OS" == "Linux" ]]; then sudo apt-get install libxml2-dev libjansson-dev; fi
+        if [[ "$RUNNER_OS" == "Linux" ]]; then sudo apt-get install libjansson-dev; fi
         if [[ "$RUNNER_OS" == "macOS" ]]; then brew update; fi
-        if [[ "$RUNNER_OS" == "macOS" ]]; then brew install libxml2 jansson; fi
+        if [[ "$RUNNER_OS" == "macOS" ]]; then brew install jansson; fi
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
