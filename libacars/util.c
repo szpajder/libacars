@@ -247,9 +247,9 @@ void *memmem(void const *haystack, size_t haystack_len, void const *needle, size
         return NULL;
     }
 
-    void const *haystack_end = (char const *)haystack + haystack_len - needle_len;
-    while (haystack <= haystack_end) {
-        void const *match = memchr(haystack, *(char const *)needle, haystack_end - haystack + 1);
+    char const *haystack_end = (char const *)haystack + haystack_len - needle_len;
+    while (haystack <= (const void *)haystack_end) {
+        const void *match = memchr(haystack, *(char const *)needle, haystack_end - (char const *)haystack + 1);
         if (match == NULL) {
             return NULL;
         }
