@@ -183,7 +183,7 @@ add_library (acars_core OBJECT
 	${CMAKE_CURRENT_BINARY_DIR}/version.c
 )
 set_property(TARGET acars_core PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(acars_core PUBLIC ${acars_include_dirs} ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(acars_core PUBLIC libacars/asn1 asn1 ${acars_include_dirs} ${CMAKE_CURRENT_BINARY_DIR})
 
 set(acars_obj_files $<TARGET_OBJECTS:asn1> $<TARGET_OBJECTS:acars_core>)
 

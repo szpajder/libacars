@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2003, 2004 X/IO Labs, xiolabs.com.
- * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * Copyright (c) 2003-2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
 #ifndef	_XER_SUPPORT_H_
 #define	_XER_SUPPORT_H_
 
-#include "asn_system.h"		/* Platform-specific types */
+#include <asn_system.h>		/* Platform-specific types */
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,8 +40,8 @@ typedef int (pxml_callback_f)(pxml_chunk_type_e _type,
 
 /*
  * Parse the given buffer as it were a chunk of XML data.
- * Invoke the specified callback each time the meaninful data is found.
- * This function returns number of bytes consumed from the bufer.
+ * Invoke the specified callback each time the meaningful data is found.
+ * This function returns number of bytes consumed from the buffer.
  * It will always be lesser than or equal to the specified _size.
  * The next invocation of this function must account the difference.
  */

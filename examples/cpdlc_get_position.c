@@ -88,26 +88,26 @@ long parse_altitude(FANSAltitude_t altitude) {
 	return result;
 }
 
-void extract_position(FANSPositionReport_t rpt) {
+void extract_position(FANSPositionReport_t* rpt) {
 	// FANSPositionCurrent_t can contain various types of position data (fix name, navaid, etc).
 	// We want only latitude/longitude coordinates.
-	FANSPositionCurrent_t pos = rpt.positioncurrent;
+	FANSPositionCurrent_t pos = rpt->positioncurrent;
 	if(pos.present != FANSPosition_PR_latitudeLongitude) {
 		printf("-- No latitude/longitude data present in this position report\n");
 		return;
 	}
-	FANSLatitudeLongitude_t latlon = pos.choice.latitudeLongitude;
-	double lat = parse_coordinate(latlon.latitude.latitudeDegrees, latlon.latitude.minutesLatLon);
-	if(latlon.latitude.latitudeDirection == FANSLatitudeDirection_south) {
+	FANSLatitudeLongitude_t* latlon = pos.choice.latitudeLongitude;
+	double lat = parse_coordinate(latlon->latitude.latitudeDegrees, latlon->latitude.minutesLatLon);
+	if(latlon->latitude.latitudeDirection == FANSLatitudeDirection_south) {
 		lat = -lat;
 	}
-	double lon = parse_coordinate(latlon.longitude.longitudeDegrees, latlon.longitude.minutesLatLon);
-	if(latlon.longitude.longitudeDirection == FANSLongitudeDirection_west) {
+	double lon = parse_coordinate(latlon->longitude.longitudeDegrees, latlon->longitude.minutesLatLon);
+	if(latlon->longitude.longitudeDirection == FANSLongitudeDirection_west) {
 		lon = -lon;
 	}
-	long hours = rpt.timeatpositioncurrent.hours;
-	long minutes = rpt.timeatpositioncurrent.minutes;
-	long alt = parse_altitude(rpt.altitude);
+	long hours = rpt->timeatpositioncurrent.hours;
+	long minutes = rpt->timeatpositioncurrent.minutes;
+	long alt = parse_altitude(rpt->altitude);
 	printf(" Latitude: %f\n Longitude: %f\n Altitude: %ld ft\n Time: %02ld:%02ld\n",
 			lat, lon, alt, hours, minutes);
 }

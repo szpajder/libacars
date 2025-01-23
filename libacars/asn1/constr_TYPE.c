@@ -2,8 +2,8 @@
  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include "asn_internal.h"
-#include "constr_TYPE.h"
+#include <asn_internal.h>
+#include <constr_TYPE.h>
 #include <errno.h>
 #include <libacars/vstring.h>
 
@@ -27,29 +27,32 @@ asn_TYPE_outmost_tag(const asn_TYPE_descriptor_t *type_descriptor,
 	if(type_descriptor->tags_count)
 		return type_descriptor->tags[0];
 
-	return type_descriptor->outmost_tag(type_descriptor, struct_ptr, 0, 0);
+	return type_descriptor->op->outmost_tag(type_descriptor, struct_ptr, 0, 0);
 }
 
 /*
  * Print the target language's structure in human readable form.
  */
 int
-asn_fprint(FILE *stream, asn_TYPE_descriptor_t *td, const void *struct_ptr, int indent) {
-	if(!stream) stream = stdout;
-	if(!td || !struct_ptr) {
-		errno = EINVAL;
-		return -1;
+asn_fprint(FILE *stream, const asn_TYPE_descriptor_t *td,
+           const void *struct_ptr) {
+    if(!stream) stream = stdout;
+    if(!td || !struct_ptr) {
+        errno = EINVAL;
+        return -1;
 	}
 
 	/* Invoke type-specific printer */
-	if(td->print_struct(td, struct_ptr, indent, _print2fp, stream))
-		return -1;
+    if(td->op->print_struct(td, struct_ptr, 1, _print2fp, stream)) {
+        return -1;
+    }
 
-	/* Terminate the output */
-	if(_print2fp("\n", 1, stream))
-		return -1;
+    /* Terminate the output */
+    if(_print2fp("\n", 1, stream)) {
+        return -1;
+    }
 
-	return fflush(stream);
+    return fflush(stream);
 }
 
 /* Dump the data into the specified stdio stream */
@@ -80,17 +83,19 @@ asn_sprintf(la_vstring *vstr, asn_TYPE_descriptor_t *td, const void *struct_ptr,
 	}
 
 	/* Invoke type-specific printer */
-	if(td->print_struct(td, struct_ptr, indent, _print2vstring, vstr))
+	if(td->op->print_struct(td, struct_ptr, indent, _print2vstring, vstr))
 		return -1;
 
 	return 0;
 }
 
+
+
 /*
  * Some compilers do not support variable args macros.
  * This function is a replacement of ASN_DEBUG() macro.
  */
-void ASN_DEBUG_f(const char *fmt, ...);
+void CC_PRINTFLIKE(1, 2) ASN_DEBUG_f(const char *fmt, ...);
 void ASN_DEBUG_f(const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
@@ -98,11 +103,3 @@ void ASN_DEBUG_f(const char *fmt, ...) {
 	fprintf(stderr, "\n");
 	va_end(ap);
 }
-
-#if	EMIT_ASN_DEBUG == 1
-#ifdef	__GNUC__
-#ifndef	ASN_THREAD_SAFE
-int asn_debug_indent;
-#endif
-#endif
-#endif
