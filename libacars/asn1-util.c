@@ -31,7 +31,7 @@ int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t cons
 	}
 #ifdef DEBUG
 	if(Debug >= D_VERBOSE) {
-		asn_fprint(stderr, td, *struct_ptr, 1);
+		asn_fprint(stderr, td, *struct_ptr);
 	}
 #endif
 	return 0;
