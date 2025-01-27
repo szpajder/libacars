@@ -222,7 +222,7 @@ void la_format_SEQUENCE_OF_as_json(la_asn1_formatter_params p, la_asn1_formatter
 // Bit 0 is the MSB of the first octet in the buffer.
 void la_format_BIT_STRING_as_text(la_asn1_formatter_params p, la_dict const *bit_labels) {
 	BIT_STRING_t const *bs = p.sptr;
-	la_debug_print(D_INFO, "buf len: %d bits_unused: %d\n", bs->size, bs->bits_unused);
+	la_debug_print(D_INFO, "buf len: %ld bits_unused: %d\n", bs->size, bs->bits_unused);
 	uint32_t val = 0;
 	int truncated = 0;
 	int len = bs->size;
@@ -267,7 +267,7 @@ end:
 
 void la_format_BIT_STRING_as_json(la_asn1_formatter_params p, la_dict const *bit_labels) {
 	BIT_STRING_t const *bs = p.sptr;
-	la_debug_print(D_INFO, "buf len: %d bits_unused: %d\n", bs->size, bs->bits_unused);
+	la_debug_print(D_INFO, "buf len: %ld bits_unused: %d\n", bs->size, bs->bits_unused);
 	uint32_t val = 0;
 	int len = bs->size;
 	int bits_unused = bs->bits_unused;

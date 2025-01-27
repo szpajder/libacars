@@ -11,8 +11,8 @@
 #ifndef	_CONSTR_TYPE_H_
 #define	_CONSTR_TYPE_H_
 
-#include <ber_tlv_length.h>
-#include <ber_tlv_tag.h>
+#include "ber_tlv_length.h"
+#include "ber_tlv_tag.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,48 +35,48 @@ typedef struct asn_struct_ctx_s {
 } asn_struct_ctx_t;
 
 #if !defined(ASN_DISABLE_BER_SUPPORT)
-#include <ber_decoder.h>  /* Basic Encoding Rules decoder */
-#include <der_encoder.h>  /* Distinguished Encoding Rules encoder */
+#include "ber_decoder.h"  /* Basic Encoding Rules decoder */
+#include "der_encoder.h"  /* Distinguished Encoding Rules encoder */
 #else
 typedef void (ber_type_decoder_f)(void);
 typedef void (der_type_encoder_f)(void);
 #endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_XER_SUPPORT)
-#include <xer_decoder.h>  /* Decoder of XER (XML, text) */
-#include <xer_encoder.h>  /* Encoder into XER (XML, text) */
+#include "xer_decoder.h"  /* Decoder of XER (XML, text) */
+#include "xer_encoder.h"  /* Encoder into XER (XML, text) */
 #else
 typedef void (xer_type_decoder_f)(void);
 typedef void (xer_type_encoder_f)(void);
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
-#include <jer_decoder.h>  /* Decoder of JER (JSON, text) */
-#include <jer_encoder.h>  /* Encoder into JER (JSON, text) */
+#include "jer_decoder.h"  /* Decoder of JER (JSON, text) */
+#include "jer_encoder.h"  /* Encoder into JER (JSON, text) */
 #else
 typedef void (jer_type_decoder_f)(void);
 typedef void (jer_type_encoder_f)(void);
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-#include <per_decoder.h>  /* Packet Encoding Rules decoder */
-#include <per_encoder.h>  /* Packet Encoding Rules encoder */
+#include "per_decoder.h"  /* Packet Encoding Rules decoder */
+#include "per_encoder.h"  /* Packet Encoding Rules encoder */
 #else
 typedef void (per_type_decoder_f)(void);
 typedef void (per_type_encoder_f)(void);
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 
-#include <constraints.h>  /* Subtype constraints support */
+#include "constraints.h"  /* Subtype constraints support */
 
 #if !defined(ASN_DISABLE_RFILL_SUPPORT)
-#include <asn_random_fill.h>  /* Random structures support */
+#include "asn_random_fill.h"  /* Random structures support */
 #else
 typedef void (asn_random_fill_f)(void);
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-#include <oer_decoder.h>  /* Octet Encoding Rules encoder */
-#include <oer_encoder.h>  /* Octet Encoding Rules encoder */
+#include "oer_decoder.h"  /* Octet Encoding Rules encoder */
+#include "oer_encoder.h"  /* Octet Encoding Rules encoder */
 #else
 typedef void (oer_type_decoder_f)(void);
 typedef void (oer_type_encoder_f)(void);
