@@ -16,6 +16,7 @@
 #include <libacars/json.h>              // la_json_append_*()
 #include <libacars/adsc.h>              // la_adsc_parse()
 #include <libacars/cpdlc.h>             // la_cpdlc_parse()
+#include <libacars/atis.h>              // la_atis_parse()
 
 #define LA_ARINC_IMI_LEN        3
 #define LA_ARINC_AIR_REG_LEN    7
@@ -46,6 +47,7 @@ static la_arinc_imi_map const imi_map[LA_ARINC_IMI_CNT] = {
 	{ .imi_string = ".DR1", .imi = ARINC_MSG_DR1 },
 	{ .imi_string = ".ADS", .imi = ARINC_MSG_ADS },
 	{ .imi_string = ".DIS", .imi = ARINC_MSG_DIS },
+	{ .imi_string = ".TI2", .imi = ARINC_MSG_TI2 },
 	{ .imi_string = NULL,   .imi = ARINC_MSG_UNKNOWN }
 };
 
@@ -84,6 +86,11 @@ static la_arinc_imi_props const imi_props[LA_ARINC_IMI_CNT] = {
 		.app_type = ARINC_APP_TYPE_BINARY,
 		.description = "ADS-C disconnect request",
 		.json_key = "adsc_disconnect_request",
+	},
+	[ARINC_MSG_TI2] = {
+		.app_type = ARINC_APP_TYPE_CHARACTER,
+		.description = "ATIS message",
+		.json_key = "atis_msg",
 	}
 };
 
@@ -250,6 +257,9 @@ la_proto_node *la_arinc_parse(char const *txt, la_msg_dir msg_dir) {
 		msg->crc_ok = crc_value == LA_CRC_ARINC_GOOD;
 
 		switch(msg->imi) {
+			case ARINC_MSG_TI2:
+				next_node = la_atis_parse(data, data_len, msg_dir);
+				break;
 			default:
 				break;
 		}

@@ -138,6 +138,7 @@ la_proto_node *la_acars_apps_parse_and_reassemble(char const *reg,
 		case 'A':
 			switch(label[1]) {
 				case '6':
+				case '9':
 				case 'A':
 					if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
 						goto end;
@@ -148,6 +149,7 @@ la_proto_node *la_acars_apps_parse_and_reassemble(char const *reg,
 		case 'B':
 			switch(label[1]) {
 				case '6':
+				case '9':
 				case 'A':
 					if((ret = la_arinc_parse(txt, msg_dir)) != NULL) {
 						goto end;

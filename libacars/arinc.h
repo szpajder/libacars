@@ -22,9 +22,10 @@ typedef enum {
 	ARINC_MSG_DR1,
 	ARINC_MSG_AT1,
 	ARINC_MSG_ADS,
-	ARINC_MSG_DIS
+	ARINC_MSG_DIS,
+	ARINC_MSG_TI2
 } la_arinc_imi;
-#define LA_ARINC_IMI_CNT 7
+#define LA_ARINC_IMI_CNT 8
 
 typedef struct {
 	char gs_addr[8];
