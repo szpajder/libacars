@@ -1,5 +1,9 @@
 # ChangeLog
 
+## Version 2.2.1 (2025-11-02)
+* Fix compatibility with latest CMake versions
+* Fix compilation error on Windows (thx @gvanem)
+
 ## Version 2.2.0 (2023-08-21)
 
 * Support for decoding OHMA messages. These are diagnostic data exchanged with
