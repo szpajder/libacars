@@ -75,16 +75,16 @@ cd libacars-x.y.z
 ```
 
 - **Option 2:** To run the latest development code which has not yet made it
-  into a stable release, clone the source repository and checkout the `unstable`
+  into a stable release, clone the source repository and checkout the `devel`
   branch:
 
 ```
 git clone https://github.com/szpajder/libacars
 cd libacars
-git checkout unstable
+git checkout devel
 ```
 
-`master` branch is always in sync with the latest stable release. `unstable`
+`master` branch is always in sync with the latest stable release. `devel`
 branch is where the latest cutting-edge code goes first.
 
 - Configure the build:
