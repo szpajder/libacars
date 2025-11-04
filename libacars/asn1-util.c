@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <search.h>                         // lfind()
 #include <libacars/asn1/asn_application.h>  // asn_TYPE_descriptor_t
+#include <libacars/asn1/uper_decoder.h>  // asn_TYPE_descriptor_t
 #include <libacars/asn1-util.h>             // la_asn1_formatter
 #include <libacars/macros.h>                // LA_ISPRINTF, la_debug_print
 #include <libacars/vstring.h>               // la_vstring
@@ -30,7 +31,7 @@ int la_asn1_decode_as(asn_TYPE_descriptor_t *td, void **struct_ptr, uint8_t cons
 	}
 #ifdef DEBUG
 	if(Debug >= D_VERBOSE) {
-		asn_fprint(stderr, td, *struct_ptr, 1);
+		asn_fprint(stderr, td, *struct_ptr);
 	}
 #endif
 	return 0;

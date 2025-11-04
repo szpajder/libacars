@@ -110,7 +110,7 @@ void la_cpdlc_destroy(void *data) {
 	}
 	la_cpdlc_msg *msg = data;
 	if(msg->asn_type != NULL) {
-		msg->asn_type->free_struct(msg->asn_type, msg->data, 0);
+		msg->asn_type->op->free_struct(msg->asn_type, msg->data, 0);
 	}
 	LA_XFREE(data);
 }

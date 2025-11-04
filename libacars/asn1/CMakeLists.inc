@@ -245,6 +245,38 @@ set(ASN_MODULE_HEADERS
 	per_decoder.h
 	per_encoder.h
 	per_opentype.h
+
+	# New files needed by the mouse07410 fork of asn1c
+	uper_support.h
+	uper_decoder.h
+	uper_encoder.h
+	uper_opentype.h
+	AMY_aper.c
+	asn_bit_data.h
+	asn_codecs_prim_ber.h
+	asn_codecs_prim_xer.h
+	asn_config.h
+	asn_constant.h
+	asn_ioc.h
+	asn_random_fill.h
+	ENUMERATED.h
+	EXTERNAL.h
+	GraphicString.h
+	OBJECT_IDENTIFIER.h
+	ObjectDescriptor.h
+	OPEN_TYPE.h
+	aper_support.h
+	aper_decoder.h
+	aper_encoder.h
+	aper_opentype.h
+
+	jer_support.h
+	jer_decoder.h
+	jer_encoder.h
+
+	oer_support.h
+	oer_decoder.h
+	oer_encoder.h
 )
 
 set(ASN_MODULE_SOURCES
@@ -490,5 +522,157 @@ set(ASN_MODULE_SOURCES
 	per_decoder.c
 	per_encoder.c
 	per_opentype.c
-)
 
+	# New files needed for mouse07410 asn1c fork
+	asn_internal.c
+	uper_support.c
+	uper_decoder.c
+	uper_encoder.c
+	uper_opentype.c
+
+	aper_support.c
+	aper_decoder.c
+	aper_encoder.c
+	aper_opentype.c
+
+	jer_support.c
+	jer_decoder.c
+	jer_encoder.c
+
+	oer_support.c
+	oer_decoder.c
+	oer_encoder.c
+
+	ANY_uper.c
+	ANY_aper.c
+	ANY_xer.c
+	ANY_jer.c
+	ANY.c
+
+	asn_bit_data.c
+	asn_codecs_prim_ber.c
+	asn_codecs_prim_xer.c
+	asn_codecs_prim_jer.c
+	asn_random_fill.c
+
+	BIT_STRING_uper.c
+	BIT_STRING_xer.c
+	BIT_STRING_oer.c
+	BIT_STRING_jer.c
+	BIT_STRING_rfill.c
+	BIT_STRING_print.c
+
+	BOOLEAN_uper.c
+	BOOLEAN_aper.c
+	BOOLEAN_xer.c
+	BOOLEAN_oer.c
+	BOOLEAN_ber.c
+	BOOLEAN_jer.c
+	BOOLEAN_rfill.c
+	BOOLEAN_print.c
+
+	constr_CHOICE_ber.c
+	constr_CHOICE_print.c
+	constr_CHOICE_rfill.c
+	constr_CHOICE_uper.c
+	constr_CHOICE_aper.c
+	constr_CHOICE_xer.c
+	constr_CHOICE_oer.c
+	constr_CHOICE_jer.c
+
+	constr_SEQUENCE_ber.c
+	constr_SEQUENCE_xer.c
+	constr_SEQUENCE_uper.c
+	constr_SEQUENCE_oer.c
+	constr_SEQUENCE_jer.c
+	constr_SEQUENCE_aper.c
+	constr_SEQUENCE_rfill.c
+	constr_SEQUENCE_print.c
+
+	constr_SEQUENCE_OF_ber.c
+	constr_SEQUENCE_OF_xer.c
+	constr_SEQUENCE_OF_jer.c
+	constr_SEQUENCE_OF_uper.c
+	constr_SEQUENCE_OF_aper.c
+	constr_SEQUENCE_ber.c
+
+	constr_SET_OF_ber.c
+	constr_SET_OF_xer.c
+	constr_SET_OF_oer.c
+	constr_SET_OF_jer.c
+	constr_SET_OF_uper.c
+	constr_SET_OF_aper.c
+	constr_SET_OF_ber.c
+	constr_SET_OF_rfill.c
+	constr_SET_OF_print.c
+
+	ENUMERATED_uper.c
+	ENUMERATED_aper.c
+	ENUMERATED_oer.c
+	ENUMERATED_jer.c
+	ENUMERATED.c
+	EXTERNAL.c
+	constr_SET_OF_xer.c
+	constr_SET_OF_uper.c
+
+	GraphicString.c
+
+	INTEGER_ber.c
+	INTEGER_uper.c
+	INTEGER_aper.c
+	INTEGER_xer.c
+	INTEGER_jer.c
+	INTEGER_oer.c
+	INTEGER_rfill.c
+	INTEGER_print.c
+
+	NativeEnumerated_uper.c
+	NativeEnumerated_aper.c
+	NativeEnumerated_xer.c
+	NativeEnumerated_jer.c
+	NativeEnumerated_oer.c
+
+	NativeInteger_ber.c
+	NativeInteger_uper.c
+	NativeInteger_aper.c
+	NativeInteger_oer.c
+	NativeInteger_xer.c
+	NativeInteger_jer.c
+	NativeInteger_rfill.c
+	NativeInteger_print.c
+
+	NULL_ber.c
+	NULL_uper.c
+	NULL_aper.c
+	NULL_xer.c
+	NULL_oer.c
+	NULL_jer.c
+	NULL_print.c
+	NULL_rfill.c
+
+	OBJECT_IDENTIFIER.c
+	OBJECT_IDENTIFIER_xer.c
+	OBJECT_IDENTIFIER_jer.c
+	OBJECT_IDENTIFIER_print.c
+	OBJECT_IDENTIFIER_rfill.c
+
+	ObjectDescriptor.c
+
+	OCTET_STRING_ber.c
+	OCTET_STRING_uper.c
+	OCTET_STRING_aper.c
+	OCTET_STRING_xer.c
+	OCTET_STRING_oer.c
+	OCTET_STRING_jer.c
+	OCTET_STRING_print.c
+	OCTET_STRING_rfill.c
+
+	OPEN_TYPE_ber.c
+	OPEN_TYPE_uper.c
+	OPEN_TYPE_aper.c
+	OPEN_TYPE_xer.c
+	OPEN_TYPE_oer.c
+	OPEN_TYPE_jer.c
+	OPEN_TYPE.c
+
+)

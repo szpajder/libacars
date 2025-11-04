@@ -2,52 +2,107 @@
  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include "asn_internal.h"
-#include "BIT_STRING.h"
-#include "asn_internal.h"
+#include <asn_internal.h>
+#include <BIT_STRING.h>
 
 /*
  * BIT STRING basic type description.
  */
 static const ber_tlv_tag_t asn_DEF_BIT_STRING_tags[] = {
-	(ASN_TAG_CLASS_UNIVERSAL | (3 << 2))
+    (ASN_TAG_CLASS_UNIVERSAL | (3 << 2))
 };
-static asn_OCTET_STRING_specifics_t asn_DEF_BIT_STRING_specs = {
-	sizeof(BIT_STRING_t),
-	offsetof(BIT_STRING_t, _asn_ctx),
-	ASN_OSUBV_BIT
+asn_OCTET_STRING_specifics_t asn_SPC_BIT_STRING_specs = {
+    sizeof(BIT_STRING_t),
+    offsetof(BIT_STRING_t, _asn_ctx),
+    ASN_OSUBV_BIT
+};
+asn_TYPE_operation_t asn_OP_BIT_STRING = {
+    OCTET_STRING_free,         /* Implemented in terms of OCTET STRING */
+#if !defined(ASN_DISABLE_PRINT_SUPPORT)
+    BIT_STRING_print,
+#else
+    0,
+#endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
+    BIT_STRING_compare,
+#if !defined(ASN_DISABLE_BER_SUPPORT)
+    OCTET_STRING_decode_ber,   /* Implemented in terms of OCTET STRING */
+    OCTET_STRING_encode_der,   /* Implemented in terms of OCTET STRING */
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
+#if !defined(ASN_DISABLE_XER_SUPPORT)
+    OCTET_STRING_decode_xer_binary,
+    BIT_STRING_encode_xer,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+    OCTET_STRING_decode_jer_hex,
+    BIT_STRING_encode_jer,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+    BIT_STRING_decode_oer,
+    BIT_STRING_encode_oer,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT)
+    BIT_STRING_decode_uper,  /* Unaligned PER decoder */
+    BIT_STRING_encode_uper,  /* Unaligned PER encoder */
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
+#if !defined(ASN_DISABLE_APER_SUPPORT)
+    OCTET_STRING_decode_aper,  /* Aligned PER decoder */
+    OCTET_STRING_encode_aper,  /* Aligned PER encoder */
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_RFILL_SUPPORT)
+    BIT_STRING_random_fill,
+#else
+    0,
+#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
+    0  /* Use generic outmost tag fetcher */
 };
 asn_TYPE_descriptor_t asn_DEF_BIT_STRING = {
-	"BIT STRING",
-	"BIT_STRING",
-	OCTET_STRING_free,         /* Implemented in terms of OCTET STRING */
-	BIT_STRING_print,
-	BIT_STRING_constraint,
-	OCTET_STRING_decode_ber,   /* Implemented in terms of OCTET STRING */
-	OCTET_STRING_encode_der,   /* Implemented in terms of OCTET STRING */
-	OCTET_STRING_decode_xer_binary,
-	BIT_STRING_encode_xer,
-	OCTET_STRING_decode_uper,	/* Unaligned PER decoder */
-	OCTET_STRING_encode_uper,	/* Unaligned PER encoder */
-	0, /* Use generic outmost tag fetcher */
-	asn_DEF_BIT_STRING_tags,
-	sizeof(asn_DEF_BIT_STRING_tags)
-	  / sizeof(asn_DEF_BIT_STRING_tags[0]),
-	asn_DEF_BIT_STRING_tags,	/* Same as above */
-	sizeof(asn_DEF_BIT_STRING_tags)
-	  / sizeof(asn_DEF_BIT_STRING_tags[0]),
-	0,	/* No PER visible constraints */
-	0, 0,	/* No members */
-	&asn_DEF_BIT_STRING_specs
+    "BIT STRING",
+    "BIT_STRING",
+    &asn_OP_BIT_STRING,
+    asn_DEF_BIT_STRING_tags,
+    sizeof(asn_DEF_BIT_STRING_tags)
+      / sizeof(asn_DEF_BIT_STRING_tags[0]),
+    asn_DEF_BIT_STRING_tags,  /* Same as above */
+    sizeof(asn_DEF_BIT_STRING_tags)
+      / sizeof(asn_DEF_BIT_STRING_tags[0]),
+    {
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+        BIT_STRING_constraint
+    },
+    0, 0,  /* No members */
+    &asn_SPC_BIT_STRING_specs
 };
 
 /*
  * BIT STRING generic constraint.
  */
 int
-BIT_STRING_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
-		asn_app_constraint_failed_f *ctfailcb, void *app_key) {
-	const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
+BIT_STRING_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
+                      asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+    const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
 
 	if(st && st->buf) {
 		if((st->size == 0 && st->bits_unused)
@@ -67,123 +122,94 @@ BIT_STRING_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
 	return 0;
 }
 
-static char *_bit_pattern[16] = {
-	"0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111",
-	"1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111"
-};
+/*
+ * Non-destructively remove the trailing 0-bits from the given bit string.
+ */
+const BIT_STRING_t *
+BIT_STRING__compactify(const BIT_STRING_t *st, BIT_STRING_t *tmp) {
+    const uint8_t *b;
+    union {
+        const uint8_t *c_buf;
+        uint8_t *nc_buf;
+    } unconst;
 
-asn_enc_rval_t
-BIT_STRING_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
-	int ilevel, enum xer_encoder_flags_e flags,
-		asn_app_consume_bytes_f *cb, void *app_key) {
-	asn_enc_rval_t er;
-	char scratch[128];
-	char *p = scratch;
-	char *scend = scratch + (sizeof(scratch) - 10);
-	const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
-	int xcan = (flags & XER_F_CANONICAL);
-	uint8_t *buf;
-	uint8_t *end;
+    if(st->size == 0) {
+        assert(st->bits_unused == 0);
+        return st;
+    } else {
+        for(b = &st->buf[st->size - 1]; b > st->buf && *b == 0; b--) {
+            ;
+        }
+        /* b points to the last byte which may contain data */
+        if(*b) {
+            int unused = 7;
+            uint8_t v = *b;
+            v &= -(int8_t)v;
+            if(v & 0x0F) unused -= 4;
+            if(v & 0x33) unused -= 2;
+            if(v & 0x55) unused -= 1;
+            tmp->size = b-st->buf + 1;
+            tmp->bits_unused = unused;
+        } else {
+            tmp->size = b-st->buf;
+            tmp->bits_unused = 0;
+        }
 
-	if(!st || !st->buf)
-		ASN__ENCODE_FAILED;
+        assert(b >= st->buf);
+    }
 
-	er.encoded = 0;
-
-	buf = st->buf;
-	end = buf + st->size - 1;	/* Last byte is special */
-
-	/*
-	 * Binary dump
-	 */
-	for(; buf < end; buf++) {
-		int v = *buf;
-		int nline = xcan?0:(((buf - st->buf) % 8) == 0);
-		if(p >= scend || nline) {
-			er.encoded += p - scratch;
-			ASN__CALLBACK(scratch, p - scratch);
-			p = scratch;
-			if(nline) ASN__TEXT_INDENT(1, ilevel);
-		}
-		memcpy(p + 0, _bit_pattern[v >> 4], 4);
-		memcpy(p + 4, _bit_pattern[v & 0x0f], 4);
-		p += 8;
-	}
-
-	if(!xcan && ((buf - st->buf) % 8) == 0)
-		ASN__TEXT_INDENT(1, ilevel);
-	er.encoded += p - scratch;
-	ASN__CALLBACK(scratch, p - scratch);
-	p = scratch;
-
-	if(buf == end) {
-		int v = *buf;
-		int ubits = st->bits_unused;
-		int i;
-		for(i = 7; i >= ubits; i--)
-			*p++ = (v & (1 << i)) ? 0x31 : 0x30;
-		er.encoded += p - scratch;
-		ASN__CALLBACK(scratch, p - scratch);
-	}
-
-	if(!xcan) ASN__TEXT_INDENT(1, ilevel - 1);
-
-	ASN__ENCODED_OK(er);
-cb_failed:
-	ASN__ENCODE_FAILED;
+    unconst.c_buf = st->buf;
+    tmp->buf = unconst.nc_buf;
+    return tmp;
 }
-
 
 /*
- * BIT STRING specific contents printer.
+ * Lexicographically compare the common prefix of both strings,
+ * and if it is the same return -1 for the smallest string.
  */
 int
-BIT_STRING_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
-		asn_app_consume_bytes_f *cb, void *app_key) {
-	const char * const h2c = "0123456789ABCDEF";
-	char scratch[64];
-	const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
-	uint8_t *buf;
-	uint8_t *end;
-	char *p = scratch;
+BIT_STRING_compare(const asn_TYPE_descriptor_t *td, const void *aptr,
+                   const void *bptr) {
+    /*
+     * Remove information about trailing bits, since
+     * X.680 (08/2015) #22.7 "ensure that different semantics are not"
+     * "associated with [values that differ only in] the trailing 0 bits."
+     */
+    BIT_STRING_t compact_a, compact_b;
+    const BIT_STRING_t *a = BIT_STRING__compactify(aptr, &compact_a);
+    const BIT_STRING_t *b = BIT_STRING__compactify(bptr, &compact_b);
+    const asn_OCTET_STRING_specifics_t *specs = td->specifics;
 
-	(void)td;	/* Unused argument */
+    (void)specs;
+    assert(specs && specs->subvariant == ASN_OSUBV_BIT);
 
-	if(!st || !st->buf)
-		return (cb("<absent>", 8, app_key) < 0) ? -1 : 0;
-
-	ilevel++;
-	buf = st->buf;
-	end = buf + st->size;
-
-	/*
-	 * Hexadecimal dump.
-	 */
-	for(; buf < end; buf++) {
-		if((buf - st->buf) % 16 == 0 && (st->size > 16)
-				&& buf != st->buf) {
-			_i_INDENT(1);
-			/* Dump the string */
-			if(cb(scratch, p - scratch, app_key) < 0) return -1;
-			p = scratch;
-		}
-		*p++ = h2c[*buf >> 4];
-		*p++ = h2c[*buf & 0x0F];
-		*p++ = 0x20;
-	}
-
-	if(p > scratch) {
-		p--;	/* Eat the tailing space */
-
-		if((st->size > 16)) {
-			_i_INDENT(1);
-		}
-
-		/* Dump the incomplete 16-bytes row */
-		if(cb(scratch, p - scratch, app_key) < 0)
-			return -1;
-	}
-
-	return 0;
+    if(a && b) {
+        size_t common_prefix_size = a->size <= b->size ? a->size : b->size;
+        int ret = memcmp(a->buf, b->buf, common_prefix_size);
+        if(ret == 0) {
+            /* Figure out which string with equal prefixes is longer. */
+            if(a->size < b->size) {
+                return -1;
+            } else if(a->size > b->size) {
+                return 1;
+            } else {
+                /* Figure out how many unused bits */
+                if(a->bits_unused > b->bits_unused) {
+                    return -1;
+                } else if(a->bits_unused < b->bits_unused) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+        } else {
+            return ret;
+        }
+    } else if(!a && !b) {
+        return 0;
+    } else if(!a) {
+        return -1;
+    } else {
+        return 1;
+    }
 }
-

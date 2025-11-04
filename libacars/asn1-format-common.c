@@ -63,8 +63,8 @@ void la_format_INTEGER_as_ENUM_as_json(la_asn1_formatter_params p, la_dict const
 
 void la_format_CHOICE_as_text(la_asn1_formatter_params p, la_dict const *choice_labels,
 		la_asn1_formatter_func cb) {
-	asn_CHOICE_specifics_t *specs = p.td->specifics;
-	int present = _fetch_present_idx(p.sptr, specs->pres_offset, specs->pres_size);
+	const asn_CHOICE_specifics_t *specs = p.td->specifics;
+	unsigned int present = _fetch_present_idx(p.sptr, specs->pres_offset, specs->pres_size);
 	if(p.label != NULL) {
 		LA_ISPRINTF(p.vstr, p.indent, "%s:\n", p.label);
 		p.indent++;
@@ -103,7 +103,7 @@ void la_format_CHOICE_as_text(la_asn1_formatter_params p, la_dict const *choice_
 void la_format_CHOICE_as_json(la_asn1_formatter_params p, la_dict const *choice_labels,
 		la_asn1_formatter_func cb) {
 	asn_CHOICE_specifics_t const *specs = p.td->specifics;
-	int present = _fetch_present_idx(p.sptr, specs->pres_offset, specs->pres_size);
+	unsigned int present = _fetch_present_idx(p.sptr, specs->pres_offset, specs->pres_size);
 	la_json_object_start(p.vstr, p.label);
 	if(choice_labels != NULL) {
 		char const *descr = la_dict_search(choice_labels, present);
@@ -138,7 +138,7 @@ void la_format_SEQUENCE_as_text(la_asn1_formatter_params p, la_asn1_formatter_fu
 		p.indent++;
 	}
 	la_asn1_formatter_params cb_p = p;
-	for(int edx = 0; edx < p.td->elements_count; edx++) {
+	for(unsigned int edx = 0; edx < p.td->elements_count; edx++) {
 		asn_TYPE_member_t *elm = &p.td->elements[edx];
 		void const *memb_ptr;
 
@@ -162,7 +162,7 @@ void la_format_SEQUENCE_as_text(la_asn1_formatter_params p, la_asn1_formatter_fu
 void la_format_SEQUENCE_as_json(la_asn1_formatter_params p, la_asn1_formatter_func cb) {
 	la_asn1_formatter_params cb_p = p;
 	la_json_object_start(p.vstr, p.label);
-	for(int edx = 0; edx < p.td->elements_count; edx++) {
+	for(unsigned int edx = 0; edx < p.td->elements_count; edx++) {
 		asn_TYPE_member_t *elm = &p.td->elements[edx];
 		void const *memb_ptr;
 
@@ -222,7 +222,7 @@ void la_format_SEQUENCE_OF_as_json(la_asn1_formatter_params p, la_asn1_formatter
 // Bit 0 is the MSB of the first octet in the buffer.
 void la_format_BIT_STRING_as_text(la_asn1_formatter_params p, la_dict const *bit_labels) {
 	BIT_STRING_t const *bs = p.sptr;
-	la_debug_print(D_INFO, "buf len: %d bits_unused: %d\n", bs->size, bs->bits_unused);
+	la_debug_print(D_INFO, "buf len: %ld bits_unused: %d\n", bs->size, bs->bits_unused);
 	uint32_t val = 0;
 	int truncated = 0;
 	int len = bs->size;
@@ -260,14 +260,14 @@ void la_format_BIT_STRING_as_text(la_asn1_formatter_params p, la_dict const *bit
 end:
 	if(truncated > 0) {
 		LA_ISPRINTF(p.vstr, p.indent,
-				"-- Warning: bit string too long (%d bits), truncated to %d bits\n",
+				"-- Warning: bit string too long (%zu bits), truncated to %d bits\n",
 				bs->size * 8 - bs->bits_unused, len * 8);
 	}
 }
 
 void la_format_BIT_STRING_as_json(la_asn1_formatter_params p, la_dict const *bit_labels) {
 	BIT_STRING_t const *bs = p.sptr;
-	la_debug_print(D_INFO, "buf len: %d bits_unused: %d\n", bs->size, bs->bits_unused);
+	la_debug_print(D_INFO, "buf len: %ld bits_unused: %d\n", bs->size, bs->bits_unused);
 	uint32_t val = 0;
 	int len = bs->size;
 	int bits_unused = bs->bits_unused;

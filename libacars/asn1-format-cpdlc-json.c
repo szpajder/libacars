@@ -11,6 +11,7 @@
 #include <libacars/asn1-format-cpdlc.h>             /* la_asn1_output_cpdlc_as_json(),
                                                        FANSATCUplinkMsgElementId_labels,
                                                        FANSATCDownlinkMsgElementId_labels */
+#include <libacars/FANS.h>
 #include <libacars/macros.h>                        /* LA_ISPRINTF */
 #include <libacars/util.h>                          /* LA_XCALLOC, la_dict_search() */
 #include <libacars/vstring.h>                       /* la_vstring */
