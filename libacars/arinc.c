@@ -16,6 +16,7 @@
 #include <libacars/json.h>              // la_json_append_*()
 #include <libacars/adsc.h>              // la_adsc_parse()
 #include <libacars/cpdlc.h>             // la_cpdlc_parse()
+#include <libacars/atis.h>              // la_atis_parse()
 
 #define LA_ARINC_IMI_LEN        3
 #define LA_ARINC_AIR_REG_LEN    7
@@ -46,6 +47,7 @@ static la_arinc_imi_map const imi_map[LA_ARINC_IMI_CNT] = {
 	{ .imi_string = ".DR1", .imi = ARINC_MSG_DR1 },
 	{ .imi_string = ".ADS", .imi = ARINC_MSG_ADS },
 	{ .imi_string = ".DIS", .imi = ARINC_MSG_DIS },
+	{ .imi_string = ".TI2", .imi = ARINC_MSG_TI2 },
 	{ .imi_string = NULL,   .imi = ARINC_MSG_UNKNOWN }
 };
 
@@ -84,6 +86,11 @@ static la_arinc_imi_props const imi_props[LA_ARINC_IMI_CNT] = {
 		.app_type = ARINC_APP_TYPE_BINARY,
 		.description = "ADS-C disconnect request",
 		.json_key = "adsc_disconnect_request",
+	},
+	[ARINC_MSG_TI2] = {
+		.app_type = ARINC_APP_TYPE_CHARACTER,
+		.description = "ATIS message",
+		.json_key = "atis_msg",
 	}
 };
 
@@ -201,6 +208,57 @@ la_proto_node *la_arinc_parse(char const *txt, la_msg_dir msg_dir) {
 			case ARINC_MSG_DIS:
 				next_node = la_adsc_parse(buf, buflen, msg_dir, msg->imi);
 				LA_XFREE(buf);
+				break;
+			default:
+				break;
+		}
+	} else if(imi_props[msg->imi].app_type == ARINC_APP_TYPE_CHARACTER) {
+		// ARINC622 character-oriented format
+		// Total message length (IMI.<chars><CRC hex[4]>)
+		size_t payload_len = strlen(payload);
+
+		// Remove tailing CRLF
+		size_t trimmed = payload_len;
+		for(; (trimmed <= payload_len) &&
+				(trimmed > 0) &&
+				(payload[trimmed - 1] == '\r' ||
+				payload[trimmed - 1] == '\n');
+				trimmed--) {
+		}
+
+		if(trimmed < LA_ARINC_IMI_LEN + 1 + LA_ARINC_CRC_LEN * 2) {
+			la_debug_print(D_ERROR, "payload too short: %zu\n", payload_len);
+			goto cleanup;
+		}
+
+		payload_len = trimmed;
+
+		// No registration in character-oriented format
+		msg->air_reg[0] = 0;
+
+		// Application data (without IMI. and CRC hex)
+		uint8_t *data = (uint8_t *) payload + (LA_ARINC_IMI_LEN + 1);
+		size_t data_len = payload_len - (LA_ARINC_IMI_LEN + 1) - LA_ARINC_CRC_LEN * 2;
+
+		// CRC hex to byte[2] (allocated)
+		uint8_t *crc_bytes = NULL;
+		la_slurp_hexstring((char *) data + data_len, &crc_bytes);
+
+		// crc(IMI.<chars><CRC bytes[2]>)
+		size_t crc_len = payload_len - 2;
+		uint8_t *crc = LA_XCALLOC(crc_len, sizeof(uint8_t));
+		memcpy(crc, payload, payload_len - 4);
+		memcpy(crc + payload_len - 4, crc_bytes, 2);
+		LA_XFREE(crc_bytes);
+
+		uint16_t crc_value = la_crc16_arinc(crc, crc_len, 0xFFFFu);
+		LA_XFREE(crc);
+
+		msg->crc_ok = crc_value == LA_CRC_ARINC_GOOD;
+
+		switch(msg->imi) {
+			case ARINC_MSG_TI2:
+				next_node = la_atis_parse(data, data_len, msg_dir);
 				break;
 			default:
 				break;

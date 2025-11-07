@@ -14,6 +14,10 @@ ACARS_2.0 {
     la_arinc_format_json;
     la_arinc_format_text;
     la_arinc_parse;
+    la_atis_destroy;
+    la_atis_format_json;
+    la_atis_format_text;
+    la_atis_parse;
     la_config;
     la_config_destroy;
     la_config_init;
@@ -33,6 +37,7 @@ ACARS_2.0 {
     la_DEF_acars_message;
     la_DEF_adsc_message;
     la_DEF_arinc_message;
+    la_DEF_atis_message;
     la_DEF_cpdlc_message;
     la_DEF_media_adv_message;
     la_DEF_miam_core_pdu;
@@ -95,6 +100,7 @@ ACARS_2.0 {
     la_proto_tree_find_acars;
     la_proto_tree_find_adsc;
     la_proto_tree_find_arinc;
+    la_proto_tree_find_atis;
     la_proto_tree_find_cpdlc;
     la_proto_tree_find_media_adv;
     la_proto_tree_find_miam;

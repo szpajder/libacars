@@ -160,6 +160,7 @@ add_library (acars_core OBJECT
 	acars.c
 	adsc.c
 	arinc.c
+	atis.c
 	asn1-format-common.c
 	asn1-format-cpdlc-text.c
 	asn1-format-cpdlc-json.c
@@ -218,6 +219,7 @@ install(FILES
 	acars.h
 	adsc.h
 	arinc.h
+	atis.h
 	asn1-format-common.h
 	asn1-util.h
 	cpdlc.h
