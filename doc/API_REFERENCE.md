@@ -183,10 +183,13 @@ A structure representing a decoded ACARS message.
 - `crc_ok` - `true` if ACARS CRC verification succeeded, `false` otherwise.
 - `err` - `true` if the decoder failed to decode the message. Values of other
   fields are left uninitialized.
-- `final_block` - `true` if the message text is terminated with ETX character
-  (meaning it's the final block of a multiblock ACARS message), `false` if
+- `more` - `false` if the message text is terminated with ETX character
+  (meaning it's the final block of a multiblock ACARS message), `true` if
   it has been terminated with ETB character (meaning there are more blocks
   left in this message)
+- `reassembly` - multi-block message reassembly status. One of: `unknown`,
+  `complete`, `in progress`, `skipped`, `duplicate`, `out of sequence`,
+  `invalid args`.
 - `mode` - mode character
 - `reg` - aircraft registration number (NULL-terminated)
 - `ack` - acknowledgement character

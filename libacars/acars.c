@@ -559,6 +559,7 @@ void la_acars_format_json(la_vstring *vstr, void const *data) {
 	}
 	la_json_append_bool(vstr, "crc_ok", msg->crc_ok);
 	la_json_append_bool(vstr, "more", !msg->final_block);
+	la_json_append_string(vstr, "reassembly", la_reasm_status_name_get(msg->reasm_status));
 	la_json_append_string(vstr, "reg", msg->reg);
 	la_json_append_char(vstr, "mode", msg->mode);
 	la_json_append_string(vstr, "label", msg->label);
