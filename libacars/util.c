@@ -329,6 +329,9 @@ la_octet_string *la_base64_decode(char const *input, size_t input_len) {
 	if((input_len & 3) != 0) {
 		input_len &= ~3;
 	}
+	if(input_len == 0) {  // block rounding above can zero a length of 1..3
+		return NULL;
+	}
     size_t decoded_len = (input_len * 3) / 4;
 
     if (input[input_len - 1] == '=') {
