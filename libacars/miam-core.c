@@ -219,6 +219,7 @@ la_proto_node *la_miam_core_pdu_parse(char const *txt) {
 	// Assume the initial part is the Header - try to decode it
 	la_base85_decode_result header = la_base85_decode(txt, delim);
 	if(header.buf == NULL || header.len < hpad) { // BASE85 decoder failed or result too short
+		LA_XFREE(header.buf);
 		return NULL;
 	}
 	la_debug_print_buf_hex(D_VERBOSE, header.buf, header.len, "Decoded header:\n");
