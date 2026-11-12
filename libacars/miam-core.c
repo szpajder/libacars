@@ -577,7 +577,8 @@ static la_proto_node *la_miam_core_v1_data_parse(uint8_t const *hdrbuf, int hdrl
 	la_debug_print(D_INFO, "app_id: '%s'\n", pdu->app_id);
 	hdrbuf += app_id_len; hdrlen -= app_id_len;
 
-	pdu->crc = (hdrbuf[0] << 24) | (hdrbuf[1] << 16) | (hdrbuf[2] << 8) | hdrbuf[3];
+	pdu->crc = ((uint32_t)hdrbuf[0] << 24) | ((uint32_t)hdrbuf[1] << 16) |
+		((uint32_t)hdrbuf[2] << 8) | (uint32_t)hdrbuf[3];
 	hdrbuf += LA_MIAM_CORE_V1_CRC_LEN; hdrlen -= LA_MIAM_CORE_V1_CRC_LEN;
 	if(hdrlen > 0) {
 		la_debug_print(D_ERROR, "Warning: %u bytes left after MIAM header\n", hdrlen);
