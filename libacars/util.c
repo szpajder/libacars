@@ -18,7 +18,6 @@
 #ifdef WITH_LIBXML2
 #include <libxml/parser.h>      // xmlParseDoc
 #include <libxml/tree.h>        // xmlBuffer.*, xmlNodeDump, xmlDocGetRootElement, xmlFreeDoc
-#include <libxml/xmlerror.h>    // initGenericErrorDefaultFunc, xmlGenericError
 #endif
 #ifdef WITH_ZLIB
 #include <zlib.h>               // z_stream, inflateInit2(), inflate(), inflateEnd()
@@ -263,30 +262,34 @@ void *memmem(void const *haystack, size_t haystack_len, void const *needle, size
 #endif
 
 #ifdef WITH_LIBXML2
-void la_xml_errfunc_noop(void * ctx, char const *msg, ...) {
-	(void)ctx;
-	(void)msg;
-}
-
-xmlBufferPtr la_prettify_xml(char const *buf) {
+xmlChar *la_prettify_xml(char const *buf) {
 	if(buf == NULL) {
 		return NULL;
 	}
-	// Disables printing XML parser errors to stderr by setting error handler to noop.
-	// Can't do this once in library constructor, because this is a per-thread setting.
-	if(xmlGenericError != la_xml_errfunc_noop) {
-		xmlGenericErrorFunc errfuncptr = la_xml_errfunc_noop;
-		initGenericErrorDefaultFunc(&errfuncptr);
+
+	size_t len = strlen(buf);
+	if(len > INT_MAX) {
+		return NULL;
 	}
-	xmlDocPtr doc = xmlParseDoc((uint8_t const *)buf);
+
+	xmlDocPtr doc = xmlReadMemory(buf, (int)len, NULL, NULL,
+		XML_PARSE_NOERROR | XML_PARSE_NOWARNING | XML_PARSE_NONET
+	);
 	if(doc == NULL) {
 		return NULL;
 	}
 	xmlBufferPtr outbufptr = xmlBufferCreate();
+	if(outbufptr == NULL) {
+		xmlFreeDoc(doc);
+		return NULL;
+	}
 	int result_len = xmlNodeDump(outbufptr, doc, xmlDocGetRootElement(doc), 0, 1);
 	xmlFreeDoc(doc);
+
 	if(result_len > 0) {
-		return outbufptr;
+		xmlChar *result = xmlBufferDetach(outbufptr);
+		xmlBufferFree(outbufptr);
+		return result;
 	}
 	xmlBufferFree(outbufptr);
 	return NULL;

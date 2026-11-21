@@ -10,7 +10,7 @@
 #include <sys/time.h>                       // struct timeval
 #endif
 #ifdef WITH_LIBXML2
-#include <libxml/tree.h>                    // xmlBufferPtr, xmlBufferFree()
+#include <libxml/tree.h>                    // xmlChar, xmlFree()
 #endif
 #include <libacars/libacars.h>              // la_proto_node, la_proto_tree_find_protocol
 #include <libacars/macros.h>                // la_assert, la_debug_print
@@ -530,11 +530,11 @@ void la_acars_format_text(la_vstring *vstr, void const *data, int indent) {
 #ifdef WITH_LIBXML2
 		(void)la_config_get_bool("prettify_xml", &prettify_xml);
 		if(prettify_xml == true) {
-			xmlBufferPtr xmlbufptr = NULL;
-			if((xmlbufptr = la_prettify_xml(msg->txt)) != NULL) {
+			xmlChar *xml = NULL;
+			if((xml = la_prettify_xml(msg->txt)) != NULL) {
 				LA_ISPRINTF(vstr, indent, "Message (reformatted):\n");
-				la_isprintf_multiline_text(vstr, indent + 1, (char *)xmlbufptr->content);
-				xmlBufferFree(xmlbufptr);
+				la_isprintf_multiline_text(vstr, indent + 1, (char *)xml);
+				xmlFree(xml);
 			} else {
 				// Doesn't look like XML - print it as normal
 				prettify_xml = false;

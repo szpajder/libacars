@@ -9,7 +9,7 @@
 #include <string.h>                 // strchr(), strdup(), strtok_r(), strlen
 #include "config.h"
 #ifdef WITH_LIBXML2
-#include <libxml/tree.h>            // xmlBufferPtr, xmlBufferFree()
+#include <libxml/tree.h>            // xmlChar, xmlFree()
 #endif
 #include <libacars/macros.h>        // la_assert(), LA_UNLIKELY()
 #include <libacars/libacars.h>      // la_proto_node
@@ -745,11 +745,11 @@ static void la_miam_core_v1_data_format_text(la_vstring *vstr, void const *data,
 #ifdef WITH_LIBXML2
 			(void)la_config_get_bool("prettify_xml", &prettify_xml);
 			if(prettify_xml == true) {
-				xmlBufferPtr xmlbufptr = NULL;
-				if((xmlbufptr = la_prettify_xml((char *)pdu->data)) != NULL) {
+				xmlChar *xml = NULL;
+				if((xml = la_prettify_xml((char *)pdu->data)) != NULL) {
 					LA_ISPRINTF(vstr, indent, "Message (reformatted):\n");
-					la_isprintf_multiline_text(vstr, indent + 1, (char *)xmlbufptr->content);
-					xmlBufferFree(xmlbufptr);
+					la_isprintf_multiline_text(vstr, indent + 1, (char *)xml);
+					xmlFree(xml);
 				} else {
 					// Doesn't look like XML - print it as normal
 					prettify_xml = false;
@@ -1146,11 +1146,11 @@ static void la_miam_core_v2_data_format_text(la_vstring *vstr, void const *data,
 #ifdef WITH_LIBXML2
 			(void)la_config_get_bool("prettify_xml", &prettify_xml);
 			if(prettify_xml == true) {
-				xmlBufferPtr xmlbufptr = NULL;
-				if((xmlbufptr = la_prettify_xml((char *)pdu->data)) != NULL) {
+				xmlChar *xml = NULL;
+				if((xml = la_prettify_xml((char *)pdu->data)) != NULL) {
 					LA_ISPRINTF(vstr, indent, "Message (reformatted):\n");
-					la_isprintf_multiline_text(vstr, indent + 1, (char *)xmlbufptr->content);
-					xmlBufferFree(xmlbufptr);
+					la_isprintf_multiline_text(vstr, indent + 1, (char *)xml);
+					xmlFree(xml);
 				} else {
 					// Doesn't look like XML - print it as normal
 					prettify_xml = false;
