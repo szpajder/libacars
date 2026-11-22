@@ -27,7 +27,7 @@ directly from `bin` subdirectory.
 Requirements:
 
 - c11-capable C compiler
-- cmake 3.1 or later
+- cmake 3.12 or later
 - zlib 1.2 (optional)
 - libxml2 (optional)
 
