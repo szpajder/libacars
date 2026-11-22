@@ -3,7 +3,7 @@
  *  aircraft position information from downlink CPDLC message with
  *  a position report.
  *
- *  Copyright (c) 2018-2023 Tomasz Lemiech <szpajder@gmail.com>
+ *  Copyright (c) 2018-2026 Tomasz Lemiech <szpajder@gmail.com>
  */
 #include <stdbool.h>
 #include <stdio.h>

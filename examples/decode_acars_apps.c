@@ -1,7 +1,7 @@
 /*
  *  decode_acars_apps - an example decoder for ACARS applications
  *
- *  Copyright (c) 2018-2023 Tomasz Lemiech <szpajder@gmail.com>
+ *  Copyright (c) 2018-2026 Tomasz Lemiech <szpajder@gmail.com>
  */
 #include <stdbool.h>            /* true */
 #include <stdio.h>              /* printf(), fprintf(), fgets() */
