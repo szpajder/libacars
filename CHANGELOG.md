@@ -1,5 +1,16 @@
 # ChangeLog
 
+## Version 2.2.2 (2026-11-22)
+* Message reassembly status is now exposed in the JSON output (thx @Trumeet)
+* Added Debian packaging (thx @ka9q)
+* Fixed three memory safety issues (thx @alosafuzz):
+  * out-of-bounds read in BASE64 decoder
+  * memory leak when decoding too short MIAM PDUs
+  * signed integer overflow in MIAM CORE CRC reconstruction
+* Mention the non-printable characters in text output caveat in the
+  programming guide (suggested by @f00b4r0)
+* A few minor bugfixes and improvements
+
 ## Version 2.2.1 (2025-11-02)
 * Fix compatibility with latest CMake versions
 * Fix compilation error on Windows (thx @gvanem)

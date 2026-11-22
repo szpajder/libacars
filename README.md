@@ -2,7 +2,7 @@
 
 libacars is a library for decoding ACARS message contents.
 
-Current stable version: **2.2.1** (released November 2, 2025)
+Current stable version: **2.2.2** (released November 22, 2026)
 
 ## Supported message types
 
