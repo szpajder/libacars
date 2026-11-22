@@ -519,6 +519,21 @@ with:
 
 Piece of cake.
 
+### A word on non-printable characters in text data
+
+While ACARS messages are textual in principle, nothing prevents the sender from
+using non-printable characters in them. Most common example is the bell
+character (ASCII code 7) used to ring the chime sound in the cockpit to alert
+the crew.  Certain avionics are also known to include a terminating NULL
+character in CPDLC free text messages by mistake (see
+[libacars issue 20](https://github.com/szpajder/libacars/issues/20)).  libacars text formatting
+functions do not escape these characters in any way, everything is printed as
+is. It is usually not an issue for humans, but might be a problem for machine
+parsing. It is therefore recommended to use JSON output for automatic data
+processing. JSON data is guaranteed to be properly formatted and all
+non-printable characters are correctly escaped (for example the NULL character
+is represented by `\u0000`).
+
 ### Accessing message fields
 
 Having only an option to pretty-print decoded messages would be quite a
