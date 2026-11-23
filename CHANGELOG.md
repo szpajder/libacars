@@ -1,5 +1,8 @@
 # ChangeLog
 
+## Version 2.2.3 (2026-11.23)
+* Fixed compatibility issue with cmake versions prior to 3.26
+
 ## Version 2.2.2 (2026-11-22)
 * Message reassembly status is now exposed in the JSON output (thx @Trumeet)
 * Added Debian packaging (thx @ka9q)
