@@ -28,18 +28,18 @@ file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/conftest.ldscript")
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 # strdup, strtok_r
-add_compile_definitions(-D_XOPEN_SOURCE=600)
+add_compile_definitions(_XOPEN_SOURCE=600)
 
 # strnlen
-add_compile_definitions(-D_POSIX_C_SOURCE=200809L)
+add_compile_definitions(_POSIX_C_SOURCE=200809L)
 
 # strsep
 # Also silence warnings about obsolete _BSD_SOURCE macro in ASN.1 code
-add_compile_definitions(-D_DEFAULT_SOURCE)
+add_compile_definitions(_DEFAULT_SOURCE)
 
 # strsep on MacOS
 if(APPLE)
-	add_compile_definitions(-D_DARWIN_C_SOURCE)
+	add_compile_definitions(_DARWIN_C_SOURCE)
 endif()
 
 if (HAVE_LD_VERSION_SCRIPT)

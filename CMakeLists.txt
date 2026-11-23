@@ -30,7 +30,7 @@ else()
 endif()
 
 if(MINGW)
-	add_compile_definitions(-D__USE_MINGW_ANSI_STDIO=1)
+	add_compile_definitions(__USE_MINGW_ANSI_STDIO=1)
 endif()
 
 include_directories (
